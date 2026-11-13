@@ -59,3 +59,31 @@ def test_strict_provider_schemas_do_not_have_arbitrary_maps():
             elif isinstance(node,list):
                 for v in node:check(v)
         check(schema)
+
+
+def test_missing_vectors_are_restored_from_embedding_cache(indexed):
+    indexed.config.enable_paid_api = True
+    indexed.config.openai_api_key = 'test'
+    client = SimpleNamespace(embeddings=SimpleNamespace(create=Mock(return_value=SimpleNamespace(
+        data=[SimpleNamespace(index=0, embedding=[0.2, 0.8, 0.4])],
+        usage=SimpleNamespace(total_tokens=20)))))
+    with patch.object(Provider, 'client', client):
+        provider = Provider(indexed)
+        provider.index()
+        ids = provider.collection().get()['ids']
+        provider.collection().delete(ids=ids)
+        provider.index()
+        assert provider.collection().get()['ids'] == ids
+        assert client.embeddings.create.call_count == 1
+
+
+def test_default_model_and_client_configuration(cfg):
+    assert cfg.openai_model == 'gpt-4o-mini'
+    cfg.enable_paid_api = True
+    cfg.openai_api_key = 'test-key'
+    cfg.openai_timeout_seconds = 12
+    cfg.openai_max_retries = 1
+    from flame.store import Store
+    with patch('flame.provider.OpenAI') as client:
+        Provider(Store(cfg)).client
+        client.assert_called_once_with(api_key='test-key', timeout=12, max_retries=1)

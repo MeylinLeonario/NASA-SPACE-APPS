@@ -23,6 +23,7 @@ class Health(BaseModel):
     status: str
     paid_api_enabled: bool
     synthesis_ready: bool
+    synthesis_model: str
     embedding_model: str
     consensus: str
 
@@ -112,7 +113,7 @@ def create_app(config: Settings | None = None):
 
     @app.get('/health', response_model=Health)
     def health():
-        return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
+        return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'synthesis_model': cfg.openai_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
 
     @app.get('/api/documents', response_model=list[DocumentResponse])
     def documents():

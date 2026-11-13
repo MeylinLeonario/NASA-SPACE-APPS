@@ -84,7 +84,7 @@ Edit `.env` locally; never put credentials in chat, browser code, or Git:
 
 ```dotenv
 OPENAI_API_KEY=your-local-secret
-OPENAI_MODEL=gpt-4o
+OPENAI_MODEL=gpt-4o-mini
 OPENAI_EMBEDDING_MODEL=text-embedding-3-small
 ENABLE_PAID_API=true
 ```
@@ -131,7 +131,7 @@ Set `FLAME_API_TOKEN` on a shared workstation, restart the backend, and supply `
 
 ## Consensus without API entitlement
 
-No official API entitlement was established for the Free account. There is no authenticated scraping or speculative API integration. Manual discovery import works completely independently of normal RAG.
+A direct Consensus API connection is not configured. `CONSENSUS_API_KEY` is reserved and is currently unused; setting it does not enable an integration. There is no authenticated scraping or speculative API integration. Manual discovery import works completely independently of normal RAG.
 
 CSV headers:
 
@@ -197,3 +197,22 @@ README.md
 ```
 
 Recommended next work: review/OCR the unreadable PDFs; scientifically review metadata and findings; configure and validate live OpenAI access; broaden bilingual and out-of-domain evaluation; improve equation/table segmentation; add reviewed numerical datasets and charts only after source validation. See [known limitations](docs/limitations.md).
+
+## Conectar GPT-4o mini y Consensus
+
+1. Copia `.env.example` a `.env` en la raíz del repositorio (`cp .env.example .env`).
+2. Crea una API key en https://platform.openai.com/api-keys y configura facturación en esa plataforma. La suscripción de ChatGPT no incluye saldo de API. Guarda la clave solo en `OPENAI_API_KEY`, conserva `OPENAI_MODEL=gpt-4o-mini` y establece `ENABLE_PAID_API=true`.
+3. Ejecuta `.venv/bin/python -m flame.cli connections` para revisar la configuración sin enviar claves ni realizar llamadas externas. Reinicia el backend. `curl http://127.0.0.1:8000/health` indica si existe configuración local; no valida la clave contra OpenAI.
+4. Ejecuta `.venv/bin/python -m flame.cli ingest --dry-run --embeddings` para estimar y `.venv/bin/python -m flame.cli ingest --embeddings` para crear el índice semántico. Las llamadas generan cargos.
+5. Prueba `/api/chat` con una pregunta sobre los documentos. `mode=hybrid` confirma recuperación híbrida; revisa `limitations` si falla la búsqueda semántica. Si no hay evidencia, el asistente se abstiene.
+
+Busca publicaciones en https://consensus.app/ y prepara sus metadatos con el formato CSV/JSON descrito arriba. Usa el botón **Import Consensus CSV / JSON** o:
+
+```bash
+curl -F 'file=@consensus.json' http://127.0.0.1:8000/api/discovery/upload
+curl http://127.0.0.1:8000/api/discovery
+```
+
+La importación no necesita credenciales de Consensus. Añade los PDF permitidos a `papers/` y repite la indexación para incorporarlos al RAG. Una conexión automática requiere acceso autorizado y documentación de la API de Consensus (URL, autenticación y esquema); una clave por sí sola no basta. No compartas claves por chat.
+
+`RAG_MAX_CONTEXT_TOKENS` limita los pasajes enviados al modelo usando una estimación conservadora de tokens. El índice puede reconstruir vectores ausentes desde su caché sin volver a pagar por embeddings ya almacenados. Los precios del `.env.example` son estimaciones configurables para GPT-4o mini, no una cotización en tiempo real.
