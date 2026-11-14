@@ -10,7 +10,7 @@ type Coverage = {
   observations: number; gravity_levels: number[]; prediction_eligible: boolean;
   folds: {gravity_g: number; eligible: boolean; training_n: number; test_n: number}[];
 };
-type Cohort = {fuel: string; configuration: string; temperature_available: boolean; coverage: Record<string, Coverage>};
+type Cohort = {fuel: string; configuration: string; temperature_available: boolean; coverage: Record<string, Coverage>; availability?: string; observed_ranges?: Record<string, [number, number]>};
 type Status = {
   reason: string | null; reviewed_direct_observations: number; dependencies_ready: boolean;
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
@@ -164,7 +164,7 @@ export default function OODPanel({token}: {token: string}) {
               <option disabled>Physics-guided GPR · baseline unavailable</option></select></label>
             <label>Fuel / experimental configuration<select value={cohort} onChange={event => {setCohort(event.target.value); setHoldout(''); setTemperature('');}} disabled={!cohortOptions.length}>
               {!cohortOptions.length && <option value="0">{exploratory ? 'No compatible extracted cohort available' : 'No reviewed cohort available'}</option>}
-              {cohortOptions.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}</option>)}</select></label>
+              {cohortOptions.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}{Object.values(value.coverage).some(output => output.prediction_eligible) ? ' · estimates available' : ' · observations only'}</option>)}</select></label>
             <label>Oxygen (%)<input type="number" required min="0" max="100" step="any" value={oxygen} onChange={event => setOxygen(event.target.value)}/></label>
             <label>Pressure (kPa)<input type="number" required min="0.001" step="any" value={pressure} onChange={event => setPressure(event.target.value)}/></label>
             <label>Airflow (cm/s)<input type="number" required min="0" step="any" value={airflow} onChange={event => setAirflow(event.target.value)}/></label>
@@ -173,8 +173,9 @@ export default function OODPanel({token}: {token: string}) {
           {selected && <div className="ood-coverage"><h4>Evidence available for this cohort</h4><div className="ood-results">{Object.entries(coverage).map(([key, value]) => <div className="ood-coverage-item" key={key}>
             <strong>{propertyLabels[key]}</strong><small>{value.observations} observations · {value.gravity_levels.length} gravity levels</small>
             <span>{value.prediction_eligible ? exploratory ? 'Eligible for exploratory fitting · unvalidated' : 'Eligible for fitting · not a validation claim' : 'Insufficient measurements for fitting'}</span></div>)}</div></div>}
+          {selected?.observed_ranges && <div className="ood-condition-ranges"><h4>Recorded input coverage for this configuration</h4><p>These ranges describe the observations. Keeping each input within its range does not establish joint support.</p><div className="ood-badges">{Object.entries(selected.observed_ranges).map(([field, range]) => <span className="tag neutral" key={field}>{({oxygen_pct: 'Oxygen (%)', pressure_kpa: 'Pressure (kPa)', airflow_cm_s: 'Airflow (cm/s)', temperature_k: 'Temperature (K)'} as Record<string,string>)[field]}: {range[0]}{range[0] !== range[1] ? ` to ${range[1]}` : ' only'}</span>)}</div></div>}
           <button className="button primary" disabled={!ready || busy}>{busy ? 'Computing…' : 'Estimate supported properties'}</button>
-          {selected && !availableProperties && <p>Each output needs at least three compatible measurements across two gravity levels. This minimum does not establish scientific sufficiency.</p>}
+          {selected && !availableProperties && <p>Observations-only configuration: inspect its measurements below. Estimation requires at least three compatible rows across two gravity levels per output; that minimum does not establish scientific sufficiency.</p>}
         </form>
         <p className="small-note">Trees have limited ability to extrapolate trends. GPR outputs are fitted independently. Physics-guided GPR requires a documented, applicable physical baseline; no model guarantees extrapolation.</p>
         {result && <div aria-live="polite">{result.data_mode === 'exploratory' && <div className="alert"><strong>Exploratory estimate · not experimentally validated</strong><p>{result.warning}</p></div>}<p>{result.reason}</p>{Object.entries(result.unavailable_outputs || {}).map(([key, reason]) => <p className="ood-warning" key={key}>{propertyLabels[key]}: {reason}</p>)}{Object.keys(result.results).length > 0 && <>

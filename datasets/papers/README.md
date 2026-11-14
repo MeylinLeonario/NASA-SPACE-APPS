@@ -1,11 +1,12 @@
 # Mediciones extraídas de los PDF de `papers`
 
-Se examinaron los **19 PDF** del repositorio. Este paquete contiene **105 registros de extracción**, no 105 experimentos independientes. Las tablas y los valores seleccionados se transcribieron con sus páginas; las cuatro tablas principales de NASA TM-100195 se comprobaron visualmente. No se estimaron coordenadas de curvas ni se inventaron condiciones ausentes.
+Se examinaron los **19 PDF** del repositorio. Este paquete contiene **123 registros de extracción**, no 123 experimentos independientes. Las tablas y los valores seleccionados se transcribieron con sus páginas; las cuatro tablas principales de NASA TM-100195 se comprobaron visualmente. Las ampliaciones de PMMA se digitalizaron desde marcadores vectoriales identificados en la figura original; no se generaron puntos intermedios de curvas ni se inventaron condiciones ausentes.
 
 ## Archivos
 
-- `combustion-observations.json`: 70 filas con los campos obligatorios del contrato OOD; todas tienen `reviewed: false`. Contienen 70 velocidades de propagación y 50 longitudes de llama. No contienen umbrales de oxígeno convertidos artificialmente en observaciones puntuales ni temperaturas de llama inventadas.
-- `extracted-measurements.csv`: los 105 registros, incluidos resultados incompletos, celdas originales, banderas y campos ausentes; se puede abrir en Excel. Las listas y celdas compuestas están serializadas como JSON en sus columnas.
+- `combustion-observations.json`: 91 filas con los campos obligatorios del contrato OOD; todas tienen `reviewed: false`. Contienen 91 velocidades de propagación y 51 longitudes de llama. No contienen umbrales de oxígeno convertidos artificialmente en observaciones puntuales ni temperaturas de llama inventadas.
+- `extracted-measurements.csv`: los 123 registros, incluidos resultados incompletos, celdas originales, banderas y campos ausentes; se puede abrir en Excel. Las listas y celdas compuestas están serializadas como JSON en sus columnas.
+- `pmma-figure4-digitization.json`: coordenadas, calibración y puntos reproducibles de la figura de PMMA.
 - `extraction-audit.json`: inventario de los 19 documentos, huellas SHA-256, páginas PDF (numeración desde 1), ubicación de cada tabla/fila, valores originales, conversiones, exclusiones y notas. Este archivo permite verificar qué observación procede de qué PDF.
 
 ## Cargar el archivo local
@@ -26,14 +27,14 @@ El archivo de `datasets/papers/` está versionado en Git; el archivo activo de `
 | Fuente | Registros de extracción | Filas exportadas al contrato OOD |
 |---|---:|---:|
 | Olson (1987), NASA TM-100195 | 89 | 68 |
-| Manu B V y Amit Kumar, PMMA fino (manuscrito suministrado) | 2 | 2 |
-| Resultados Saffire I/II (presentación) | 6 | 0 |
+| Manu B V y Amit Kumar, PMMA fino (manuscrito suministrado) | 20 | 20 |
+| Resultados Saffire I/II (presentación) | 6 | 3 |
 | Resultados preliminares Saffire VI, ICES-2024-365 | 5 | 0 |
 | Kobayashi et al., SCEM/ISS, Fig. 1A | 2 | 0 |
 | Manuscrito de propagación concurrente sobre aislamiento de cables | 1 | 0 |
-| **Total** | **105** | **70** |
+| **Total** | **123** | **91** |
 
-Las 89 entradas de Olson son 77 filas individuales de las tablas A-I–A-IV, 4 límites de extinción expresados como intervalos y 8 filas de una tabla secundaria de hipergravedad. De las 77 filas individuales se excluyeron 8 con propagación oscilatoria y 1 con una posible anomalía de impresión; quedan 68. No se añadieron como experimentos nuevos los promedios de las tablas ni sus repeticiones en la tabla II.
+Las 89 entradas de Olson son 77 filas individuales de las tablas A-I–A-IV, 4 límites de extinción expresados como intervalos y 8 filas de una tabla secundaria de hipergravedad. De las 77 filas individuales se excluyeron 8 con propagación oscilatoria y 1 con una posible anomalía de impresión; quedan 68. En Olson no se añadieron como experimentos nuevos los promedios de las tablas ni sus repeticiones en la tabla II. En el manuscrito de PMMA, cada punto publicado representa una media de dos repeticiones: se conserva como una única observación agregada, sin inventar las dos filas de origen.
 
 ### NASA TM-100195
 
@@ -53,9 +54,15 @@ Sandra L. Olson, *The Effect of Microgravity on Flame Spread Over a Thin Fuel*, 
 
 ### Otras fuentes con valores explícitos
 
-**PMMA fino:** página PDF 7: 0.68 mm/s sin flujo y 0.53 mm/s a 25 cm/s, gravedad normal, cilindro de PMMA transparente colado de 1 mm de diámetro y 80 mm de longitud. La página PDF 1 especifica 21% O2 y 1 atm; páginas 2–3 definen material y geometría. El manuscrito suministrado no permite verificar sus metadatos editoriales; esa limitación está marcada. Ambas filas siguen pendientes de revisión.
+**PMMA fino:** 20 valores de propagación promediados sobre dos repeticiones por punto, en varillas de 0.5 y 1 mm, separados por diámetro. La página PDF 1 fija 21% O2 y 1 atm; la página 3 especifica la misma cámara en gravedad normal y torre de caída. Se preservan las dos cifras explícitas del texto (0.68 mm/s a 0 cm/s y 0.53 mm/s a 25 cm/s para 1 mm a 1 g), sin duplicarlas. Se añaden 18 puntos de Fig. 4, página 7, con el adaptador reproducible `scripts/extract_pmma_figure4.py`.
 
-**Saffire I/II:** tabla I, página PDF 29: tasas de 1.8, 1.3, 2.1 y 2.6 mm/s en microgravedad; 1.2 y 0.6 mm/s pertenecen a la columna de controles a 1 g para silicona. Las longitudes aproximadas de 40 y 24 mm se describen en la página PDF 21 y se muestran en la 20. No se asignó una presión que no figura en esta presentación, ni el oxígeno de vuelo a los controles terrestres. Las entradas conservan valores aproximados de oxígeno como notas, no como medidas exactas por ejecución.
+El adaptador comprueba la huella del PDF, los ejes, las etiquetas y la coincidencia de los centros de marcadores con los nodos de las curvas vectoriales. Extrae únicamente los puntos experimentales señalados; no muestrea el interior de líneas suavizadas ni los extremos de las barras de error. `pmma-figure4-digitization.json` conserva los anclajes, índices y coordenadas. Los valores se redondean a 0.01 mm/s; esa resolución de lectura **no es una desviación estándar de medida**. No se inventan las dos repeticiones como filas independientes. El 0 g del gráfico es nominal y los metadatos editoriales del manuscrito siguen sin verificar.
+
+**Saffire I/II:** la tabla I de la presentación (página PDF 29) aporta velocidades y geometrías. Han et al. (2026), DOI 10.1016/j.proci.2026.106327, tabla 1 (página PDF 2 del documento también incluido), aporta las condiciones experimentales nominales de los vuelos I/II: 1 atm, 21.7%/22.1% de oxígeno y 20/25 cm/s. Esto permite completar tres observaciones **concurrentes de SIBAL**: muestra 1-1, 1.8 mm/s; 2-5, 2.1 mm/s; 2-6, 2.6 mm/s. La primera tiene además una longitud de llama aproximada de 40 mm. Las anchuras de 406 y 50 mm permanecen en dos configuraciones distintas. El oxígeno se registra como condición inicial nominal, con advertencia sobre su variación temporal; no se presenta como una medida constante exacta.
+
+La presión no se dedujo de la palabra «ambiente»: está explícita en la tabla secundaria. El importador verifica también la huella de ese PDF complementario. No se importó ninguna columna de simulación ni longitud de pirólisis como longitud de llama. No se mezclaron los resúmenes discrepantes de Saffire IV/VI entre fuentes. Las dos filas de silicona corresponden a controles terrestres cuyos valores de presión/oxígeno no pueden completarse con una tabla de condiciones de vuelo; continúan excluidas. La muestra opuesta 1-2 también permanece en la auditoría incompleta.
+
+Los dos conjuntos nuevos de SIBAL solo cubren un nivel nominal de gravedad y menos de tres filas: son **observations only**, con gráficos y tablas disponibles, pero sin estimación a otras gravedades bajo el protocolo actual.
 
 **Saffire IV–VI:** las tablas 1 y 2 (páginas PDF 3 y 6) permiten asociar cinco muestras con presión, oxígeno, flujo, duración y calorimetría. La temperatura de salida del SFU **no es temperatura de llama**. No se convirtió longitud/duración en velocidad medida, ni potencia calorimétrica en otra salida del modelo.
 
@@ -67,7 +74,7 @@ Sandra L. Olson, *The Effect of Microgravity on Flame Spread Over a Thin Fuel*, 
 
 **No se marcó ninguna extracción propia como revisada.** El JSON ya contiene observaciones reales transcritas; eso no equivale a validar su uso conjunto para regresión. Una revisión científica debe comprobar las fuentes, las convenciones de gravedad, las definiciones de salida, la compatibilidad y los grupos de dependencia antes de aprobar filas en el archivo activo. No basta con cambiar todos los `reviewed` a `true` para quitar el bloqueo.
 
-No se ha establecido validación científica independiente con estas extracciones pendientes. La casilla **Use extracted observations for exploratory estimates** permite ajustes exploratorios explícitos sin aprobar filas; los resultados quedan señalados como no validados y la validación LOGO permanece bloqueada en ese modo. Las pruebas de integración comprueban que ambos modelos pueden devolver estimaciones exploratorias sin modificar los archivos ni conceder aprobación. En el subconjunto NASA solo existen dos niveles nominales de gravedad; además, el grupo conservador del estudio excluye todas sus filas al retener uno de esos niveles. Por tanto **no hay evidencia LOGO independiente** con este paquete. Las observaciones de hipergravedad citadas por Olson proceden de otro trabajo y otros materiales: no se mezclaron con Kimwipes para crear artificialmente más niveles.
+No se ha establecido validación científica independiente con estas extracciones pendientes. La casilla **Use extracted observations for exploratory estimates** permite ajustes exploratorios explícitos sin aprobar filas; los resultados quedan señalados como no validados y la validación LOGO permanece bloqueada en ese modo. Las pruebas de integración comprueban que ambos modelos pueden devolver estimaciones exploratorias sin modificar los archivos ni conceder aprobación. En los subconjuntos NASA y PMMA solo existen dos niveles nominales de gravedad; además, el grupo conservador del estudio excluye todas sus filas al retener uno de esos niveles. Por tanto **no hay evidencia LOGO independiente** con este paquete. Las observaciones de hipergravedad citadas por Olson proceden de otro trabajo y otros materiales: no se mezclaron con Kimwipes para crear artificialmente más niveles.
 
 El paquete no contiene observaciones directas de la Luna o Marte. Los resultados numéricos, las analogías, las previsiones de ensayos y las figuras aún no digitalizadas permanecen separados.
 
@@ -85,11 +92,11 @@ El paquete no contiene observaciones directas de la Luna o Marte. Los resultados
 | Fire Safety in Space – Beyond Flammability Testing of Small.pdf | 17 | 0 / 0 | Background/design and literature discussion. No additional unambiguous run-level numerical output rows extracted. |
 | Fire safety in space – Investigating flame spread interaction over wires.pdf | 7 | 0 / 0 | Image-only ScienceDirect article preview; OCR recovered abstract/snippets/recommendations, not a full experimental table. Full article needed. |
 | Flame spread Effects of microgravity and scale.pdf | 15 | 0 / 0 | Image-only ScienceDirect article preview; OCR recovered preview content. Overlaps Saffire campaigns; not counted as an independent dataset. |
-| Flame spread over thin circular PMMA rods.pdf | 9 | 2 / 2 | Two explicit normal-gravity spread values extracted; additional plotted points require digitization. Supplied manuscript has unverified publication metadata. |
-| Numerical study of concurrent flow flame spread over thin solids in.pdf | 9 | 0 / 0 | Numerical study. No direct experimental training rows added from simulated curves. |
+| Flame spread over thin circular PMMA rods.pdf | 9 | 20 / 20 | 20 plotted experimental averages: two textual anchors preserved, 18 additional marker values vector-digitized. Diameters 0.5/1 mm kept separate; nominal 0/1 g, 21% O2, 1 atm. Publication metadata pending review. |
+| Numerical study of concurrent flow flame spread over thin solids in.pdf | 9 | 0 / 0 | Simulation paper, used only for explicitly tabulated experimental Saffire I/II conditions (Table 1), with supplementary citation hashes. No numerical model outputs promoted to observations; conflicting IV/VI condition summaries not merged. |
 | Preliminary results from the saffire VI Experiment.pdf | 7 | 5 / 0 | Five Table 1/2 samples extracted; output temperatures are at SFU outlet, not flame temperatures. Calorimetry is unsupported by current regression. |
 | Quiescent flame spread and extinction over acrylic sheets in microgravity at increased oxygen concentration.pdf | 8 | 0 / 0 | SoFIE/RTDFS experimental curves with changing pressure/thickness; pointwise values require graph digitization and condition linkage. No invented graph coordinates. |
-| Results of Large-Scale Spacecraft Flammability Tests.pdf | 36 | 6 / 0 | Table I rates and p20 flame lengths extracted; pressure missing, oxygen approximate. Ground-control columns kept distinct. |
+| Results of Large-Scale Spacecraft Flammability Tests.pdf | 36 | 6 / 3 | Three concurrent SIBAL records completed with nominal pressure/oxygen from Han et al. Table 1. Remaining silicone controls and opposed sample remain incomplete. No gravity-dependent fit for single-level SIBAL cohorts. |
 | Saffire A Novel Approach to Study of Spacecraft Fire Safety Using Un-Manned Spacecraft.pdf | 32 | 0 / 0 | Experiment design/planning presentation. Planned test conditions are not completed experimental measurements. |
 | The Effect of Microgravity on Flame Spread over a Thin Fuel.pdf | 50 | 89 / 68 | Four primary Appendix A tables fully transcribed, individual rows only; averages and duplicate Table II summaries excluded. Additional extinction brackets and secondary hypergravity table retained separately. |
 | can spreading flame over electric wire insulation in concurrent flow achieve steady propagation in microgavity.pdf | 23 | 1 / 0 | One explicitly experimental spread rate extracted; nearby theoretical spread/length values excluded. |
@@ -98,3 +105,18 @@ El paquete no contiene observaciones directas de la Luna o Marte. Los resultados
 Dos archivos eran impresiones de vistas previas de ScienceDirect y no ofrecían texto nativo; se aplicó OCR para identificar su contenido. Sus recomendaciones y fragmentos no se trataron como tablas del artículo completo. En otros documentos los valores están en gráficos: todavía requieren digitalización y enlace a cada condición; «0 filas exportadas» no significa que el artículo carezca de datos experimentales.
 
 Para probar la importación sin escribir, usa `--check`. Para verificar conversiones, exclusiones, conservación de revisiones locales, huellas de origen y bloqueo de entrenamiento, ejecuta `pytest tests/test_paper_observations.py` con las dependencias de pruebas y ciencia instaladas.
+
+## Configuraciones disponibles tras ampliar el paquete
+
+| Material y configuración | Filas | Gravedades nominales | Uso actual |
+|---|---:|---|---|
+| Kimwipes, lámina 0.076 mm, quiescente | 37 | 0, 1 g | Estimación exploratoria |
+| Kimwipes, lámina 0.152 mm, quiescente | 31 | 0, 1 g | Estimación exploratoria |
+| PMMA transparente, varilla 1 mm, flujo opuesto | 12 | 0, 1 g | Estimación exploratoria de velocidad |
+| PMMA transparente, varilla 0.5 mm, flujo opuesto | 8 | 0, 1 g | Estimación exploratoria de velocidad |
+| SIBAL, lámina 406 mm de ancho, concurrente | 1 | 0 g | Observaciones únicamente |
+| SIBAL, lámina 50 mm de ancho, concurrente | 2 | 0 g | Observaciones únicamente |
+
+Para PMMA, el rango de flujo observado es 0–25 cm/s, mientras que oxígeno y presión están fijos a 21% y 101.325 kPa. El panel muestra estos rangos y advierte al consultar fuera de ellos. Más configuraciones no equivalen a validación independiente. Todas las filas nuevas permanecen pendientes de revisión científica.
+
+Ejecuta de nuevo `python scripts/import_paper_observations.py` después de actualizar Git: añade 21 filas a la versión anterior de 70 y conserva todas las filas y revisiones locales existentes. Una segunda importación no duplica registros.

@@ -1380,6 +1380,406 @@
         "spread_mm_s": 0.53
       },
       "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 5.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-1g-flow5",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 1 g, 5 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.6
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-1g-flow10",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 1 g, 10 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.64
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 15.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-1g-flow15",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 1 g, 15 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.61
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 20.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-1g-flow20",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 1 g, 20 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.62
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 0.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow0",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 0 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.65
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 5.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow5",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 5 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.38
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow10",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 10 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.03
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 15.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow15",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 15 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.01
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 20.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow20",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 20 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.97
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 25.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-1mm-0g-flow25",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 1 mm, 0 g, 25 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.88
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 0.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-1g-flow0",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 1 g, 0 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.17
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 5.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-1g-flow5",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 1 g, 5 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.19
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-1g-flow10",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 1 g, 10 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.23
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 1.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 25.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-1g-flow25",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 1 g, 25 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "ground",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.03
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 0.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-0g-flow0",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 0 g, 0 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 3.56
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 5.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-0g-flow5",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 0 g, 5 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.82
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-0g-flow10",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 0 g, 10 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.64
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 25.0,
+      "fuel": "Cast clear PMMA",
+      "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+      "temperature_k": null,
+      "experiment_id": "pmma-thin-0.5mm-0g-flow25",
+      "source": "Manu-BV-Kumar-thin-PMMA-manuscript",
+      "citation": "Manu B V & Amit Kumar, Flame spread over thin circular PMMA rods (supplied manuscript), PDF p7 Fig.4: 0.5 mm, 0 g, 25 cm/s; digitized experimental marker average of two repeats, rounded to 0.01 mm/s; conditions p1, same chamber for 1g/drop tower p3.",
+      "leakage_group": "Manu-BV-Kumar-thin-PMMA-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.11
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 21.7,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 20.0,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "Saffire I/II concurrent SIBAL sheet; width 406 mm; length 940 mm; thickness 0.37 mm; nominal flight conditions",
+      "temperature_k": null,
+      "experiment_id": "saffire-1-1",
+      "source": "Saffire-I-II-experimental-presentation",
+      "citation": "Results of Large-Scale Spacecraft Flammability Tests, PDF p29 Table I, sample 1-1; nominal flight oxygen/pressure supported by Han et al. (2026), doi:10.1016/j.proci.2026.106327, Table 1 PDF p2. Experimental column only; no simulated output.",
+      "leakage_group": "Saffire-I-II-shared-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.8,
+        "length_mm": 40.0
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.1,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 20.0,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "Saffire I/II concurrent SIBAL sheet; width 50 mm; length 290 mm; thickness 0.37 mm; nominal flight conditions",
+      "temperature_k": null,
+      "experiment_id": "saffire-2-5",
+      "source": "Saffire-I-II-experimental-presentation",
+      "citation": "Results of Large-Scale Spacecraft Flammability Tests, PDF p29 Table I, sample 2-5; nominal flight oxygen/pressure supported by Han et al. (2026), doi:10.1016/j.proci.2026.106327, Table 1 PDF p2. Experimental column only; no simulated output.",
+      "leakage_group": "Saffire-I-II-shared-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.1
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.1,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 25.0,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "Saffire I/II concurrent SIBAL sheet; width 50 mm; length 290 mm; thickness 0.37 mm; nominal flight conditions",
+      "temperature_k": null,
+      "experiment_id": "saffire-2-6",
+      "source": "Saffire-I-II-experimental-presentation",
+      "citation": "Results of Large-Scale Spacecraft Flammability Tests, PDF p29 Table I, sample 2-6; nominal flight oxygen/pressure supported by Han et al. (2026), doi:10.1016/j.proci.2026.106327, Table 1 PDF p2. Experimental column only; no simulated output.",
+      "leakage_group": "Saffire-I-II-shared-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.6
+      },
+      "uncertainty": {}
     }
   ]
 }

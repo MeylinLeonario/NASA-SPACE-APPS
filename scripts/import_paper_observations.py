@@ -51,14 +51,15 @@ def import_observations(destination: Path, *, check=False, bundle=BUNDLE, papers
         for key in ('gravity_g', 'oxygen_pct', 'pressure_kpa', 'airflow_cm_s', 'fuel', 'configuration', 'temperature_k'):
             if getattr(row, key) != entry['conditions'].get(key):
                 raise ValueError(f'Condition differs from the extraction audit: {row.experiment_id} / {key}')
-        source = papers / entry['source_file']
-        if source.parent.resolve() != papers.resolve():
-            raise ValueError('Invalid source filename')
-        source_key = (source, entry['source_sha256'])
-        if source_key not in checked_sources:
-            if hashlib.sha256(source.read_bytes()).hexdigest() != entry['source_sha256']:
-                raise ValueError(f'Source PDF changed: {source.name}; recheck the transcription before importing')
-            checked_sources.add(source_key)
+        for source_entry in [entry] + entry.get('additional_sources', []):
+            source = papers / source_entry['source_file']
+            if source.parent.resolve() != papers.resolve():
+                raise ValueError('Invalid source filename')
+            source_key = (source, source_entry['source_sha256'])
+            if source_key not in checked_sources:
+                if hashlib.sha256(source.read_bytes()).hexdigest() != source_entry['source_sha256']:
+                    raise ValueError(f'Source PDF changed: {source.name}; recheck the transcription before importing')
+                checked_sources.add(source_key)
     existing, _ = load_dataset(destination)
     known = {row.experiment_id for row in existing}
     if len(known) != len(existing):
@@ -81,7 +82,7 @@ def import_observations(destination: Path, *, check=False, bundle=BUNDLE, papers
         'added' if not check else 'would_add': len(additions), 'preserved_existing': len(existing),
         'total': len(merged.observations), 'reviewed': sum(r.reviewed for r in merged.observations),
         'sources': dict(Counter(r.source for r in merged.observations)),
-        'notice': 'Imported rows remain reviewed=false. Scientific review is required before training. See datasets/papers/README.md and extraction-audit.json.',
+        'notice': 'Imported rows remain reviewed=false. Scientific review is required for reviewed-mode training; explicit exploratory estimates remain unvalidated. See datasets/papers/README.md and extraction-audit.json.',
     }
 
 

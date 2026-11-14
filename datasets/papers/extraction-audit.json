@@ -1,5 +1,5 @@
 {
-  "extraction_version": "papers-transcription-v1",
+  "extraction_version": "papers-transcription-v2",
   "review_status": "pending_scientific_review",
   "sources": [
     {
@@ -196,9 +196,9 @@
       "pages": 9,
       "native_text_characters": 21799,
       "text_method": "native",
-      "records_extracted": 2,
-      "exported_observations": 2,
-      "assessment": "Two explicit normal-gravity spread values extracted; additional plotted points require digitization. Supplied manuscript has unverified publication metadata.",
+      "records_extracted": 20,
+      "exported_observations": 20,
+      "assessment": "20 plotted experimental averages: two textual anchors preserved, 18 additional marker values vector-digitized. Diameters 0.5/1 mm kept separate; nominal 0/1 g, 21% O2, 1 atm. Publication metadata pending review.",
       "numerical_candidate_pages": [
         1,
         2,
@@ -217,7 +217,7 @@
       "text_method": "native",
       "records_extracted": 0,
       "exported_observations": 0,
-      "assessment": "Numerical study. No direct experimental training rows added from simulated curves.",
+      "assessment": "Simulation paper, used only for explicitly tabulated experimental Saffire I/II conditions (Table 1), with supplementary citation hashes. No numerical model outputs promoted to observations; conflicting IV/VI condition summaries not merged.",
       "numerical_candidate_pages": [
         1,
         2,
@@ -268,8 +268,8 @@
       "native_text_characters": 25201,
       "text_method": "native",
       "records_extracted": 6,
-      "exported_observations": 0,
-      "assessment": "Table I rates and p20 flame lengths extracted; pressure missing, oxygen approximate. Ground-control columns kept distinct.",
+      "exported_observations": 3,
+      "assessment": "Three concurrent SIBAL records completed with nominal pressure/oxygen from Han et al. Table 1. Remaining silicone controls and opposed sample remain incomplete. No gravity-dependent fit for single-level SIBAL cohorts.",
       "numerical_candidate_pages": [
         4,
         16,
@@ -4259,13 +4259,13 @@
       "location": "Table I p29; flame lengths and average rates p21; plotted confirmation p20",
       "evidence_role": "primary_experiment",
       "conditions": {
-        "gravity_g": null,
-        "gravity_label": "microgravity (not numerically quantified)",
+        "gravity_g": 0,
         "oxygen_pct": 21.7,
-        "pressure_kpa": null,
+        "pressure_kpa": 101.325,
         "airflow_cm_s": 20,
         "fuel": "Cotton-fiberglass (SIBAL)",
-        "configuration": "concurrent; width 406 mm; thickness 0.37 mm; nominal sample length 940 mm"
+        "configuration": "Saffire I/II concurrent SIBAL sheet; width 406 mm; length 940 mm; thickness 0.37 mm; nominal flight conditions",
+        "temperature_k": null
       },
       "outputs": {
         "spread_mm_s": 1.8,
@@ -4277,22 +4277,37 @@
         "flame_length_mm": 40,
         "width_mm": 406,
         "thickness_mm": 0.37,
-        "length_mm": 940
+        "length_mm": 940,
+        "pressure_kpa": 101.325,
+        "oxygen_pct": 21.7,
+        "gravity_g": 0
       },
       "extraction_method": "native PDF text; rendered table/figure checked where specified",
       "flags": [
-        "missing_pressure",
-        "missing_numeric_microgravity"
+        "nominal_initial_oxygen",
+        "nominal_microgravity_coordinate",
+        "pressure_from_secondary_experimental_conditions_table"
       ],
       "notes": [
-        "Flight oxygen values are approximate/changing and are not automatically assigned to normal-gravity controls. Flight table gives ~21.5% for 1-2 and ~22.1% for 2-5/2-6; kept as annotations instead of exact per-run inputs.",
-        "2-2/2-4 rates come from the 1-g column, not the microgravity column. Burned length is not flame length."
+        "1 atm is explicitly reported for Saffire I/II in the secondary conditions table, converted to 101.325 kPa; not inferred from ambient pressure.",
+        "Oxygen is the nominal initial flight condition; the primary source reports temporal changes/approximate values. It is not an exact constant per-run measurement.",
+        "0 g is a nominal orbital microgravity coordinate, not a measured zero residual acceleration.",
+        "Primary source dimensions are preserved; secondary table rounds widths/lengths. Material/geometry/direction cohorts remain separate.",
+        "SIBAL only has one gravity level here; these cohorts support observation inspection, not gravity-dependent regression under the current protocol.",
+        "No Table 2 model output, pyrolysis length or flame temperature was converted into an experimental observation."
       ],
       "review_status": "pending_scientific_review",
-      "exported_observation_id": null,
-      "missing_required_inputs": [
-        "gravity_g",
-        "pressure_kpa"
+      "exported_observation_id": "saffire-1-1",
+      "missing_required_inputs": [],
+      "additional_sources": [
+        {
+          "source_file": "Numerical study of concurrent flow flame spread over thin solids in.pdf",
+          "source_sha256": "c1c9ff4a02e39dcd95d583636bf73d9ae34962eb664e2a1d72ffb22a86f8d92a",
+          "pdf_pages": [
+            2
+          ],
+          "location": "Table 1, Saffire I/II conditions"
+        }
       ]
     },
     {
@@ -4356,13 +4371,13 @@
       "location": "Table I p29; flame lengths and average rates p21; plotted confirmation p20",
       "evidence_role": "primary_experiment",
       "conditions": {
-        "gravity_g": null,
-        "gravity_label": "microgravity (not numerically quantified)",
-        "oxygen_pct": null,
-        "pressure_kpa": null,
+        "gravity_g": 0,
+        "oxygen_pct": 22.1,
+        "pressure_kpa": 101.325,
         "airflow_cm_s": 20,
         "fuel": "Cotton-fiberglass (SIBAL)",
-        "configuration": "concurrent; width 50 mm; thickness 0.37 mm; nominal sample length 290 mm"
+        "configuration": "Saffire I/II concurrent SIBAL sheet; width 50 mm; length 290 mm; thickness 0.37 mm; nominal flight conditions",
+        "temperature_k": null
       },
       "outputs": {
         "spread_mm_s": 2.1
@@ -4373,23 +4388,37 @@
         "flame_length_mm": null,
         "width_mm": 50,
         "thickness_mm": 0.37,
-        "length_mm": 290
+        "length_mm": 290,
+        "pressure_kpa": 101.325,
+        "oxygen_pct": 22.1,
+        "gravity_g": 0
       },
       "extraction_method": "native PDF text; rendered table/figure checked where specified",
       "flags": [
-        "missing_pressure",
-        "missing_numeric_microgravity"
+        "nominal_initial_oxygen",
+        "nominal_microgravity_coordinate",
+        "pressure_from_secondary_experimental_conditions_table"
       ],
       "notes": [
-        "Flight oxygen values are approximate/changing and are not automatically assigned to normal-gravity controls. Flight table gives ~21.5% for 1-2 and ~22.1% for 2-5/2-6; kept as annotations instead of exact per-run inputs.",
-        "2-2/2-4 rates come from the 1-g column, not the microgravity column. Burned length is not flame length."
+        "1 atm is explicitly reported for Saffire I/II in the secondary conditions table, converted to 101.325 kPa; not inferred from ambient pressure.",
+        "Oxygen is the nominal initial flight condition; the primary source reports temporal changes/approximate values. It is not an exact constant per-run measurement.",
+        "0 g is a nominal orbital microgravity coordinate, not a measured zero residual acceleration.",
+        "Primary source dimensions are preserved; secondary table rounds widths/lengths. Material/geometry/direction cohorts remain separate.",
+        "SIBAL only has one gravity level here; these cohorts support observation inspection, not gravity-dependent regression under the current protocol.",
+        "No Table 2 model output, pyrolysis length or flame temperature was converted into an experimental observation."
       ],
       "review_status": "pending_scientific_review",
-      "exported_observation_id": null,
-      "missing_required_inputs": [
-        "gravity_g",
-        "oxygen_pct",
-        "pressure_kpa"
+      "exported_observation_id": "saffire-2-5",
+      "missing_required_inputs": [],
+      "additional_sources": [
+        {
+          "source_file": "Numerical study of concurrent flow flame spread over thin solids in.pdf",
+          "source_sha256": "c1c9ff4a02e39dcd95d583636bf73d9ae34962eb664e2a1d72ffb22a86f8d92a",
+          "pdf_pages": [
+            2
+          ],
+          "location": "Table 1, Saffire I/II conditions"
+        }
       ]
     },
     {
@@ -4404,13 +4433,13 @@
       "location": "Table I p29; flame lengths and average rates p21; plotted confirmation p20",
       "evidence_role": "primary_experiment",
       "conditions": {
-        "gravity_g": null,
-        "gravity_label": "microgravity (not numerically quantified)",
-        "oxygen_pct": null,
-        "pressure_kpa": null,
+        "gravity_g": 0,
+        "oxygen_pct": 22.1,
+        "pressure_kpa": 101.325,
         "airflow_cm_s": 25,
         "fuel": "Cotton-fiberglass (SIBAL)",
-        "configuration": "concurrent; width 50 mm; thickness 0.37 mm; nominal sample length 290 mm"
+        "configuration": "Saffire I/II concurrent SIBAL sheet; width 50 mm; length 290 mm; thickness 0.37 mm; nominal flight conditions",
+        "temperature_k": null
       },
       "outputs": {
         "spread_mm_s": 2.6
@@ -4421,23 +4450,37 @@
         "flame_length_mm": null,
         "width_mm": 50,
         "thickness_mm": 0.37,
-        "length_mm": 290
+        "length_mm": 290,
+        "pressure_kpa": 101.325,
+        "oxygen_pct": 22.1,
+        "gravity_g": 0
       },
       "extraction_method": "native PDF text; rendered table/figure checked where specified",
       "flags": [
-        "missing_pressure",
-        "missing_numeric_microgravity"
+        "nominal_initial_oxygen",
+        "nominal_microgravity_coordinate",
+        "pressure_from_secondary_experimental_conditions_table"
       ],
       "notes": [
-        "Flight oxygen values are approximate/changing and are not automatically assigned to normal-gravity controls. Flight table gives ~21.5% for 1-2 and ~22.1% for 2-5/2-6; kept as annotations instead of exact per-run inputs.",
-        "2-2/2-4 rates come from the 1-g column, not the microgravity column. Burned length is not flame length."
+        "1 atm is explicitly reported for Saffire I/II in the secondary conditions table, converted to 101.325 kPa; not inferred from ambient pressure.",
+        "Oxygen is the nominal initial flight condition; the primary source reports temporal changes/approximate values. It is not an exact constant per-run measurement.",
+        "0 g is a nominal orbital microgravity coordinate, not a measured zero residual acceleration.",
+        "Primary source dimensions are preserved; secondary table rounds widths/lengths. Material/geometry/direction cohorts remain separate.",
+        "SIBAL only has one gravity level here; these cohorts support observation inspection, not gravity-dependent regression under the current protocol.",
+        "No Table 2 model output, pyrolysis length or flame temperature was converted into an experimental observation."
       ],
       "review_status": "pending_scientific_review",
-      "exported_observation_id": null,
-      "missing_required_inputs": [
-        "gravity_g",
-        "oxygen_pct",
-        "pressure_kpa"
+      "exported_observation_id": "saffire-2-6",
+      "missing_required_inputs": [],
+      "additional_sources": [
+        {
+          "source_file": "Numerical study of concurrent flow flame spread over thin solids in.pdf",
+          "source_sha256": "c1c9ff4a02e39dcd95d583636bf73d9ae34962eb664e2a1d72ffb22a86f8d92a",
+          "pdf_pages": [
+            2
+          ],
+          "location": "Table 1, Saffire I/II conditions"
+        }
       ]
     },
     {
@@ -4871,11 +4914,1065 @@
       "missing_required_inputs": [
         "gravity_g"
       ]
+    },
+    {
+      "id": "pmma-thin-1mm-1g-flow5",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 1 g, airflow 5 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 5,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.6
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 5,
+        "spread_mm_s": 0.6,
+        "endpoint_pdf_points": [
+          213.589996,
+          406.72998
+        ],
+        "marker_center_pdf_points": [
+          213.650002,
+          406.659988
+        ],
+        "marker_drawing_index": 33,
+        "diameter_mm": 1,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-1g-flow5",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-1g-flow10",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 1 g, airflow 10 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.64
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 10,
+        "spread_mm_s": 0.64,
+        "endpoint_pdf_points": [
+          276.600006,
+          405.269989
+        ],
+        "marker_center_pdf_points": [
+          276.650009,
+          405.219986
+        ],
+        "marker_drawing_index": 34,
+        "diameter_mm": 1,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-1g-flow10",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-1g-flow15",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 1 g, airflow 15 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 15,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.61
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 15,
+        "spread_mm_s": 0.61,
+        "endpoint_pdf_points": [
+          339.619995,
+          406.309998
+        ],
+        "marker_center_pdf_points": [
+          339.650009,
+          406.299973
+        ],
+        "marker_drawing_index": 35,
+        "diameter_mm": 1,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-1g-flow15",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-1g-flow20",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 1 g, airflow 20 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 20,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.62
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 20,
+        "spread_mm_s": 0.62,
+        "endpoint_pdf_points": [
+          402.630005,
+          406.109985
+        ],
+        "marker_center_pdf_points": [
+          402.650009,
+          406.059982
+        ],
+        "marker_drawing_index": 36,
+        "diameter_mm": 1,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-1g-flow20",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow0",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 0 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 0,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.65
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 0,
+        "spread_mm_s": 1.65,
+        "endpoint_pdf_points": [
+          150.570007,
+          363.269989
+        ],
+        "marker_center_pdf_points": [
+          150.650002,
+          363.219986
+        ],
+        "marker_drawing_index": 39,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow0",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow5",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 5 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 5,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.38
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 5,
+        "spread_mm_s": 1.38,
+        "endpoint_pdf_points": [
+          213.589996,
+          374.499969
+        ],
+        "marker_center_pdf_points": [
+          213.650002,
+          374.499985
+        ],
+        "marker_drawing_index": 40,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow5",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow10",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 10 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.03
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 10,
+        "spread_mm_s": 1.03,
+        "endpoint_pdf_points": [
+          276.600006,
+          388.639984
+        ],
+        "marker_center_pdf_points": [
+          276.650009,
+          388.659988
+        ],
+        "marker_drawing_index": 41,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow10",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow15",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 15 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 15,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.01
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 15,
+        "spread_mm_s": 1.01,
+        "endpoint_pdf_points": [
+          339.619995,
+          389.679993
+        ],
+        "marker_center_pdf_points": [
+          339.650009,
+          389.61998
+        ],
+        "marker_drawing_index": 42,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow15",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow20",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 20 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 20,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.97
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 20,
+        "spread_mm_s": 0.97,
+        "endpoint_pdf_points": [
+          402.630005,
+          391.339996
+        ],
+        "marker_center_pdf_points": [
+          402.650009,
+          391.299973
+        ],
+        "marker_drawing_index": 43,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow20",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-1mm-0g-flow25",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 1 mm, 0 g, airflow 25 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 25,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 1 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.88
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 25,
+        "spread_mm_s": 0.88,
+        "endpoint_pdf_points": [
+          465.649994,
+          395.289978
+        ],
+        "marker_center_pdf_points": [
+          465.650009,
+          395.259979
+        ],
+        "marker_drawing_index": 44,
+        "diameter_mm": 1,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-1mm-0g-flow25",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-1g-flow0",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 1 g, airflow 0 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 0,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.17
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 0,
+        "spread_mm_s": 1.17,
+        "endpoint_pdf_points": [
+          150.570007,
+          382.939972
+        ],
+        "marker_center_pdf_points": [
+          150.650002,
+          382.899979
+        ],
+        "marker_drawing_index": 46,
+        "diameter_mm": 0.5,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-1g-flow0",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-1g-flow5",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 1 g, airflow 5 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 5,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.19
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 5,
+        "spread_mm_s": 1.19,
+        "endpoint_pdf_points": [
+          213.589996,
+          382.149994
+        ],
+        "marker_center_pdf_points": [
+          213.650002,
+          382.179977
+        ],
+        "marker_drawing_index": 47,
+        "diameter_mm": 0.5,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-1g-flow5",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-1g-flow10",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 1 g, airflow 10 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.23
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 10,
+        "spread_mm_s": 1.23,
+        "endpoint_pdf_points": [
+          276.600006,
+          380.699982
+        ],
+        "marker_center_pdf_points": [
+          276.650009,
+          380.61998
+        ],
+        "marker_drawing_index": 48,
+        "diameter_mm": 0.5,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-1g-flow10",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-1g-flow25",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 1 g, airflow 25 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 1,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 25,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.03
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 25,
+        "spread_mm_s": 1.03,
+        "endpoint_pdf_points": [
+          465.649994,
+          388.929993
+        ],
+        "marker_center_pdf_points": [
+          465.650009,
+          388.899979
+        ],
+        "marker_drawing_index": 49,
+        "diameter_mm": 0.5,
+        "gravity_g": 1,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-1g-flow25",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-0g-flow0",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 0 g, airflow 0 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 0,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 3.56
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 0,
+        "spread_mm_s": 3.56,
+        "endpoint_pdf_points": [
+          150.570007,
+          283.829956
+        ],
+        "marker_center_pdf_points": [
+          150.650002,
+          283.779999
+        ],
+        "marker_drawing_index": 51,
+        "diameter_mm": 0.5,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-0g-flow0",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-0g-flow5",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 0 g, airflow 5 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 5,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 2.82
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 5,
+        "spread_mm_s": 2.82,
+        "endpoint_pdf_points": [
+          213.589996,
+          314.409973
+        ],
+        "marker_center_pdf_points": [
+          213.650002,
+          314.379974
+        ],
+        "marker_drawing_index": 52,
+        "diameter_mm": 0.5,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-0g-flow5",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-0g-flow10",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 0 g, airflow 10 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 2.64
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 10,
+        "spread_mm_s": 2.64,
+        "endpoint_pdf_points": [
+          276.600006,
+          321.690002
+        ],
+        "marker_center_pdf_points": [
+          276.650009,
+          321.699982
+        ],
+        "marker_drawing_index": 53,
+        "diameter_mm": 0.5,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-0g-flow10",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "pmma-thin-0.5mm-0g-flow25",
+      "source_file": "Flame spread over thin circular PMMA rods.pdf",
+      "source_sha256": "5f51872600024b38360fc6f1356bf99508133a2c530e3b7a9c54e13da2b23862",
+      "pdf_pages": [
+        1,
+        2,
+        3,
+        6,
+        7
+      ],
+      "location": "Fig.4, diameter 0.5 mm, 0 g, airflow 25 cm/s, experimental marker",
+      "evidence_role": "primary_experiment_plot_average",
+      "conditions": {
+        "gravity_g": 0,
+        "oxygen_pct": 21.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 25,
+        "fuel": "Cast clear PMMA",
+        "configuration": "Thin circular rod; diameter 0.5 mm; length 80 mm; downward opposed flow; 120x120x270 mm duct",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 2.11
+      },
+      "transcribed_cells": {
+        "airflow_cm_s": 25,
+        "spread_mm_s": 2.11,
+        "endpoint_pdf_points": [
+          465.649994,
+          344.189972
+        ],
+        "marker_center_pdf_points": [
+          465.650009,
+          344.139999
+        ],
+        "marker_drawing_index": 54,
+        "diameter_mm": 0.5,
+        "gravity_g": 0,
+        "digitization_resolution_mm_s": 0.01
+      },
+      "extraction_method": "Source-pinned PDF vector digitization; marker center verified against curve endpoint; no intermediate curve samples.",
+      "flags": [
+        "vector_digitized",
+        "average_of_two_repeats",
+        "publication_metadata_unverified",
+        "nominal_microgravity_coordinate"
+      ],
+      "notes": [
+        "Digitized plotted averages, not original per-run raw measurements.",
+        "Each plotted point averages two repeats; repeats are not exported as separate invented rows.",
+        "Reading/rounding resolution is not a measured standard deviation. Error-bar meaning is not established here.",
+        "0 g is the figure nominal microgravity coordinate, not an accelerometer measurement.",
+        "Publication metadata and scientific applicability remain pending review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "pmma-thin-0.5mm-0g-flow25",
+      "missing_required_inputs": []
     }
   ],
   "rules": [
     "No extraction was marked reviewed by the assistant.",
-    "No plot points were estimated or synthetic observations generated.",
+    "PMMA Figure 4 observed markers were vector-digitized with a source-pinned adapter; no synthetic or intermediate curve points were generated.",
     "1 cm/s = 10 mm/s; 1 cm = 10 mm; 1 atm = 101.325 kPa.",
     "Microgravity zero coordinates in the NASA export are nominal as used in report Table II, not accelerometer measurements.",
     "Appendix A averages are not independent rows.",

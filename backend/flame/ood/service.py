@@ -6,9 +6,17 @@ from .schema import OUTPUTS
 WARNING = 'Research exploration only. Unvalidated predictions are insufficient for spacecraft fire-safety certification.'
 
 def cohorts(rows):
-    return [dict(fuel=f, configuration=c, temperature_available=t,
-                 coverage=output_coverage([r for r in rows if (r.fuel, r.configuration, r.temperature_k is not None) == (f,c,t)]))
-            for f,c,t in sorted({(r.fuel,r.configuration,r.temperature_k is not None) for r in rows})]
+    result = []
+    for fuel, configuration, temperature_available in sorted({(r.fuel, r.configuration, r.temperature_k is not None) for r in rows}):
+        selected = [r for r in rows if (r.fuel, r.configuration, r.temperature_k is not None) == (fuel, configuration, temperature_available)]
+        coverage = output_coverage(selected)
+        prediction_eligible = any(output['prediction_eligible'] for output in coverage.values())
+        fields = ['oxygen_pct', 'pressure_kpa', 'airflow_cm_s'] + (['temperature_k'] if temperature_available else [])
+        result.append(dict(fuel=fuel, configuration=configuration, temperature_available=temperature_available,
+                           coverage=coverage, prediction_eligible=prediction_eligible,
+                           availability='estimates_available' if prediction_eligible else 'observations_only',
+                           observed_ranges={field: [min(getattr(r, field) for r in selected), max(getattr(r, field) for r in selected)] for field in fields}))
+    return result
 
 
 def status(path):

@@ -265,3 +265,30 @@ test('exploratory gravity inspection expands real-evidence UI without enabling v
   expect(exported.request.gravity_g).toBe(1);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
+
+test('material options distinguish estimates from observations-only and show recorded input ranges', async ({page}) => {
+  const pmma = {...loaded.cohorts[0], fuel: 'Cast clear PMMA', configuration: 'Software fixture: 0.5 mm rod',
+    observed_ranges: {oxygen_pct: [21,21], pressure_kpa: [101.325,101.325], airflow_cm_s: [0,25]}};
+  const sibal = {...loaded.cohorts[0], fuel: 'SIBAL', configuration: 'Software fixture: 406 mm sheet',
+    coverage: {spread_mm_s: {observations: 1, gravity_levels: [0], prediction_eligible: false,
+      folds: [{gravity_g: 0, eligible: false, training_n: 0, test_n: 1}]},
+      length_mm: {observations: 0, gravity_levels: [], prediction_eligible: false, folds: []}}};
+  const panel = await setup(page, {...empty, observations: 91, unreviewed_observations: 91, exploratory_cohorts: [pmma, sibal]});
+  await page.route('**/api/ood/evidence', async route => {
+    const report = evidenceReport(null);
+    report.cohort_observations = 1;
+    report.outputs.spread_mm_s.observations = report.outputs.spread_mm_s.observations.slice(0,1);
+    report.outputs.spread_mm_s.by_gravity = report.outputs.spread_mm_s.by_gravity.slice(0,1);
+    await route.fulfill({json: report});
+  });
+  await panel.getByRole('checkbox', {name: 'Use extracted observations for exploratory estimates'}).check();
+  const materials = panel.getByLabel('Fuel / experimental configuration');
+  await expect(materials.locator('option[value="0"]')).toContainText('estimates available');
+  await expect(materials.locator('option[value="1"]')).toContainText('observations only');
+  await expect(panel.getByText('Oxygen (%): 21 only', {exact: true})).toBeVisible();
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeEnabled();
+  await materials.selectOption('1');
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
+  await expect(panel.getByText(/Observations-only configuration: inspect its measurements below/)).toBeVisible();
+  await expect(panel.locator('.ood-evidence').getByRole('table')).toBeVisible();
+});
