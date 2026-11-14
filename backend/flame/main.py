@@ -115,6 +115,25 @@ def create_app(config: Settings | None = None):
     def health():
         return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'synthesis_model': cfg.openai_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
 
+    from .ood.schema import Query
+    from .ood.service import status as ood_status, infer as ood_infer
+
+    @app.get('/api/ood/status')
+    def gravity_status():
+        return ood_status(cfg.data_dir / 'combustion-observations.json')
+
+    @app.post('/api/ood/predict')
+    def gravity_predict(query: Query):
+        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+            raise HTTPException(503, 'Install the science optional dependencies')
+        return ood_infer(cfg.data_dir / 'combustion-observations.json', query)
+
+    @app.post('/api/ood/validate')
+    def gravity_validate(query: Query):
+        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+            raise HTTPException(503, 'Install the science optional dependencies')
+        return ood_infer(cfg.data_dir / 'combustion-observations.json', query, validation=True)
+
     @app.get('/api/documents', response_model=list[DocumentResponse])
     def documents():
         return store.documents()

@@ -216,3 +216,7 @@ curl http://127.0.0.1:8000/api/discovery
 La importación no necesita credenciales de Consensus. Añade los PDF permitidos a `papers/` y repite la indexación para incorporarlos al RAG. Una conexión automática requiere acceso autorizado y documentación de la API de Consensus (URL, autenticación y esquema); una clave por sí sola no basta. No compartas claves por chat.
 
 `RAG_MAX_CONTEXT_TOKENS` limita los pasajes enviados al modelo usando una estimación conservadora de tokens. El índice puede reconstruir vectores ausentes desde su caché sin volver a pagar por embeddings ya almacenados. Los precios del `.env.example` son estimaciones configurables para GPT-4o mini, no una cotización en tiempo real.
+
+### Scientific gravity generalization (OOD)
+
+Overview includes a data-gated gravity module with independent Matérn GPR and histogram gradient boosting, grouped leave-one-gravity-out evaluation, per-source errors, and explicit uncertainty limitations. No run-level experimental dataset is bundled: predictions remain unavailable until reviewed compatible observations are supplied. Physics-guided regression is disabled pending a documented applicable physical baseline. See [dataset schema, API, methods and limitations](docs/ood-generalization.md). Install optional dependencies with `pip install -e '.[science,test]'`.
