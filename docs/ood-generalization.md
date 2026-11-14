@@ -43,7 +43,8 @@ Measured gravity, numerical interpolation/extrapolation, input marginal coverage
 
 ## Validation and API
 
-* `GET /api/ood/status`: data/dependency availability, provenance hash, cohorts, observed gravity levels, output schema, model availability.
+* `GET /api/ood/schema`: strict dataset-envelope JSON Schema, including observation fields. The UI also offers an empty dataset template containing no fabricated measurements.
+* `GET /api/ood/status`: data/dependency availability, provenance counts/hash, cohorts, per-output measurement counts and fitting eligibility, and cohort-specific gravity folds. Fold eligibility uses the same dependency-group exclusion as evaluation. The UI disables validation for ineligible folds and never offers gravity levels from a different cohort.
 * `POST /api/ood/predict`: Query physical inputs plus model (`gpr`, `boosting`, `physics_gpr`). Only outputs with at least three compatible measurements across two gravities are estimated. This minimum is a software eligibility rule, not a scientific sufficiency claim.
 * `POST /api/ood/validate`: same Query, optional `holdout_g`; omitted means all gravity levels. For each output, every row at held-out gravity is excluded, along with all rows sharing leakage groups with the test rows. Folds need at least three remaining rows across two gravities. Missing/ineligible folds give reasons. Input oxygen/pressure/airflow do not filter LOGO test observations; evaluation uses each held-out row's recorded conditions within the selected fuel/configuration/temperature-availability cohort.
 
@@ -53,8 +54,16 @@ LOGO is implemented; leave-one-condition-out, nested grouped kernel selection, a
 
 ## Reproducibility and limits
 
-Models fit on demand and are not deserialized from untrusted pickle files. Responses identify pipeline version `ood-v1` and SHA-256 of the complete source dataset; the input request and installed package versions must also be recorded by callers for reproduction. Persisted fitted model artifacts, training job scheduling, calibrated domain detection and physical-baseline registration are not yet implemented. Small local datasets are intended; large production datasets require offline training and bounded serving workloads.
+Models fit on demand and are not deserialized from untrusted pickle files. Responses identify pipeline version `ood-v2`, SHA-256 of the complete source dataset, the exact validated input request, and installed NumPy/SciPy/scikit-learn versions. Prediction and validation reports can be exported as JSON from the panel. Persisted fitted model artifacts, training job scheduling, calibrated domain detection and physical-baseline registration are not yet implemented. Small local datasets are intended; large production datasets require offline training and bounded serving workloads.
 
 References for implemented methods: Rasmussen & Williams, *Gaussian Processes for Machine Learning*, MIT Press (2006), https://gaussianprocess.org/gpml/ ; scikit-learn Gaussian process regression https://scikit-learn.org/stable/modules/gaussian_process.html and histogram gradient boosting https://scikit-learn.org/stable/modules/ensemble.html#histogram-based-gradient-boosting . Dataset discovery starting point: NASA Physical Sciences Informatics https://psi.nasa.gov/ . These are method/discovery references, not evidence that any NASA observations were loaded.
 
 This module supports research exploration. Unvalidated estimates are insufficient for spacecraft fire-safety certification.
+
+## Interface behavior
+
+Changing conditions cancels outstanding requests and clears previous results, so late responses cannot overwrite estimates for the new inputs. Both fitting and validation apply the same browser input validity checks. The observed/predicted plot uses common axis bounds, a perfect-agreement reference line and available interval bars; the underlying pairs remain accessible in a table. Coverage is empirical per held-out fold and does not imply calibrated intervals. Empty-data onboarding, per-property availability, detailed provenance and result exports remain available without inventing observations.
+
+### Regression checks
+
+Run `pytest` with the science/test extras installed. Browser regression tests use synthetic API fixtures only: after `npm ci` and `npm run build` in `frontend`, install Chromium with `npx playwright install chromium`, then run `npm run test:ood-ui`. To use an existing system Chromium, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to its executable path. Desktop and mobile tests cover empty-state downloads, cohort-specific gravity choices, leakage-group eligibility, physical input validation, cancellation of stale predictions, provenance exports, and both models' held-out comparison charts and tables. These checks do not establish experimental model accuracy.

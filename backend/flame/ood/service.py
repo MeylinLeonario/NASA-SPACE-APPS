@@ -1,5 +1,6 @@
 import importlib.util
-from .data import load_dataset, compatible, features
+from importlib.metadata import version as package_version
+from .data import load_dataset, compatible, features, eligible, output_coverage
 from .schema import OUTPUTS
 
 WARNING = 'Research exploration only. Unvalidated predictions are insufficient for spacecraft fire-safety certification.'
@@ -10,7 +11,10 @@ def status(path):
     direct = [r for r in rows if r.reviewed and r.provenance in {'ground', 'partial_gravity', 'microgravity'}]
     return {'schema_version': 1, 'dataset_sha256': version, 'observations': len(rows), 'reviewed_direct_observations': len(direct),
             'dependencies_ready': ready, 'models': {'gpr': ready, 'boosting': ready, 'physics_gpr': False},
-            'outputs': OUTPUTS, 'cohorts': [dict(fuel=f, configuration=c, temperature_available=t) for f,c,t in sorted({(r.fuel,r.configuration,r.temperature_k is not None) for r in direct})],
+            'outputs': OUTPUTS, 'cohorts': [dict(fuel=f, configuration=c, temperature_available=t,
+                coverage=output_coverage([r for r in direct if (r.fuel, r.configuration, r.temperature_k is not None) == (f,c,t)]))
+                for f,c,t in sorted({(r.fuel,r.configuration,r.temperature_k is not None) for r in direct})],
+            'provenance_counts': {kind: sum(r.provenance == kind for r in rows) for kind in sorted({r.provenance for r in rows})},
             'gravity_levels': sorted({r.gravity_g for r in direct}),
             'reason': None if direct else 'No reviewed run-level experimental observations supplied. Papers and metadata are not training rows.',
             'warning': WARNING}
@@ -25,7 +29,7 @@ def infer(path, query, validation=False):
     results = {}
     for output, unit in OUTPUTS.items():
         selected = [r for r in rows if r.outputs.get(output) is not None]
-        if len(selected) < 3 or len({r.gravity_g for r in selected}) < 2:
+        if not eligible(selected):
             continue
         if validation:
             results[output] = {'unit': unit, 'folds': evaluate(selected, output, query.model, query.holdout_g)}
@@ -46,6 +50,10 @@ def infer(path, query, validation=False):
                            'within_marginal_ranges': inside, 'joint_domain': 'Not established by marginal ranges',
                            'novelty_score': None, 'domain_coverage_uncertainty': 'Unavailable',
                            'validation_evidence': 'Run grouped LOGO validation; prediction alone is not independent validation.',
-                           'sources': sorted({r.citation for r in selected}), 'training_n': len(selected)}
+                           'sources': sorted({r.citation for r in selected}), 'training_n': len(selected),
+                           'outside_features': [name for i, name in enumerate(['gravity_g', 'oxygen_pct', 'pressure_kpa', 'airflow_cm_s'] + ([] if query.temperature_k is None else ['temperature_k']))
+                                                if not min(v[i] for v in x) <= vector[i] <= max(v[i] for v in x)]}
     return {'status': 'available' if results else 'unavailable', 'reason': None if results else 'Insufficient compatible reviewed observations: need at least 3 rows across 2 gravity levels per output.',
-            'dataset_sha256': version, 'artifact_version': 'ood-v1', 'model': query.model, 'results': results, 'warning': WARNING}
+            'dataset_sha256': version, 'artifact_version': 'ood-v2',
+            'request': query.model_dump(),
+            'package_versions': {name: package_version(name) for name in ('numpy', 'scipy', 'scikit-learn')}, 'model': query.model, 'results': results, 'warning': WARNING}

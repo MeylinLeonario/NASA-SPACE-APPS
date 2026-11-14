@@ -1,7 +1,7 @@
 import hashlib
-import json
+import math
 from pathlib import Path
-from .schema import Observation
+from .schema import Dataset
 
 DIRECT = {'ground', 'partial_gravity', 'microgravity'}
 
@@ -9,11 +9,8 @@ def load_dataset(path: Path):
     if not path.exists():
         return [], None
     raw = path.read_bytes()
-    payload = json.loads(raw)
-    if payload.get('schema_version') != 1:
-        raise ValueError('Expected observation schema_version 1')
-    rows = [Observation.model_validate(row) for row in payload['observations']]
-    return rows, hashlib.sha256(raw).hexdigest()
+    dataset = Dataset.model_validate_json(raw)
+    return dataset.observations, hashlib.sha256(raw).hexdigest()
 
 def compatible(rows, query, output=None):
     return [r for r in rows if r.reviewed and r.provenance in DIRECT
@@ -26,8 +23,38 @@ def features(query):
     return [getattr(query, key) for key in FEATURES] + ([] if query.temperature_k is None else [query.temperature_k])
 
 def gravity_to_g(value, unit):
+    if not math.isfinite(value) or value < 0:
+        raise ValueError('Gravity must be finite and nonnegative')
     if unit == 'g':
         return value
     if unit == 'm/s2':
         return value / 9.80665
     raise ValueError('Gravity units must be g or m/s2')
+
+
+def split_gravity(rows, gravity):
+    """Exclude all dependencies of the held-out rows, including other gravities."""
+    test = [r for r in rows if r.gravity_g == gravity]
+    groups = {r.leakage_group for r in test}
+    train = [r for r in rows if r.gravity_g != gravity and r.leakage_group not in groups]
+    return train, test, groups
+
+
+def eligible(rows):
+    return len(rows) >= 3 and len({r.gravity_g for r in rows}) >= 2
+
+
+def output_coverage(rows):
+    from .schema import OUTPUTS
+    coverage = {}
+    for output in OUTPUTS:
+        measured = [r for r in rows if r.outputs.get(output) is not None]
+        levels = sorted({r.gravity_g for r in measured})
+        folds = []
+        for gravity in levels:
+            train, test, _ = split_gravity(measured, gravity)
+            folds.append({'gravity_g': gravity, 'eligible': bool(test) and eligible(train),
+                          'training_n': len(train), 'test_n': len(test)})
+        coverage[output] = {'observations': len(measured), 'gravity_levels': levels,
+                            'prediction_eligible': eligible(measured), 'folds': folds}
+    return coverage

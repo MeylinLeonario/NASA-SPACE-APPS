@@ -115,8 +115,12 @@ def create_app(config: Settings | None = None):
     def health():
         return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'synthesis_model': cfg.openai_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
 
-    from .ood.schema import Query
+    from .ood.schema import Query, Dataset
     from .ood.service import status as ood_status, infer as ood_infer
+
+    @app.get('/api/ood/schema')
+    def gravity_dataset_schema():
+        return Dataset.model_json_schema()
 
     @app.get('/api/ood/status')
     def gravity_status():

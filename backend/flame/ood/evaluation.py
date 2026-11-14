@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
-from .data import features
+from .data import features, split_gravity, eligible
 from .models import fit_model, predict
 
 def position(gravity, levels):
@@ -26,10 +26,8 @@ def evaluate(rows, output, name, holdout=None):
     folds = []
     levels = sorted({r.gravity_g for r in rows}) if holdout is None else [holdout]
     for gravity in levels:
-        test = [r for r in rows if r.gravity_g == gravity]
-        groups = {r.leakage_group for r in test}
-        train = [r for r in rows if r.gravity_g != gravity and r.leakage_group not in groups]
-        if not test or len(train) < 3 or len({r.gravity_g for r in train}) < 2:
+        train, test, groups = split_gravity(rows, gravity)
+        if not test or not eligible(train):
             folds.append({'gravity_g': gravity, 'status': 'unavailable', 'reason': 'Requires held-out observations and at least 3 independent training rows across 2 remaining gravity levels.'})
             continue
         y = [r.outputs[output] for r in train]

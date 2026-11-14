@@ -95,3 +95,47 @@ def test_invalid_physical_mean_is_suppressed(tmp_path, monkeypatch):
     result = infer(path, query())['results']['spread_mm_s']
     assert result['mean'] is None
     assert result['physical_constraint_warning']
+
+def test_cohort_readiness_matches_leakage_safe_validation(cfg):
+    """Other fuels and output missingness must not enable a validation button."""
+    rows = [row(0, 'shared'), row(.2, 'shared'), row(.2, 'b'), row(.5, 'c'), row(1, 'd'),
+            row(.8, 'other', fuel='other-fuel')]
+    path = cfg.data_dir/'combustion-observations.json'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({'schema_version': 1, 'observations': [r.model_dump() for r in rows]}))
+    with TestClient(create_app(cfg)) as client:
+        status = client.get('/api/ood/status').json()
+        cohort = next(c for c in status['cohorts'] if c['fuel'] == 'test-only')
+        coverage = cohort['coverage']['spread_mm_s']
+        assert coverage['gravity_levels'] == [0, .2, .5, 1]
+        assert coverage['prediction_eligible'] is True
+        assert cohort['coverage']['length_mm']['prediction_eligible'] is False
+        report = client.post('/api/ood/validate', json=query().model_dump()).json()
+        folds = report['results']['spread_mm_s']['folds']
+        for ready, evaluated in zip(coverage['folds'], folds):
+            assert ready['eligible'] == (evaluated['status'] == 'evaluated')
+            if ready['eligible']: assert ready['training_n'] == evaluated['training_n']
+        assert next(c for c in status['cohorts'] if c['fuel'] == 'other-fuel')['coverage']['spread_mm_s']['prediction_eligible'] is False
+        assert report['request'] == query().model_dump()
+        assert report['artifact_version'] == 'ood-v2'
+        assert set(report['package_versions']) == {'numpy', 'scipy', 'scikit-learn'}
+
+
+def test_strict_dataset_envelope_and_schema(cfg):
+    from flame.ood.data import load_dataset
+    path = cfg.data_dir/'combustion-observations.json'
+    path.parent.mkdir(parents=True, exist_ok=True)
+    for malformed in ({'schema_version': 1}, {'schema_version': 1, 'observations': [], 'typo': True}, []):
+        path.write_text(json.dumps(malformed))
+        with pytest.raises(ValueError): load_dataset(path)
+    with TestClient(create_app(cfg)) as client:
+        schema = client.get('/api/ood/schema').json()
+        assert schema['additionalProperties'] is False
+        assert set(schema['required']) == {'schema_version', 'observations'}
+        assert schema['$defs']['Observation']['additionalProperties'] is False
+        assert client.get('/api/ood/status').status_code == 400
+
+
+@pytest.mark.parametrize('value', [-1, float('nan'), float('inf')])
+def test_invalid_gravity_conversion(value):
+    with pytest.raises(ValueError): gravity_to_g(value, 'g')

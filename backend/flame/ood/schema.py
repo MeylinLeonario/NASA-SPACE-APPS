@@ -3,6 +3,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 OUTPUTS = {'minimum_oxygen_pct': '%', 'spread_mm_s': 'mm/s', 'length_mm': 'mm', 'temperature_k': 'K'}
+OutputName = Literal['minimum_oxygen_pct', 'spread_mm_s', 'length_mm', 'temperature_k']
 FEATURES = ['gravity_g', 'oxygen_pct', 'pressure_kpa', 'airflow_cm_s']
 
 class Conditions(BaseModel):
@@ -22,8 +23,8 @@ class Observation(Conditions):
     leakage_group: str = Field(min_length=1, description='Shared campaign/run/source dependency group')
     provenance: Literal['ground', 'partial_gravity', 'microgravity', 'efield_analog', 'simulation', 'model_prediction']
     reviewed: bool = False
-    outputs: dict[str, float | None]
-    uncertainty: dict[str, float] = Field(default_factory=dict, description='One standard deviation in output units')
+    outputs: dict[OutputName, float | None]
+    uncertainty: dict[OutputName, float] = Field(default_factory=dict, description='One standard deviation in output units')
 
     @model_validator(mode='after')
     def valid_outputs(self):
@@ -41,3 +42,10 @@ class Observation(Conditions):
 class Query(Conditions):
     model: Literal['gpr', 'boosting', 'physics_gpr'] = 'gpr'
     holdout_g: float | None = Field(default=None, ge=0)
+
+
+class Dataset(BaseModel):
+    """Strict envelope shared by the loader and downloadable JSON Schema."""
+    model_config = ConfigDict(extra='forbid')
+    schema_version: Literal[1]
+    observations: list[Observation]
