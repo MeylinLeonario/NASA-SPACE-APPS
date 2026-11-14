@@ -85,3 +85,35 @@ def test_import_rejects_values_that_no_longer_match_audit(tmp_path):
     with pytest.raises(ValueError, match='differs from the extraction audit'):
         import_observations(destination, bundle=bundle)
     assert not destination.exists()
+
+
+def test_exploration_is_explicit_does_not_approve_data_and_cannot_validate(tmp_path):
+    from flame.main import create_app
+    from flame.config import Settings
+    from fastapi.testclient import TestClient
+    path = tmp_path/'data'/'combustion-observations.json'
+    import_observations(path)
+    original_hash = hashlib.sha256(path.read_bytes()).hexdigest()
+    rows, _ = load_dataset(path)
+    source = next(row for row in rows if row.source == 'NASA-TM-100195')
+    query = Query(**{key: getattr(source, key) for key in ('gravity_g','oxygen_pct','pressure_kpa','airflow_cm_s','fuel','configuration')})
+    config = Settings(_env_file=None, data_dir=path.parent, papers_dir=tmp_path/'papers', enable_paid_api=False, openai_api_key='')
+    with TestClient(create_app(config)) as client:
+        availability = client.get('/api/ood/status').json()
+        assert availability['cohorts'] == []
+        assert len(availability['exploratory_cohorts']) == 3
+        assert client.post('/api/ood/predict', json=query.model_dump()).json()['status'] == 'unavailable'
+        body = query.model_dump() | {'data_mode': 'exploratory'}
+        for model in ('gpr', 'boosting'):
+            report = client.post('/api/ood/predict', json=body | {'model': model}).json()
+            assert report['status'] == 'available'
+            assert report['data_mode'] == 'exploratory'
+            assert report['scientific_validation'] == 'not_established'
+            assert 'pending scientific review' in report['warning']
+            assert set(report['results']) == {'spread_mm_s', 'length_mm'}
+            assert report['request']['data_mode'] == 'exploratory'
+            assert all(r['reviewed_training_n'] == 0 and r['unreviewed_training_n'] > 0 for r in report['results'].values())
+        assert client.post('/api/ood/validate', json=body).status_code == 400
+        assert client.post('/api/ood/predict', json=body | {'data_mode': 'approved'}).status_code == 422
+    assert hashlib.sha256(path.read_bytes()).hexdigest() == original_hash
+    assert not any(row.reviewed for row in load_dataset(path)[0])

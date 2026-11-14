@@ -45,3 +45,6 @@
 .ood-provenance{border-top:1px solid var(--border);margin-top:20px}.ood-safety{display:flex;gap:9px;padding-top:16px;color:var(--muted);font-size:11px}
 .ood-safety svg{flex-shrink:0}.ood-panel button:disabled{cursor:not-allowed}
 @media(max-width:640px){.ood-panel{padding:16px}.ood-heading h3{font-size:17px}.ood-gravity{padding:14px}.ood-controls,.ood-results{grid-template-columns:1fr}.ood-empty{display:block;padding:16px}.ood-empty>svg{margin:0 0 12px}.ood-reference{padding:8px}.ood-result-toolbar{align-items:stretch}.ood-result-toolbar>label{width:100%}}
+.ood-exploratory{margin:18px 0;padding:16px;border:1px solid #855839;border-radius:6px;background:#f38b5508}
+.ood-panel .ood-mode-toggle{display:flex;flex-direction:row;align-items:center;gap:10px;font-weight:600;cursor:pointer}
+.ood-mode-toggle input{width:17px;height:17px;accent-color:var(--orange);flex-shrink:0}.ood-exploratory strong{color:#edb085;font-size:12px}

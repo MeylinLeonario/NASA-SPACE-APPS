@@ -117,7 +117,7 @@ def test_cohort_readiness_matches_leakage_safe_validation(cfg):
             if ready['eligible']: assert ready['training_n'] == evaluated['training_n']
         assert next(c for c in status['cohorts'] if c['fuel'] == 'other-fuel')['coverage']['spread_mm_s']['prediction_eligible'] is False
         assert report['request'] == query().model_dump()
-        assert report['artifact_version'] == 'ood-v2'
+        assert report['artifact_version'] == 'ood-v3'
         assert set(report['package_versions']) == {'numpy', 'scipy', 'scikit-learn'}
 
 
@@ -139,3 +139,13 @@ def test_strict_dataset_envelope_and_schema(cfg):
 @pytest.mark.parametrize('value', [-1, float('nan'), float('inf')])
 def test_invalid_gravity_conversion(value):
     with pytest.raises(ValueError): gravity_to_g(value, 'g')
+
+
+def test_exploratory_cohorts_still_exclude_analogs_simulations_and_other_fuels():
+    rows = [row(0, 'a', reviewed=False), row(1, 'b', reviewed=False),
+            row(.2, 'proxy', reviewed=False, provenance='efield_analog'),
+            row(.3, 'sim', reviewed=False, provenance='simulation'),
+            row(.4, 'prediction', reviewed=False, provenance='model_prediction'),
+            row(.5, 'other', reviewed=False, fuel='different')]
+    assert compatible(rows, query()) == []
+    assert [r.gravity_g for r in compatible(rows, query(data_mode='exploratory'))] == [0, 1]

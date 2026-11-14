@@ -28,17 +28,19 @@ export type Estimate = {
   unit: string; mean?: number | null; interval?: [number, number] | null;
   interval_interpretation?: string; gravity_position?: string; within_marginal_ranges?: boolean;
   joint_domain?: string; sources?: string[]; physical_constraint_warning?: string;
-  outside_features?: string[]; training_n?: number; folds?: Fold[];
+  outside_features?: string[]; training_n?: number; unreviewed_training_n?: number; folds?: Fold[];
 };
 export type Result = {
   status: string; reason: string | null; model: string; dataset_sha256: string | null;
   results: Record<string, Estimate>; request: Record<string, unknown>;
+  data_mode?: 'reviewed' | 'exploratory'; warning?: string;
   artifact_version: string; package_versions: Record<string, string>;
 };
 const number = (value: number | null | undefined) => value == null ? 'Unavailable' : value.toFixed(3);
 
 export function PredictionCard({name, estimate: r}: {name: string; estimate: Estimate}) {
   return <article className="ood-estimate">
+    {!!r.unreviewed_training_n && <span className="tag">Exploratory · pending review</span>}
     <span className="eyebrow">{propertyLabels[name]}</span>
     <div className="ood-estimate-value">{number(r.mean)} <small>{r.unit}</small></div>
     <p>{r.interval ? `95% interval: ${r.interval.map(number).join(' to ')} ${r.unit}` : 'Prediction interval unavailable'}</p>

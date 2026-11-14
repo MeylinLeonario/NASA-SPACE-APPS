@@ -40,6 +40,7 @@ class Observation(Conditions):
         return self
 
 class Query(Conditions):
+    data_mode: Literal['reviewed', 'exploratory'] = Field(default='reviewed', description='Explicit opt-in to exploratory fits on unreviewed direct observations; never enables scientific validation')
     model: Literal['gpr', 'boosting', 'physics_gpr'] = 'gpr'
     holdout_g: float | None = Field(default=None, ge=0)
 

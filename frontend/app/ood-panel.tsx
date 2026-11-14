@@ -11,7 +11,7 @@ type Coverage = {
 type Cohort = {fuel: string; configuration: string; temperature_available: boolean; coverage: Record<string, Coverage>};
 type Status = {
   reason: string | null; reviewed_direct_observations: number; dependencies_ready: boolean;
-  observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
+  observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
 function downloadJSON(filename: string, value: unknown) {
@@ -34,6 +34,7 @@ export default function OODPanel({token}: {token: string}) {
   const [temperature, setTemperature] = useState('');
   const [cohort, setCohort] = useState('0');
   const [model, setModel] = useState('gpr');
+  const [exploratory, setExploratory] = useState(false);
   const [holdout, setHoldout] = useState('');
   const [property, setProperty] = useState('all');
   const [result, setResult] = useState<Result | null>(null);
@@ -65,10 +66,11 @@ export default function OODPanel({token}: {token: string}) {
     setValidation([]);
     setProperty('all');
     return () => activeRequest.current?.abort();
-  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, holdout, token]);
+  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, holdout, token, exploratory]);
 
   const pendingReview = status?.unreviewed_observations || 0;
-  const selected = status?.cohorts[Number(cohort)];
+  const cohortOptions = (exploratory ? status?.exploratory_cohorts : status?.cohorts) || [];
+  const selected = cohortOptions[Number(cohort)];
   const coverage = selected?.coverage || {};
   const availableProperties = Object.values(coverage).some(value => value.prediction_eligible);
   const validationLevels = [...new Set(Object.values(coverage).flatMap(value => value.folds.map(fold => fold.gravity_g)))].sort((a, b) => a - b);
@@ -76,7 +78,7 @@ export default function OODPanel({token}: {token: string}) {
   const ready = !!selected && !!status?.dependencies_ready && availableProperties && (!selected.temperature_available || !!temperature);
 
   async function run(validate = false) {
-    if (!selected || !form.current?.reportValidity()) return;
+    if ((validate && exploratory) || !selected || !form.current?.reportValidity()) return;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
@@ -85,6 +87,7 @@ export default function OODPanel({token}: {token: string}) {
     setResult(null);
     setValidation([]);
     const payload = {
+      data_mode: exploratory ? 'exploratory' : 'reviewed',
       gravity_g: gravity, oxygen_pct: Number(oxygen), pressure_kpa: Number(pressure), airflow_cm_s: Number(airflow),
       temperature_k: selected.temperature_available ? Number(temperature) : null,
       fuel: selected.fuel, configuration: selected.configuration,
@@ -142,14 +145,23 @@ export default function OODPanel({token}: {token: string}) {
             <button type="button" className="button secondary" onClick={() => void downloadSchema()}>Download field schema</button></div>
         </div></div>}
         {!status.dependencies_ready && <p className="ood-warning">Scientific dependencies are missing. Install the science optional dependencies before fitting models.</p>}
+        {!!status.exploratory_cohorts?.length && pendingReview > 0 && <div className="ood-exploratory">
+          <label className="ood-mode-toggle"><input type="checkbox" checked={exploratory} onChange={event => {
+            const nextOptions = event.target.checked ? status.exploratory_cohorts || [] : status.cohorts;
+            const firstEligible = nextOptions.findIndex(item => Object.values(item.coverage).some(output => output.prediction_eligible));
+            setExploratory(event.target.checked); setCohort(String(Math.max(0, firstEligible))); setHoldout(''); setTemperature('');
+          }}/><span>Use extracted observations for exploratory estimates</span></label>
+          <p>Explicit opt-in: includes direct observations whose transcription is pending scientific review. Estimates are not experimentally validated. This does not approve records or enable scientific validation.</p>
+          {exploratory && <strong role="status">Exploratory mode active · unreviewed source transcriptions</strong>}
+        </div>}
         <form ref={form} onSubmit={event => {event.preventDefault(); void run();}}>
           <div className="ood-controls">
             <label>Regression model<select value={model} onChange={event => setModel(event.target.value)}>
               {Object.entries(modelLabels).map(([key, label]) => <option key={key} value={key}>{label}{key === 'gpr' ? ' · Matérn 3/2' : ''}</option>)}
               <option disabled>Physics-guided GPR · baseline unavailable</option></select></label>
-            <label>Fuel / experimental configuration<select value={cohort} onChange={event => {setCohort(event.target.value); setHoldout(''); setTemperature('');}} disabled={!status.cohorts.length}>
-              {!status.cohorts.length && <option value="0">No reviewed cohort available</option>}
-              {status.cohorts.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}</option>)}</select></label>
+            <label>Fuel / experimental configuration<select value={cohort} onChange={event => {setCohort(event.target.value); setHoldout(''); setTemperature('');}} disabled={!cohortOptions.length}>
+              {!cohortOptions.length && <option value="0">{exploratory ? 'No compatible extracted cohort available' : 'No reviewed cohort available'}</option>}
+              {cohortOptions.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}</option>)}</select></label>
             <label>Oxygen (%)<input type="number" required min="0" max="100" step="any" value={oxygen} onChange={event => setOxygen(event.target.value)}/></label>
             <label>Pressure (kPa)<input type="number" required min="0.001" step="any" value={pressure} onChange={event => setPressure(event.target.value)}/></label>
             <label>Airflow (cm/s)<input type="number" required min="0" step="any" value={airflow} onChange={event => setAirflow(event.target.value)}/></label>
@@ -157,27 +169,28 @@ export default function OODPanel({token}: {token: string}) {
           </div>
           {selected && <div className="ood-coverage"><h4>Evidence available for this cohort</h4><div className="ood-results">{Object.entries(coverage).map(([key, value]) => <div className="ood-coverage-item" key={key}>
             <strong>{propertyLabels[key]}</strong><small>{value.observations} observations · {value.gravity_levels.length} gravity levels</small>
-            <span>{value.prediction_eligible ? 'Eligible for fitting · not a validation claim' : 'Insufficient measurements for fitting'}</span></div>)}</div></div>}
+            <span>{value.prediction_eligible ? exploratory ? 'Eligible for exploratory fitting · unvalidated' : 'Eligible for fitting · not a validation claim' : 'Insufficient measurements for fitting'}</span></div>)}</div></div>}
           <button className="button primary" disabled={!ready || busy}>{busy ? 'Computing…' : 'Estimate supported properties'}</button>
           {selected && !availableProperties && <p>Each output needs at least three compatible measurements across two gravity levels. This minimum does not establish scientific sufficiency.</p>}
         </form>
         <p className="small-note">Trees have limited ability to extrapolate trends. GPR outputs are fitted independently. Physics-guided GPR requires a documented, applicable physical baseline; no model guarantees extrapolation.</p>
-        {result && <div aria-live="polite"><p>{result.reason}</p>{Object.keys(result.results).length > 0 && <>
+        {result && <div aria-live="polite">{result.data_mode === 'exploratory' && <div className="alert"><strong>Exploratory estimate · not experimentally validated</strong><p>{result.warning}</p></div>}<p>{result.reason}</p>{Object.keys(result.results).length > 0 && <>
           <div className="ood-result-toolbar"><label>Properties<select value={property} onChange={event => setProperty(event.target.value)}><option value="all">Compare supported properties</option>{Object.keys(result.results).map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}</select></label>
             <button type="button" className="button secondary" onClick={() => downloadJSON('ood-prediction.json', result)}><Download size={14}/> Export prediction</button></div>
           <div className="ood-results">{Object.entries(result.results).filter(([key]) => property === 'all' || property === key).map(([key, estimate]) => <PredictionCard key={key} name={key} estimate={estimate}/>)}</div>
         </>}</div>}
         <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
           <p>Hold out an observed gravity and exclude related campaign groups. Compare both models against the observations left out of training.</p>
-          <div className="ood-result-toolbar"><label>Gravity to hold out<select value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · insufficient independent training data'}</option>)}</select></label>
-            <button type="button" className="button secondary" disabled={!ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
+          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={exploratory} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · insufficient independent training data'}</option>)}</select></label>
+            <button type="button" className="button secondary" disabled={exploratory || !ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
+          {exploratory && <p className="ood-warning">Scientific validation is disabled in exploratory mode. It requires reviewed observations and independent held-out groups.</p>}
           {!validationLevels.length && <p>Validation unavailable: this cohort has no reviewed direct measurements to hold out.</p>}
           {holdout !== '' && !eligibleLevel && <p>Validation unavailable at this level: after excluding related groups, no output retains at least three training observations across two other gravity levels.</p>}
           {!!validation.length && <><button type="button" className="button secondary" onClick={() => downloadJSON('ood-held-out-validation.json', validation)}><Download size={14}/> Export validation</button><ValidationResults results={validation}/></>}
         </div>
         <details className="ood-provenance"><summary>Dataset provenance</summary><p>SHA-256: <small>{status.dataset_sha256 || 'No observation dataset loaded'}</small></p>
           {Object.entries(status.provenance_counts).map(([source, count]) => <p key={source}>{source.replaceAll('_', ' ')}: {count} records</p>)}
-          <p>E-FIELD analogs, simulations, model predictions, and unreviewed records are excluded from training. Exported results include the exact request, dataset hash, pipeline version, and scientific package versions.</p>
+          <p>E-FIELD analogs, simulations, and model predictions are excluded. Unreviewed direct observations are included only after explicit exploratory opt-in; reviewed-mode fitting excludes them. Exported results include the exact request, dataset hash, pipeline version, and scientific package versions.</p>
         </details>
       </>}
       <div className="ood-safety"><ShieldCheck size={15}/><span>Research exploration only. Unvalidated predictions are insufficient for spacecraft fire-safety certification.</span></div>

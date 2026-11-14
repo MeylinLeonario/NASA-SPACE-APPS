@@ -26,7 +26,7 @@ const statistics = {
   paid_api_enabled: false, embedded_chunks: 0,
 };
 
-async function setup(page: Page, status: (typeof loaded | typeof empty) & {observations?: number; unreviewed_observations?: number} = loaded) {
+async function setup(page: Page, status: (typeof loaded | typeof empty) & {observations?: number; unreviewed_observations?: number; exploratory_cohorts?: typeof loaded.cohorts} = loaded) {
   await page.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     const json = path === '/api/ood/status' ? status : path === '/api/statistics' ? statistics :
@@ -155,4 +155,33 @@ test('imported measurements are distinguished from an empty dataset and stay blo
   await expect(panel.getByRole('button', {name: 'Empty dataset template'})).toHaveCount(0);
   await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
   await expect(panel.getByRole('button', {name: 'Compare held-out predictions'})).toBeDisabled();
+});
+
+
+test('exploratory estimates require opt-in, choose an eligible cohort and never enable validation', async ({page}) => {
+  const panel = await setup(page, {...empty, observations: 70, unreviewed_observations: 70,
+    exploratory_cohorts: [loaded.cohorts[1], loaded.cohorts[0]]});
+  const toggle = panel.getByRole('checkbox', {name: 'Use extracted observations for exploratory estimates'});
+  await expect(toggle).not.toBeChecked();
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
+  await toggle.check();
+  await expect(panel.getByLabel('Fuel / experimental configuration')).toHaveValue('1');
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeEnabled();
+  await expect(panel.getByRole('button', {name: 'Compare held-out predictions'})).toBeDisabled();
+  await expect(panel.getByLabel('Gravity to hold out')).toBeDisabled();
+  let receivedMode = '';
+  await page.route('**/api/ood/predict', async route => {
+    receivedMode = route.request().postDataJSON().data_mode;
+    const report = prediction(1.234, 21);
+    await route.fulfill({json: {...report, data_mode: 'exploratory',
+      warning: 'Unreviewed software fixture. No independent validation.',
+      results: {spread_mm_s: {...report.results.spread_mm_s, unreviewed_training_n: 5}}}});
+  });
+  await panel.getByRole('button', {name: 'Estimate supported properties'}).click();
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.234');
+  expect(receivedMode).toBe('exploratory');
+  await expect(panel.getByText('Exploratory estimate · not experimentally validated', {exact: true})).toBeVisible();
+  await toggle.uncheck();
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
+  await expect(panel.locator('.ood-estimate')).toHaveCount(0);
 });

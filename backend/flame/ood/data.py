@@ -13,7 +13,8 @@ def load_dataset(path: Path):
     return dataset.observations, hashlib.sha256(raw).hexdigest()
 
 def compatible(rows, query, output=None):
-    return [r for r in rows if r.reviewed and r.provenance in DIRECT
+    exploratory = getattr(query, 'data_mode', 'reviewed') == 'exploratory'
+    return [r for r in rows if (r.reviewed or exploratory) and r.provenance in DIRECT
             and r.fuel == query.fuel and r.configuration == query.configuration
             and (r.temperature_k is None) == (query.temperature_k is None)
             and (output is None or r.outputs.get(output) is not None)]
