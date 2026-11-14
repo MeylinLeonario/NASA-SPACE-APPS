@@ -19,7 +19,7 @@ class Provider:
             raise ValueError('Paid API is disabled or OPENAI_API_KEY is missing')
         if self._client is None:
             # SDK retries connection, rate-limit and 5xx errors with exponential backoff.
-            self._client = OpenAI(api_key=self.cfg.openai_api_key, timeout=45, max_retries=2)
+            self._client = OpenAI(api_key=self.cfg.openai_api_key, timeout=self.cfg.openai_timeout_seconds, max_retries=self.cfg.openai_max_retries)
         return self._client
 
     def collection(self):
@@ -61,10 +61,12 @@ class Provider:
 
     def index(self, force=False):
         collection = self.collection()
+        indexed_ids = set(collection.get()['ids'])
         with self.store.connect() as db:
-            rows = [dict(r) for r in db.execute('SELECT * FROM chunks WHERE embedded_model IS NULL OR embedded_model != ? OR ?=1', (self.cfg.openai_embedding_model, int(force)))]
-            live_ids = {r[0] for r in db.execute('SELECT id FROM chunks')}
-        stale = [i for i in collection.get()['ids'] if i not in live_ids]
+            all_rows = [dict(r) for r in db.execute('SELECT * FROM chunks')]
+        live_ids = {r['id'] for r in all_rows}
+        rows = [r for r in all_rows if force or r['embedded_model'] != self.cfg.openai_embedding_model or r['id'] not in indexed_ids]
+        stale = list(indexed_ids - live_ids)
         if stale:
             collection.delete(ids=stale)
         for start in range(0, len(rows), 32):

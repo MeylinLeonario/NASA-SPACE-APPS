@@ -22,13 +22,13 @@ def search(store: Store, request: SearchRequest) -> SearchResponse:
     if not docs:
         return SearchResponse(results=[], mode='keyword', warnings=['No indexed documents match the filters.'])
     tokens = terms(request.query)
-    if not tokens:
-        return SearchResponse(results=[], mode='keyword')
     # Build FTS syntax only from parsed alphanumeric terms; raw user syntax never reaches MATCH.
     expression = ' OR '.join('"' + t + '"' for t in tokens)
     ranks, scores = [], defaultdict(float)
     with store.connect() as db:
-        rows = db.execute('SELECT c.*, bm25(chunks_fts) rank FROM chunks_fts JOIN chunks c ON c.id=chunks_fts.id WHERE chunks_fts MATCH ? ORDER BY rank', (expression,)).fetchall()
+        # Filter before LIMIT so unrelated documents cannot crowd out selected sources.
+        placeholders = ','.join('?' for _ in docs)
+        rows = db.execute(f'SELECT c.*, bm25(chunks_fts) rank FROM chunks_fts JOIN chunks c ON c.id=chunks_fts.id WHERE chunks_fts MATCH ? AND c.document_id IN ({placeholders}) ORDER BY rank, c.id LIMIT 100', (expression, *docs)).fetchall() if tokens else []
     keyword_ids = [r['id'] for r in rows if r['document_id'] in docs][:100]
     ranks.append(keyword_ids)
     warnings, mode = [], 'keyword'

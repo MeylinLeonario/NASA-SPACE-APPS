@@ -76,3 +76,75 @@ def test_conflicting_evidence_retains_both_source_citations(indexed):
         response=chat(indexed,ChatRequest(query='flame',semantic=False))
     assert len(response.citations)==2
     assert response.conflicts and '[1, 2]' in response.conflicts[0]
+
+
+def test_semantic_search_without_lexical_terms(indexed):
+    indexed.config.enable_paid_api = True
+    indexed.config.openai_api_key = 'test'
+    cid = search(indexed, SearchRequest(query='flame', semantic=False)).results[0].id
+    with patch('flame.retrieval.Provider.semantic', return_value=[cid]) as semantic:
+        result = search(indexed, SearchRequest(query='how does do'))
+    assert semantic.call_count == 1
+    assert result.mode == 'hybrid' and result.results[0].id == cid
+
+
+def test_semantic_failure_warning_survives_generation(indexed):
+    indexed.config.enable_paid_api = True
+    indexed.config.openai_api_key = 'test'
+    c = search(indexed, SearchRequest(query='flame', semantic=False)).results[0]
+    output = GeneratedAnswer(claims=[AnswerClaim(text='Observed extinction.', kind='observation',
+        citation_ids=[c.id], quote='Flame extinction was observed')], limitations=[], insufficient_evidence=False)
+    with patch('flame.retrieval.Provider.semantic', side_effect=RuntimeError('unavailable')), \
+         patch('flame.assistant.Provider.structured', return_value=(output, {})):
+        result = chat(indexed, ChatRequest(query='flame'))
+    assert result.claims
+    assert any('Semantic retrieval unavailable' in warning for warning in result.limitations)
+
+
+def test_context_budget_limits_complete_excerpts(indexed):
+    from conftest import make_pdf
+    from flame.ingest import ingest
+    make_pdf(indexed.config.papers_dir / 'long.pdf', 'Flame observations and evidence. ' * 100)
+    ingest(indexed, dry_run=False)
+    indexed.config.rag_max_context_tokens = 1000
+    indexed.config.enable_paid_api = True
+    indexed.config.openai_api_key = 'test'
+    output = GeneratedAnswer(claims=[], limitations=[], insufficient_evidence=True)
+    with patch('flame.assistant.Provider.structured', return_value=(output, {})) as generate:
+        result = chat(indexed, ChatRequest(query='flame', limit=20, semantic=False))
+    import json
+    from flame.ingest import token_estimate
+    evidence = json.loads(generate.call_args.args[1])['evidence']
+    assert evidence
+    assert sum(token_estimate(c['text']) for c in evidence) <= 1000
+    assert any('RAG_MAX_CONTEXT_TOKENS' in warning for warning in result.limitations)
+
+
+def test_pdf_whitespace_quote_recovers_original_span(indexed):
+    from flame.models import Citation
+    from flame.assistant import source_quote
+    text = 'Microgravity flame\n extinction was observed in this experiment.'
+    c = Citation(id='source', document_id='doc', title='Paper', source_file='paper.pdf',
+                 page=1, text=text, url='/file', relevance=1)
+    claim = AnswerClaim(text='Observed.', kind='observation', citation_ids=['source'],
+                        quote='flame extinction was observed')
+    result = validate_claims(GeneratedAnswer(claims=[claim], limitations=[], insufficient_evidence=False), [c])
+    assert result[0].quote == 'flame\n extinction was observed'
+    assert result[0].quote in text
+    assert source_quote('flame extinction was NOT observed', text) is None
+    assert source_quote('Se observó la extinción', text) is None
+    assert source_quote('flame', text) is None
+
+
+def test_all_invalid_claims_preserve_sources_and_report_validation_failure(indexed):
+    indexed.config.enable_paid_api = True
+    indexed.config.openai_api_key = 'test'
+    output = GeneratedAnswer(claims=[AnswerClaim(text='Una observación.', kind='observation',
+        citation_ids=['invented-id'], quote='An invented supporting quote.')],
+        limitations=[], insufficient_evidence=False)
+    with patch('flame.assistant.Provider.structured', return_value=(output, {})) as generate:
+        result = chat(indexed, ChatRequest(query='microgravedad', language='es', semantic=False))
+    assert generate.call_count == 1
+    assert result.mode == 'citation_validation_failed'
+    assert result.citations and not result.claims
+    assert 'no superó la validación' in result.answer
