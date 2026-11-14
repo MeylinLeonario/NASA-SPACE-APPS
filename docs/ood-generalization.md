@@ -1,6 +1,6 @@
 # Gravity generalization: auditable minimum implementation
 
-The repository snapshot contained a literature dashboard, not the gravity prediction chart described in the task. The new panel is additive on Overview; existing research features remain in place. There are **no validated run-level datasets bundled**. The papers and extracted document summaries cannot be treated as matched physical observations. No PSI/BASS-II/SAFFIRE numerical dataset was downloaded, digitized, or used for training. The default view therefore has no estimated curves, experimental markers, or benchmark numbers.
+The repository snapshot contained a literature dashboard, not the gravity prediction chart described in the task. The new panel is additive on Overview; existing research features remain in place. There are **no scientifically approved run-level datasets bundled**. A later [PDF transcription package](../datasets/papers/README.md) contains 70 schema-compatible rows from supplied papers, all pending scientific review, plus a 105-record extraction audit. Run `python scripts/import_paper_observations.py` to merge these into the local dataset without overwriting existing reviews. The importer never grants scientific approval. The papers and extracted document summaries cannot be treated as matched physical observations. No PSI/BASS-II/SAFFIRE numerical dataset was downloaded, digitized, or used for training. The default view therefore has no estimated curves, experimental markers, or benchmark numbers.
 
 ## Run
 

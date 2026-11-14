@@ -11,7 +11,7 @@ type Coverage = {
 type Cohort = {fuel: string; configuration: string; temperature_available: boolean; coverage: Record<string, Coverage>};
 type Status = {
   reason: string | null; reviewed_direct_observations: number; dependencies_ready: boolean;
-  cohorts: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
+  observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
 function downloadJSON(filename: string, value: unknown) {
@@ -67,6 +67,7 @@ export default function OODPanel({token}: {token: string}) {
     return () => activeRequest.current?.abort();
   }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, holdout, token]);
 
+  const pendingReview = status?.unreviewed_observations || 0;
   const selected = status?.cohorts[Number(cohort)];
   const coverage = selected?.coverage || {};
   const availableProperties = Object.values(coverage).some(value => value.prediction_eligible);
@@ -122,7 +123,7 @@ export default function OODPanel({token}: {token: string}) {
     <div className="ood-heading"><div><span className="eyebrow">GRAVITY GENERALIZATION LAB</span>
       <h3 id="ood-title">Predict fire behaviour at gravities never tested</h3>
       <p>Explore what the evidence supports across gravity levels.</p></div>
-      <span className={`tag ${status?.reviewed_direct_observations ? '' : 'neutral'}`}><ShieldCheck size={12}/> {status?.reviewed_direct_observations ? 'Reviewed observations loaded' : 'Awaiting experimental data'}</span>
+      <span className={`tag ${status?.reviewed_direct_observations ? '' : 'neutral'}`}><ShieldCheck size={12}/> {status?.reviewed_direct_observations ? 'Reviewed observations loaded' : pendingReview ? `${pendingReview} observations awaiting review` : 'Awaiting experimental data'}</span>
     </div>
     <div className="ood-gravity"><label htmlFor="ood-gravity">Gravitational acceleration <output htmlFor="ood-gravity">{gravity.toFixed(3)} g</output></label>
       <input id="ood-gravity" type="range" min="0" max="1" step="0.001" value={gravity} onChange={event => setGravity(Number(event.target.value))}/>
@@ -135,9 +136,9 @@ export default function OODPanel({token}: {token: string}) {
       {!status && !error && <p role="status">Loading scientific data availability…</p>}
       {status && <>
         {!status.reviewed_direct_observations && <div className="ood-empty"><FlaskConical size={26}/><div>
-          <h4>Bring observations, then test generalization.</h4><p>{status.reason}</p>
-          <ol><li>Prepare run-level measurements with citations, units, and dependency groups.</li><li>Review fuel, geometry, and provenance before marking observations as reviewed.</li><li>Save the dataset as combustion-observations.json in the backend data directory.</li></ol>
-          <div className="action-row"><button type="button" className="button secondary" onClick={() => downloadJSON('combustion-observations.json', {schema_version: 1, observations: []})}><Download size={14}/> Empty dataset template</button>
+          <h4>{pendingReview ? 'Measurements extracted; scientific review pending.' : 'Bring observations, then test generalization.'}</h4><p>{status.reason}</p>
+          {pendingReview ? <><p>Review the imported observations against their PDF pages, table rows, source notes, and exclusions. Extraction does not establish scientific validation.</p><p>The paper bundle includes an extraction audit and a CSV for inspection. Approve compatible records in the local dataset only after scientific review, then reload this page.</p></> : <ol><li>Prepare run-level measurements with citations, units, and dependency groups.</li><li>Review fuel, geometry, and provenance before marking observations as reviewed.</li><li>Save the dataset as combustion-observations.json in the backend data directory.</li></ol>}
+          <div className="action-row">{!pendingReview && <button type="button" className="button secondary" onClick={() => downloadJSON('combustion-observations.json', {schema_version: 1, observations: []})}><Download size={14}/> Empty dataset template</button>}
             <button type="button" className="button secondary" onClick={() => void downloadSchema()}>Download field schema</button></div>
         </div></div>}
         {!status.dependencies_ready && <p className="ood-warning">Scientific dependencies are missing. Install the science optional dependencies before fitting models.</p>}

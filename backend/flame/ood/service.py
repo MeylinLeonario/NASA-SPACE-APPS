@@ -10,13 +10,14 @@ def status(path):
     ready = all(importlib.util.find_spec(p) is not None for p in ('numpy', 'scipy', 'sklearn'))
     direct = [r for r in rows if r.reviewed and r.provenance in {'ground', 'partial_gravity', 'microgravity'}]
     return {'schema_version': 1, 'dataset_sha256': version, 'observations': len(rows), 'reviewed_direct_observations': len(direct),
+            'unreviewed_observations': sum(not r.reviewed for r in rows),
             'dependencies_ready': ready, 'models': {'gpr': ready, 'boosting': ready, 'physics_gpr': False},
             'outputs': OUTPUTS, 'cohorts': [dict(fuel=f, configuration=c, temperature_available=t,
                 coverage=output_coverage([r for r in direct if (r.fuel, r.configuration, r.temperature_k is not None) == (f,c,t)]))
                 for f,c,t in sorted({(r.fuel,r.configuration,r.temperature_k is not None) for r in direct})],
             'provenance_counts': {kind: sum(r.provenance == kind for r in rows) for kind in sorted({r.provenance for r in rows})},
             'gravity_levels': sorted({r.gravity_g for r in direct}),
-            'reason': None if direct else 'No reviewed run-level experimental observations supplied. Papers and metadata are not training rows.',
+            'reason': None if direct else (f'{len(rows)} observation rows loaded; {sum(not r.reviewed for r in rows)} await scientific review. Unreviewed records are excluded from training.' if rows else 'No reviewed run-level experimental observations supplied. Papers and metadata are not training rows.'),
             'warning': WARNING}
 
 def infer(path, query, validation=False):

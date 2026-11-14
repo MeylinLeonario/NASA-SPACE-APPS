@@ -26,7 +26,7 @@ const statistics = {
   paid_api_enabled: false, embedded_chunks: 0,
 };
 
-async function setup(page: Page, status: typeof loaded | typeof empty = loaded) {
+async function setup(page: Page, status: (typeof loaded | typeof empty) & {observations?: number; unreviewed_observations?: number} = loaded) {
   await page.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     const json = path === '/api/ood/status' ? status : path === '/api/statistics' ? statistics :
@@ -144,4 +144,15 @@ test('held-out comparison renders both models, intervals and accessible pairs', 
   await expect(panel.getByRole('cell', {name: 'Unavailable', exact: true})).toBeVisible();
   await expect(panel.locator('.ood-scatter svg.recharts-surface')).toHaveCount(2);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+});
+
+
+test('imported measurements are distinguished from an empty dataset and stay blocked', async ({page}) => {
+  const panel = await setup(page, {...empty, observations: 70, unreviewed_observations: 70,
+    reason: '70 observation rows loaded; 70 await scientific review. Unreviewed records are excluded from training.'});
+  await expect(panel.getByRole('heading', {name: 'Measurements extracted; scientific review pending.'})).toBeVisible();
+  await expect(panel.getByText('70 observations awaiting review', {exact: true})).toBeVisible();
+  await expect(panel.getByRole('button', {name: 'Empty dataset template'})).toHaveCount(0);
+  await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
+  await expect(panel.getByRole('button', {name: 'Compare held-out predictions'})).toBeDisabled();
 });
