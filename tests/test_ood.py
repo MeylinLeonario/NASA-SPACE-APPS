@@ -90,8 +90,8 @@ def test_invalid_physical_mean_is_suppressed(tmp_path, monkeypatch):
     import flame.ood.models as models
     path = tmp_path/'observations.json'
     path.write_text(json.dumps({'schema_version': 1, 'observations': [row(g, str(i)).model_dump() for i,g in enumerate([0,.2,1])]}))
-    monkeypatch.setattr(models, 'fit_model', lambda *a: object())
-    monkeypatch.setattr(models, 'predict', lambda *a: (np.array([-1.]), np.array([[-2.,0.]])))
+    monkeypatch.setattr(models, 'fit_model', lambda *a, **kw: object())
+    monkeypatch.setattr(models, 'predict_distribution', lambda *a: models.PredictiveDistribution(np.array([-1.]), np.array([-1.]), np.array([[-2.,0.]]), 'identity'))
     result = infer(path, query())['results']['spread_mm_s']
     assert result['mean'] is None
     assert result['physical_constraint_warning']
@@ -117,7 +117,7 @@ def test_cohort_readiness_matches_leakage_safe_validation(cfg):
             if ready['eligible']: assert ready['training_n'] == evaluated['training_n']
         assert next(c for c in status['cohorts'] if c['fuel'] == 'other-fuel')['coverage']['spread_mm_s']['prediction_eligible'] is False
         assert report['request'] == query().model_dump()
-        assert report['artifact_version'] == 'ood-v3'
+        assert report['artifact_version'] == 'ood-v4'
         assert set(report['package_versions']) == {'numpy', 'scipy', 'scikit-learn'}
 
 

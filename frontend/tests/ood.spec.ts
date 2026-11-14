@@ -106,11 +106,11 @@ test('late predictions cannot overwrite changed conditions and exports retain pr
   await expect.poll(() => started).toBe(true);
   await panel.getByLabel('Oxygen (%)').fill('22');
   await panel.getByRole('button', {name: 'Estimate supported properties'}).click();
-  await expect(panel.locator('.ood-estimate-value')).toContainText('1.234');
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.23');
   release();
   await completed;
   await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-  await expect(panel.locator('.ood-estimate-value')).toContainText('1.234');
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.23');
   const downloadEvent = page.waitForEvent('download');
   await panel.getByRole('button', {name: 'Export prediction'}).click();
   const stream = await (await downloadEvent).createReadStream();
@@ -178,10 +178,31 @@ test('exploratory estimates require opt-in, choose an eligible cohort and never 
       results: {spread_mm_s: {...report.results.spread_mm_s, unreviewed_training_n: 5}}}});
   });
   await panel.getByRole('button', {name: 'Estimate supported properties'}).click();
-  await expect(panel.locator('.ood-estimate-value')).toContainText('1.234');
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.23');
   expect(receivedMode).toBe('exploratory');
   await expect(panel.getByText('Exploratory estimate · not experimentally validated', {exact: true})).toBeVisible();
   await toggle.uncheck();
   await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
   await expect(panel.locator('.ood-estimate')).toHaveCount(0);
+});
+
+
+test('positive-target estimates distinguish median, mean, calibration and joint support', async ({page}) => {
+  const panel = await setup(page);
+  await page.route('**/api/ood/predict', async route => {
+    const report = prediction(25, 21);
+    await route.fulfill({json: {...report, artifact_version: 'ood-v4', results: {length_mm: {
+      ...report.results.spread_mm_s, unit: 'mm', mean: 25, median: 20, interval: [4, 60], target_transform: 'log',
+      training_gravity_levels: [0, 1], matching_conditions_gravity_levels: [1],
+      interval_interpretation: 'Uncalibrated lognormal posterior interval; not clipped.',
+    }}}});
+  });
+  await panel.getByRole('button', {name: 'Estimate supported properties'}).click();
+  await expect(panel.locator('.ood-estimate-value')).toContainText('20');
+  await expect(panel.getByText('Posterior median', {exact: true})).toBeVisible();
+  await expect(panel.getByText(/Posterior mean: 25 mm/)).toBeVisible();
+  await expect(panel.getByText('Uncalibrated 95% model interval', {exact: true})).toBeVisible();
+  await expect(panel.getByText('Gravity inside observed range', {exact: true})).toBeVisible();
+  await expect(panel.getByText(/No matching set of the other input conditions/)).toBeVisible();
+  await expect(panel.getByText('Empirical coverage has not been established. This is not a validated safety range.', {exact: true})).toBeVisible();
 });

@@ -1,7 +1,7 @@
 import numpy as np
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 from .data import features, split_gravity, eligible
-from .models import fit_model, predict
+from .models import fit_model, predict, Unavailable
 
 def position(gravity, levels):
     if not levels:
@@ -31,8 +31,15 @@ def evaluate(rows, output, name, holdout=None):
             folds.append({'gravity_g': gravity, 'status': 'unavailable', 'reason': 'Requires held-out observations and at least 3 independent training rows across 2 remaining gravity levels.'})
             continue
         y = [r.outputs[output] for r in train]
-        model = fit_model(name, [features(r) for r in train], y, [r.uncertainty.get(output) for r in train])
+        try:
+            model = fit_model(name, [features(r) for r in train], y, [r.uncertainty.get(output) for r in train], output=output)
+        except Unavailable as error:
+            folds.append({'gravity_g': gravity, 'status': 'unavailable', 'reason': str(error)})
+            continue
         pred, intervals = predict(model, [features(r) for r in test], name)
+        if not np.all(np.isfinite(pred)) or (intervals is not None and not np.all(np.isfinite(intervals))):
+            folds.append({'gravity_g': gravity, 'status': 'unavailable', 'reason': 'Numerically unstable predictive distribution; no metrics reported.'})
+            continue
         actual = np.array([r.outputs[output] for r in test])
         folds.append({'gravity_g': gravity, 'status': 'evaluated', 'position': position(gravity, {r.gravity_g for r in train}),
                       'training_n': len(train), 'excluded_groups': sorted(groups),

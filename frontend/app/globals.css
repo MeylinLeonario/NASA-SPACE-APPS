@@ -48,3 +48,5 @@
 .ood-exploratory{margin:18px 0;padding:16px;border:1px solid #855839;border-radius:6px;background:#f38b5508}
 .ood-panel .ood-mode-toggle{display:flex;flex-direction:row;align-items:center;gap:10px;font-weight:600;cursor:pointer}
 .ood-mode-toggle input{width:17px;height:17px;accent-color:var(--orange);flex-shrink:0}.ood-exploratory strong{color:#edb085;font-size:12px}
+.ood-point-label{display:block;color:var(--muted);font-size:11px;margin-top:14px}.ood-uncertainty{display:flex;flex-direction:column;gap:6px;margin:16px 0;padding:12px;background:#18212c;border:1px solid #374655;border-radius:5px}
+.ood-uncertainty strong{font-size:12px;color:#e5b38f}.ood-uncertainty span{font-size:17px;font-variant-numeric:tabular-nums}.ood-uncertainty small{line-height:1.6;color:var(--muted)}

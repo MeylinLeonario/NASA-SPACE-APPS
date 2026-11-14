@@ -103,7 +103,7 @@ def test_exploration_is_explicit_does_not_approve_data_and_cannot_validate(tmp_p
         assert availability['cohorts'] == []
         assert len(availability['exploratory_cohorts']) == 3
         assert client.post('/api/ood/predict', json=query.model_dump()).json()['status'] == 'unavailable'
-        body = query.model_dump() | {'data_mode': 'exploratory'}
+        body = query.model_dump() | {'data_mode': 'exploratory', 'gravity_g': .38, 'oxygen_pct': 21}
         for model in ('gpr', 'boosting'):
             report = client.post('/api/ood/predict', json=body | {'model': model}).json()
             assert report['status'] == 'available'
@@ -112,6 +112,9 @@ def test_exploration_is_explicit_does_not_approve_data_and_cannot_validate(tmp_p
             assert 'pending scientific review' in report['warning']
             assert set(report['results']) == {'spread_mm_s', 'length_mm'}
             assert report['request']['data_mode'] == 'exploratory'
+            assert all(r['matching_conditions_gravity_levels'] == [1] for r in report['results'].values())
+            if model == 'gpr':
+                assert all(r['target_transform'] == 'log' and r['interval'][0] > 0 for r in report['results'].values())
             assert all(r['reviewed_training_n'] == 0 and r['unreviewed_training_n'] > 0 for r in report['results'].values())
         assert client.post('/api/ood/validate', json=body).status_code == 400
         assert client.post('/api/ood/predict', json=body | {'data_mode': 'approved'}).status_code == 422
