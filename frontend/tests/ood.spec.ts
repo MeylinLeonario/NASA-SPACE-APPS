@@ -30,7 +30,7 @@ async function setup(page: Page, status: (typeof loaded | typeof empty) & {obser
   await page.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     const json = path === '/api/ood/status' ? status : path === '/api/statistics' ? statistics :
-      path === '/api/documents' ? [] : path === '/api/ood/evidence' ? {status: 'unavailable', reason: 'No fixture observations supplied for this test.', cohort_observations: 0, dependency_groups: 0, outputs: {}, gravity_note: null, limitations: [], model_fitted: false, dataset_sha256: null} : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
+      path === '/api/documents' ? [] : path === '/api/ood/gravity-sweep' ? {status:'unavailable',reason:'No model curve supplied in this software fixture.',points:[],observations:[],unit:'mm/s',training_n:0,warning:'Software fixture only.'} : path === '/api/ood/evidence' ? {status: 'unavailable', reason: 'No fixture observations supplied for this test.', cohort_observations: 0, dependency_groups: 0, outputs: {}, gravity_note: null, limitations: [], model_fitted: false, dataset_sha256: null} : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
     await route.fulfill({json});
   });
   await page.goto('/');
@@ -291,4 +291,45 @@ test('material options distinguish estimates from observations-only and show rec
   await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeDisabled();
   await expect(panel.getByText(/Observations-only configuration: inspect its measurements below/)).toBeVisible();
   await expect(panel.locator('.ood-evidence').getByRole('table')).toBeVisible();
+});
+
+test('gravity response shows model bands, probes without refitting and flags unsupported airflow', async ({page}) => {
+  const material = {...loaded.cohorts[0], coverage:{...coverage, length_mm:{...coverage.spread_mm_s,observations:4}}};
+  const panel = await setup(page, {...empty,observations:70,unreviewed_observations:70,exploratory_cohorts:[material]});
+  const requests: {property_name:string;airflow_cm_s:number}[] = [];
+  await page.route('**/api/ood/gravity-sweep', async route => {
+    const query = route.request().postDataJSON(); requests.push(query);
+    const points = Array.from({length:1001},(_,i)=>({gravity_g:i/1000,median:2+2*i/1000,mean:2.05+2*i/1000,interval:[1.75+2*i/1000,2.25+2*i/1000]}));
+    await route.fulfill({json:{status:'available',reason:null,unit:query.property_name==='length_mm'?'mm':'mm/s',points,
+      training_n:5,dataset_sha256:'software-fixture-only',training_gravity_levels:[0,1],outside_features:query.airflow_cm_s===8?['airflow_cm_s']:[],
+      observations:query.airflow_cm_s===8?[]:[{id:'software-ground',gravity_g:1,observed:4,source:'Synthetic software fixture',provenance:'ground',reviewed:false}],
+      warning:'Synthetic software fixture; not experimental evidence.',interval_interpretation:'Uncalibrated model interval.',limitations:['No independent validation.']}});
+  });
+  await panel.getByRole('checkbox',{name:'Use extracted observations for exploratory estimates'}).check();
+  const chart=panel.getByRole('region',{name:'Explore fire behaviour across gravity'});
+  await expect(chart.locator('.ood-curve-value')).toContainText('2.76');
+  await expect(chart.getByRole('button',{name:'Min. O₂ to burn',exact:true})).toBeDisabled();
+  await expect(chart.getByText(/no compatible threshold observations/)).toBeVisible();
+  await chart.getByRole('button',{name:'MOON 0.165',exact:true}).click();
+  await expect(chart.locator('.ood-curve-value')).toContainText('2.33');
+  await expect(chart.locator('.recharts-area-area')).toHaveCount(1);
+  const plot=chart.locator('.ood-curve-chart .recharts-wrapper > svg.recharts-surface');
+  await plot.click({position:{x:180,y:100}});
+  await expect(chart.getByLabel('Probe gravity curve')).not.toHaveValue('0.165');
+  expect(requests.length).toBe(1);
+  await chart.getByRole('button',{name:'Fans 8 cm/s',exact:true}).click();
+  await expect(panel.getByLabel('Airflow (cm/s)',{exact:true})).toHaveValue('8');
+  await expect(chart.getByText('Outside recorded ranges: airflow_cm_s.',{exact:true})).toBeVisible();
+  expect(requests.length).toBe(2);
+  await chart.getByRole('button',{name:'Flame length',exact:true}).click();
+  await expect.poll(()=>requests.at(-1)?.property_name).toBe('length_mm');
+  await expect(chart.locator('.ood-curve-value')).toContainText('mm');
+  const downloadEvent=page.waitForEvent('download');
+  await chart.getByRole('button',{name:'Export model curve'}).click();
+  const stream=await (await downloadEvent).createReadStream();const chunks=[];
+  for await(const chunk of stream!) chunks.push(chunk);
+  const report=JSON.parse(Buffer.concat(chunks).toString());
+  expect(report.points).toHaveLength(1001);
+  expect(report.dataset_sha256).toBe('software-fixture-only');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
 });

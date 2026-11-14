@@ -3,6 +3,7 @@
 import {useEffect, useRef, useState} from 'react';
 import {Download, FlaskConical, ShieldCheck} from 'lucide-react';
 import OODEvidence from './ood-evidence';
+import OODGravityCurve, {type CurveConditions} from './ood-gravity-curve';
 import {downloadJSON} from './ood-download';
 import {modelLabels, PredictionCard, propertyLabels, type Result, ValidationResults} from './ood-results';
 
@@ -78,6 +79,15 @@ export default function OODPanel({token}: {token: string}) {
   const validationLevels = [...new Set(Object.values(coverage).flatMap(value => value.folds.map(fold => fold.gravity_g)))].sort((a, b) => a - b);
   const eligibleLevel = Object.values(coverage).some(value => value.folds.some(fold => fold.gravity_g === Number(holdout) && fold.eligible));
   const ready = !!selected && !!status?.dependencies_ready && availableProperties && (!selected.temperature_available || !!temperature);
+
+  const validCurveInputs = oxygen.trim() !== '' && pressure.trim() !== '' && airflow.trim() !== '' &&
+    [Number(oxygen),Number(pressure),Number(airflow)].every(Number.isFinite) && Number(oxygen)>=0 && Number(oxygen)<=100 && Number(pressure)>=.001 && Number(airflow)>=0 &&
+    (!selected?.temperature_available || (temperature.trim() !== '' && Number.isFinite(Number(temperature)) && Number(temperature)>=1));
+  const curveConditions: CurveConditions | null = ready && selected && validCurveInputs ? {
+    fuel:selected.fuel, configuration:selected.configuration, temperature_k:selected.temperature_available?Number(temperature):null,
+    oxygen_pct:Number(oxygen),pressure_kpa:Number(pressure),airflow_cm_s:Number(airflow), data_mode:exploratory?'exploratory':'reviewed',model,
+  } : null;
+  const curveProperties = Object.entries(coverage).filter(([,value])=>value.prediction_eligible).map(([name])=>name);
 
   async function run(validate = false) {
     if ((validate && exploratory) || !selected || !form.current?.reportValidity()) return;
@@ -178,6 +188,7 @@ export default function OODPanel({token}: {token: string}) {
           {selected && !availableProperties && <p>Observations-only configuration: inspect its measurements below. Estimation requires at least three compatible rows across two gravity levels per output; that minimum does not establish scientific sufficiency.</p>}
         </form>
         <p className="small-note">Trees have limited ability to extrapolate trends. GPR outputs are fitted independently. Physics-guided GPR requires a documented, applicable physical baseline; no model guarantees extrapolation.</p>
+        <OODGravityCurve conditions={curveConditions} properties={curveProperties} gravity={gravity} onGravityChange={setGravity} onAirflowChange={setAirflow} token={token}/>
         {result && <div aria-live="polite">{result.data_mode === 'exploratory' && <div className="alert"><strong>Exploratory estimate · not experimentally validated</strong><p>{result.warning}</p></div>}<p>{result.reason}</p>{Object.entries(result.unavailable_outputs || {}).map(([key, reason]) => <p className="ood-warning" key={key}>{propertyLabels[key]}: {reason}</p>)}{Object.keys(result.results).length > 0 && <>
           <div className="ood-result-toolbar"><label>Properties<select value={property} onChange={event => setProperty(event.target.value)}><option value="all">Compare supported properties</option>{Object.keys(result.results).map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}</select></label>
             <button type="button" className="button secondary" onClick={() => downloadJSON('ood-prediction.json', result)}><Download size={14}/> Export prediction</button></div>
@@ -185,7 +196,7 @@ export default function OODPanel({token}: {token: string}) {
         </>}</div>}
         <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
           <p>Inspect the recorded observations at each gravity and preview which rows remain after related campaign groups are excluded. Reviewed data and an eligible split are required to compare model predictions with held-out measurements.</p>
-          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={!validationLevels.length} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · insufficient independent training data'}</option>)}</select></label>
+          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={!validationLevels.length} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · inspect observations; validation unavailable'}</option>)}</select></label>
             <button type="button" className="button secondary" disabled={exploratory || !ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
           {exploratory && <p className="ood-warning">You can inspect observations in exploratory mode. Scientific validation requires reviewed observations and independent held-out groups.</p>}
           {!validationLevels.length && <p>Validation unavailable: this cohort has no reviewed direct measurements to hold out.</p>}

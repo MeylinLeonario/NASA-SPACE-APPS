@@ -60,3 +60,17 @@ class EvidenceQuery(BaseModel):
     temperature_available: bool = False
     data_mode: Literal['reviewed', 'exploratory'] = 'reviewed'
     gravity_g: float | None = Field(default=None, ge=0)
+
+
+class GravitySweepQuery(BaseModel):
+    """Hold recorded environmental inputs fixed while varying gravity on a grid."""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    oxygen_pct: float = Field(ge=0, le=100)
+    pressure_kpa: float = Field(gt=0)
+    airflow_cm_s: float = Field(ge=0)
+    fuel: str = Field(min_length=1)
+    configuration: str = Field(min_length=1)
+    temperature_k: float | None = Field(default=None, gt=0)
+    data_mode: Literal['reviewed', 'exploratory'] = 'reviewed'
+    model: Literal['gpr', 'boosting', 'physics_gpr'] = 'gpr'
+    property_name: OutputName = 'spread_mm_s'
