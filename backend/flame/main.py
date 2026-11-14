@@ -115,8 +115,14 @@ def create_app(config: Settings | None = None):
     def health():
         return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'synthesis_model': cfg.openai_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
 
-    from .ood.schema import Query, Dataset
+    from .ood.schema import Query, Dataset, EvidenceQuery
     from .ood.service import status as ood_status, infer as ood_infer
+
+    from .ood.evidence import inspect_evidence
+
+    @app.post('/api/ood/evidence')
+    def gravity_evidence(query: EvidenceQuery):
+        return inspect_evidence(cfg.data_dir / 'combustion-observations.json', query)
 
     @app.get('/api/ood/schema')
     def gravity_dataset_schema():

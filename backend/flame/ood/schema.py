@@ -50,3 +50,13 @@ class Dataset(BaseModel):
     model_config = ConfigDict(extra='forbid')
     schema_version: Literal[1]
     observations: list[Observation]
+
+
+class EvidenceQuery(BaseModel):
+    """Inspection is cohort-based; it does not impute a prediction query."""
+    model_config = ConfigDict(extra='forbid', allow_inf_nan=False)
+    fuel: str = Field(min_length=1)
+    configuration: str = Field(min_length=1)
+    temperature_available: bool = False
+    data_mode: Literal['reviewed', 'exploratory'] = 'reviewed'
+    gravity_g: float | None = Field(default=None, ge=0)

@@ -12,12 +12,17 @@ def load_dataset(path: Path):
     dataset = Dataset.model_validate_json(raw)
     return dataset.observations, hashlib.sha256(raw).hexdigest()
 
-def compatible(rows, query, output=None):
-    exploratory = getattr(query, 'data_mode', 'reviewed') == 'exploratory'
+def cohort_rows(rows, fuel, configuration, temperature_available, exploratory=False):
     return [r for r in rows if (r.reviewed or exploratory) and r.provenance in DIRECT
-            and r.fuel == query.fuel and r.configuration == query.configuration
-            and (r.temperature_k is None) == (query.temperature_k is None)
-            and (output is None or r.outputs.get(output) is not None)]
+            and r.fuel == fuel and r.configuration == configuration
+            and (r.temperature_k is not None) == temperature_available]
+
+
+def compatible(rows, query, output=None):
+    rows = cohort_rows(rows, query.fuel, query.configuration, query.temperature_k is not None,
+                       exploratory=getattr(query, 'data_mode', 'reviewed') == 'exploratory')
+    return [r for r in rows if output is None or r.outputs.get(output) is not None]
+
 
 def features(query):
     from .schema import FEATURES

@@ -30,7 +30,7 @@ async function setup(page: Page, status: (typeof loaded | typeof empty) & {obser
   await page.route('**/api/**', async route => {
     const path = new URL(route.request().url()).pathname;
     const json = path === '/api/ood/status' ? status : path === '/api/statistics' ? statistics :
-      path === '/api/documents' ? [] : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
+      path === '/api/documents' ? [] : path === '/api/ood/evidence' ? {status: 'unavailable', reason: 'No fixture observations supplied for this test.', cohort_observations: 0, dependency_groups: 0, outputs: {}, gravity_note: null, limitations: [], model_fitted: false, dataset_sha256: null} : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
     await route.fulfill({json});
   });
   await page.goto('/');
@@ -168,7 +168,7 @@ test('exploratory estimates require opt-in, choose an eligible cohort and never 
   await expect(panel.getByLabel('Fuel / experimental configuration')).toHaveValue('1');
   await expect(panel.getByRole('button', {name: 'Estimate supported properties'})).toBeEnabled();
   await expect(panel.getByRole('button', {name: 'Compare held-out predictions'})).toBeDisabled();
-  await expect(panel.getByLabel('Gravity to hold out')).toBeDisabled();
+  await expect(panel.getByLabel('Gravity to hold out')).toBeEnabled();
   let receivedMode = '';
   await page.route('**/api/ood/predict', async route => {
     receivedMode = route.request().postDataJSON().data_mode;
@@ -205,4 +205,63 @@ test('positive-target estimates distinguish median, mean, calibration and joint 
   await expect(panel.getByText('Gravity inside observed range', {exact: true})).toBeVisible();
   await expect(panel.getByText(/No matching set of the other input conditions/)).toBeVisible();
   await expect(panel.getByText('Empirical coverage has not been established. This is not a validated safety range.', {exact: true})).toBeVisible();
+});
+
+function evidenceReport(gravity: number | null) {
+  const observations = [
+    {id: 'software-fixture-micro', gravity_g: 0, oxygen_pct: 30, pressure_kpa: 101.325, airflow_cm_s: 0,
+      temperature_k: null, observed: 2, measurement_sd: null, source: 'Software fixture', citation: 'Synthetic test table, not experimental evidence',
+      reviewed: false, provenance: 'microgravity', leakage_group: 'shared-software-campaign'},
+    {id: 'software-fixture-ground', gravity_g: 1, oxygen_pct: 21, pressure_kpa: 101.325, airflow_cm_s: 0,
+      temperature_k: null, observed: 3, measurement_sd: null, source: 'Software fixture', citation: 'Synthetic test table, not experimental evidence',
+      reviewed: false, provenance: 'ground', leakage_group: 'shared-software-campaign'},
+  ];
+  return {status: 'available', reason: null, model_fitted: false, dataset_sha256: 'software-fixture-only', cohort_observations: 2, dependency_groups: 1,
+    request: {gravity_g: gravity}, gravity_note: '0 g denotes nominal microgravity.', limitations: ['Software fixture only.'],
+    outputs: {spread_mm_s: {unit: 'mm/s', observations,
+      by_gravity: [{gravity_g: 0, observations: 1, reviewed: 0}, {gravity_g: 1, observations: 1, reviewed: 0}],
+      fold_preview: gravity == null ? null : {gravity_g: gravity, held_out_n: 1, remaining_before_group_exclusion: 1,
+        related_rows_removed: 1, remaining_training_n: 0, remaining_gravity_levels: [], excluded_groups: ['shared-software-campaign'],
+        data_split_eligible: false, validation_allowed: false, reasons: ['1 observation shares a dependency group with the held-out rows and must also be excluded.']},
+    }}};
+}
+
+test('exploratory gravity inspection expands real-evidence UI without enabling validation or clearing predictions', async ({page}) => {
+  const panel = await setup(page, {...empty, observations: 70, unreviewed_observations: 70, exploratory_cohorts: loaded.cohorts});
+  const evidenceRequests: number[] = [];
+  await page.route('**/api/ood/evidence', async route => {
+    const gravity = route.request().postDataJSON().gravity_g;
+    if (gravity != null) evidenceRequests.push(gravity);
+    await route.fulfill({json: evidenceReport(gravity)});
+  });
+  await page.route('**/api/ood/predict', async route => route.fulfill({json: {...prediction(1.234, 21), data_mode: 'exploratory'}}));
+  await panel.getByRole('checkbox', {name: 'Use extracted observations for exploratory estimates'}).check();
+  await panel.getByRole('button', {name: 'Estimate supported properties'}).click();
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.23');
+  await panel.getByLabel('Gravity to hold out').selectOption('0');
+  const evidence = panel.locator('.ood-evidence');
+  await expect(evidence).toHaveAttribute('open', '');
+  await expect(evidence.getByRole('heading', {name: 'What happens if 0 g is held out?'})).toBeVisible();
+  await expect(evidence.getByRole('table')).toBeVisible();
+  await expect(evidence.getByText('software-fixture-micro', {exact: true})).toBeVisible();
+  await expect(evidence.getByText('software-fixture-ground', {exact: true})).toHaveCount(0);
+  await expect(evidence.locator('.ood-evidence-chart .recharts-wrapper > svg.recharts-surface')).toHaveCount(1);
+  await expect(evidence.getByText(/observation shares a dependency group/)).toBeVisible();
+  await expect(panel.getByRole('button', {name: 'Compare held-out predictions'})).toBeDisabled();
+  await expect(panel.locator('.ood-estimate-value')).toContainText('1.23');
+  await panel.getByLabel('Gravity to hold out').selectOption('1');
+  await expect(evidence.getByRole('heading', {name: 'What happens if 1 g is held out?'})).toBeVisible();
+  await expect(evidence.getByText('software-fixture-ground', {exact: true})).toBeVisible();
+  await expect(evidence.getByText('software-fixture-micro', {exact: true})).toHaveCount(0);
+  expect(evidenceRequests).toEqual([0, 1]);
+  const downloadEvent = page.waitForEvent('download');
+  await evidence.getByRole('button', {name: 'Export observed evidence'}).click();
+  const stream = await (await downloadEvent).createReadStream();
+  const chunks = [];
+  for await (const chunk of stream!) chunks.push(chunk);
+  const exported = JSON.parse(Buffer.concat(chunks).toString());
+  expect(exported.model_fitted).toBe(false);
+  expect(exported.dataset_sha256).toBe('software-fixture-only');
+  expect(exported.request.gravity_g).toBe(1);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

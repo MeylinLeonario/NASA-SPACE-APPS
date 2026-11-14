@@ -2,6 +2,8 @@
 
 import {useEffect, useRef, useState} from 'react';
 import {Download, FlaskConical, ShieldCheck} from 'lucide-react';
+import OODEvidence from './ood-evidence';
+import {downloadJSON} from './ood-download';
 import {modelLabels, PredictionCard, propertyLabels, type Result, ValidationResults} from './ood-results';
 
 type Coverage = {
@@ -13,15 +15,6 @@ type Status = {
   reason: string | null; reviewed_direct_observations: number; dependencies_ready: boolean;
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
-
-function downloadJSON(filename: string, value: unknown) {
-  const url = URL.createObjectURL(new Blob([JSON.stringify(value, null, 2)], {type: 'application/json'}));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = filename;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
-}
 
 export default function OODPanel({token}: {token: string}) {
   const [status, setStatus] = useState<Status | null>(null);
@@ -40,6 +33,7 @@ export default function OODPanel({token}: {token: string}) {
   const [result, setResult] = useState<Result | null>(null);
   const [validation, setValidation] = useState<Result[]>([]);
   const activeRequest = useRef<AbortController | null>(null);
+  const activeRequestType = useRef<'prediction' | 'validation' | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const headers = {'Content-Type': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {})};
 
@@ -66,7 +60,15 @@ export default function OODPanel({token}: {token: string}) {
     setValidation([]);
     setProperty('all');
     return () => activeRequest.current?.abort();
-  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, holdout, token, exploratory]);
+  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, token, exploratory]);
+
+  useEffect(() => {
+    if (activeRequestType.current === 'validation') {
+      activeRequest.current?.abort();
+      setBusy(false);
+    }
+    setValidation([]);
+  }, [holdout]);
 
   const pendingReview = status?.unreviewed_observations || 0;
   const cohortOptions = (exploratory ? status?.exploratory_cohorts : status?.cohorts) || [];
@@ -82,6 +84,7 @@ export default function OODPanel({token}: {token: string}) {
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
+    activeRequestType.current = validate ? 'validation' : 'prediction';
     setBusy(true);
     setError('');
     setResult(null);
@@ -180,12 +183,13 @@ export default function OODPanel({token}: {token: string}) {
           <div className="ood-results">{Object.entries(result.results).filter(([key]) => property === 'all' || property === key).map(([key, estimate]) => <PredictionCard key={key} name={key} estimate={estimate}/>)}</div>
         </>}</div>}
         <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
-          <p>Hold out an observed gravity and exclude related campaign groups. Compare both models against the observations left out of training.</p>
-          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={exploratory} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · insufficient independent training data'}</option>)}</select></label>
+          <p>Inspect the recorded observations at each gravity and preview which rows remain after related campaign groups are excluded. Reviewed data and an eligible split are required to compare model predictions with held-out measurements.</p>
+          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={!validationLevels.length} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · insufficient independent training data'}</option>)}</select></label>
             <button type="button" className="button secondary" disabled={exploratory || !ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
-          {exploratory && <p className="ood-warning">Scientific validation is disabled in exploratory mode. It requires reviewed observations and independent held-out groups.</p>}
+          {exploratory && <p className="ood-warning">You can inspect observations in exploratory mode. Scientific validation requires reviewed observations and independent held-out groups.</p>}
           {!validationLevels.length && <p>Validation unavailable: this cohort has no reviewed direct measurements to hold out.</p>}
           {holdout !== '' && !eligibleLevel && <p>Validation unavailable at this level: after excluding related groups, no output retains at least three training observations across two other gravity levels.</p>}
+          {selected && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token}/>}
           {!!validation.length && <><button type="button" className="button secondary" onClick={() => downloadJSON('ood-held-out-validation.json', validation)}><Download size={14}/> Export validation</button><ValidationResults results={validation}/></>}
         </div>
         <details className="ood-provenance"><summary>Dataset provenance</summary><p>SHA-256: <small>{status.dataset_sha256 || 'No observation dataset loaded'}</small></p>

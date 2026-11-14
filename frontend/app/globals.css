@@ -50,3 +50,13 @@
 .ood-mode-toggle input{width:17px;height:17px;accent-color:var(--orange);flex-shrink:0}.ood-exploratory strong{color:#edb085;font-size:12px}
 .ood-point-label{display:block;color:var(--muted);font-size:11px;margin-top:14px}.ood-uncertainty{display:flex;flex-direction:column;gap:6px;margin:16px 0;padding:12px;background:#18212c;border:1px solid #374655;border-radius:5px}
 .ood-uncertainty strong{font-size:12px;color:#e5b38f}.ood-uncertainty span{font-size:17px;font-variant-numeric:tabular-nums}.ood-uncertainty small{line-height:1.6;color:var(--muted)}
+.ood-evidence{margin:22px 0;border:1px solid var(--border);border-radius:8px;padding:0 18px 18px;background:#101720;min-width:0}
+.ood-evidence>summary{display:flex;align-items:center;gap:9px;list-style:disclosure-closed}.ood-evidence>summary:before{content:'▸';color:var(--orange)}.ood-evidence[open]>summary:before{content:'▾'}
+.ood-gravity-counts,.ood-split-stages{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin:16px 0}
+.ood-gravity-counts>div,.ood-split-stages>div{padding:14px;border:1px solid var(--border);border-radius:6px;background:#141e29;display:flex;flex-direction:column;gap:5px}
+.ood-gravity-counts>div.selected{border-color:#b1784f}.ood-gravity-counts strong{font-size:20px}.ood-gravity-counts small{color:var(--muted)}
+.ood-evidence-chart{height:300px;min-width:0}.ood-split-stages strong{font-size:28px;font-variant-numeric:tabular-nums;color:#edb085}.ood-split-stages span{font-size:11px;color:var(--muted)}
+.ood-fold-preview{border-top:1px solid var(--border);padding-top:4px;margin-top:15px}.ood-fold-preview ul,.ood-evidence ul{color:var(--muted);padding-left:20px;line-height:1.9}
+.ood-next-evidence{padding:14px;border-left:2px solid #8e674c;background:#ac79490b}.ood-next-evidence strong{color:#dec1aa}
+.ood-measurement-table{margin:14px 0}.ood-measurement-table td:first-child{min-width:210px;max-width:330px;white-space:normal;overflow-wrap:anywhere}.ood-measurement-table td:first-child p{font-size:11px}.ood-measurement-table td summary{padding:6px 0;font-size:11px}.ood-evidence .ood-table-scroll{max-height:420px;overflow:auto}.ood-measurement-table th{position:sticky;top:0;background:#17212e;z-index:1}
+@media(max-width:640px){.ood-evidence{padding:0 12px 12px}.ood-evidence-chart{height:260px}.ood-gravity-counts,.ood-split-stages{grid-template-columns:1fr}.ood-evidence>summary{font-size:12px}}
