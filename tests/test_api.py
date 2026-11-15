@@ -76,3 +76,16 @@ def test_missing_original_file(cfg):
 def test_oversized_upload(cfg):
     c=client(cfg);cfg.max_file_mb=0
     assert c.post('/api/documents/upload',files={'file':('big.pdf',b'%PDF-123')}).status_code==413
+
+
+def test_health_reports_configured_model_without_exposing_key(cfg):
+    from flame.main import create_app
+    from fastapi.testclient import TestClient
+    cfg.openai_api_key = 'private-key-never-return'
+    cfg.enable_paid_api = True
+    response = TestClient(create_app(cfg)).get('/health')
+    assert response.status_code == 200
+    assert response.json()['synthesis_model'] == 'gpt-4o-mini'
+    assert response.json()['synthesis_ready'] is True
+    assert response.json()['consensus'] == 'manual_import_only'
+    assert cfg.openai_api_key not in response.text
