@@ -280,3 +280,9 @@ input[type="range"].flare-slider::-moz-range-thumb {
 .sf-predict .sf-ask{margin:16px 0}.sf-predict .sf-ask input{flex:1;min-width:0}
 .sf-predict .sf-answer{padding:20px;border:1px solid #334155;border-radius:12px;background:#0a1224}
 .sf-predict .sf-answer summary{cursor:pointer;padding:8px 0;color:#7dd3fc}.sf-predict .sf-answer blockquote{border-left:2px solid #475569;padding:12px;color:#cbd5e1}
+
+.ood-measured-results{padding:16px 0;border-bottom:1px solid var(--border);margin-bottom:16px}
+.ood-measured-results .ood-estimate{border-color:#3c6771}
+.ood-measured-row{padding:12px 0}.ood-measured-row+.ood-measured-row{border-top:1px solid var(--border)}
+.ood-measured-row .ood-estimate-value{display:block}.ood-measured-row .tag{display:inline-block;white-space:normal}
+.ood-measured-row summary{font-size:12px;overflow-wrap:anywhere}

@@ -27,12 +27,12 @@ type Evidence = {
 };
 type Props = {
   cohort: {fuel: string; configuration: string; temperature_available: boolean};
-  gravity: number | null; dataMode: 'reviewed' | 'exploratory'; token: string;
+  gravity: number | null; dataMode: 'reviewed' | 'exploratory'; token: string; observationsOnly?: boolean;
 };
 const format = (value: number) => new Intl.NumberFormat('en', {maximumSignificantDigits: 4}).format(value);
 const colors = ['#739fca', '#8eb49f', '#c3a0d1', '#d0b087'];
 
-export default function OODEvidence({cohort, gravity, dataMode, token}: Props) {
+export default function OODEvidence({cohort, gravity, dataMode, token, observationsOnly = false}: Props) {
   const [loaded, setLoaded] = useState<{key: string; token: string; report: Evidence} | null>(null);
   const [error, setError] = useState('');
   const [property, setProperty] = useState('');
@@ -72,6 +72,21 @@ export default function OODEvidence({cohort, gravity, dataMode, token}: Props) {
       <p>{report.cohort_observations} observations in this fuel/configuration cohort · {report.dependency_groups} dependency groups. This panel inspects recorded measurements and exclusion rules; it does not fit a model or compute validation errors.</p>
       {report.reason && <p>{report.reason}</p>}
       {!!properties.length && <>
+        {observationsOnly && <section className="ood-measured-results" aria-label="Measured results · not predictions">
+          <h4>Measured results · not predictions</h4>
+          <p>These are recorded values for this experimental configuration, at the conditions listed with each measurement. They do not change when you adjust the target gravity, oxygen, pressure or airflow above. A prediction at those target conditions is unavailable.</p>
+          <div className="ood-results">{Object.entries(report.outputs).map(([name, measured]) => <article className="ood-estimate" key={name} aria-label={`Measured ${propertyLabels[name]}`}>
+            <span className="eyebrow">MEASURED · {measured.observations.length} OBSERVATIONS</span>
+            <h4>{propertyLabels[name]}</h4>
+            {measured.observations.slice(0, 5).map(row => <div className="ood-measured-row" key={row.id}>
+              <strong className="ood-estimate-value">{format(row.observed)} <small>{measured.unit}</small></strong>
+              <p>{format(row.gravity_g)} g · {format(row.oxygen_pct)}% O₂ · {format(row.pressure_kpa)} kPa · {format(row.airflow_cm_s)} cm/s</p>
+              <span className="tag neutral">{row.reviewed ? 'Reviewed observation' : 'Transcription pending scientific review'}</span>
+              <details><summary>Source · {row.id}</summary><p>{row.citation}</p></details>
+            </div>)}
+            {measured.observations.length > 5 && <p>First 5 measurements shown; inspect all {measured.observations.length} in the source-linked table below.</p>}
+          </article>)}</div>
+        </section>}
         <div className="ood-result-toolbar"><label>Observed property<select value={selectedProperty} onChange={event => {setProperty(event.target.value); setShowAll(false);}}>
           {properties.map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}
         </select></label><button type="button" className="button secondary" onClick={() => downloadJSON('ood-observed-evidence.json', report)}><Download size={14}/> Export observed evidence</button></div>
@@ -110,7 +125,7 @@ export default function OODEvidence({cohort, gravity, dataMode, token}: Props) {
             {output && output.by_gravity.length < 3 && <li>This protocol needs observations at another gravity so two training levels can remain after one is held out.</li>}
             {preview.remaining_training_n < 3 && <li>Retain at least three training rows without held-out group overlap; this software minimum does not establish scientific sufficiency.</li>}
           </ul></div>}
-        </div> : <p className="ood-warning">Choose a gravity above to inspect its measurements and preview the leakage-safe holdout split.</p>}
+        </div> : <p className="ood-warning">{observationsOnly ? 'Measured results are available. Predicting across gravity requires at least three compatible observations spanning two gravity levels per property; this configuration does not meet that minimum.' : 'Choose a gravity above to inspect its measurements and preview the leakage-safe holdout split.'}</p>}
         <details className="ood-measurement-table" open><summary>Source-linked measurement table · {selectedRows.length} rows{gravity == null ? ' across all gravities' : ` at ${gravity} g`}</summary>
           <div className="ood-table-scroll"><table><caption>Observed {propertyLabels[selectedProperty]?.toLowerCase()} ({output?.unit}) · recorded conditions, not predictions</caption>
             <thead><tr><th scope="col">Row / source</th><th scope="col">Gravity (g)</th><th scope="col">Oxygen (%)</th><th scope="col">Pressure (kPa)</th><th scope="col">Airflow (cm/s)</th><th scope="col">Observed ({output?.unit})</th><th scope="col">Measurement SD</th><th scope="col">Review</th></tr></thead>

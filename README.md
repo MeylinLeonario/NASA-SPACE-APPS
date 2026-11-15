@@ -275,3 +275,10 @@ Los datos incluidos no permiten validar Luna o Marte mediante grupos independien
 Arranque local: backend en el puerto 8000 y `npm --prefix frontend run dev -- --port 3000`.
 `BACKEND_URL` configura un backend alternativo. Las fuentes tipográficas están
 incluidas en las dependencias para compilar sin descargar desde Google Fonts.
+
+Las configuraciones **observations only**, incluidas las de SIBAL, muestran sus
+valores medidos directamente bajo los controles: magnitud, unidades, gravedad,
+atmósfera, ventilación, revisión y fuente. Estos valores conservan las condiciones
+del ensayo al mover los controles del escenario. El botón de estimación permanece
+deshabilitado cuando faltan filas o niveles de gravedad compatibles; la tabla y
+la exportación de evidencia siguen disponibles.
