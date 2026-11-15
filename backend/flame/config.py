@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     data_dir: Path = ROOT / 'data'
     # Curated PSI investigation catalog (versioned in Git, unlike data/).
     catalog_dir: Path = ROOT / 'datasets' / 'psi'
+    # Optional Supabase project holding the same catalog (supabase_seed.sql). Empty = local JSON only.
+    # Use the public (anon/publishable) key, never the service_role key.
+    supabase_url: str = ''
+    supabase_key: str = ''
     # Answer synthesis provider. Embeddings remain OpenAI-only.
     llm_provider: Literal['openai', 'anthropic'] = 'openai'
     anthropic_api_key: str = ''

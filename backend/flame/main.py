@@ -168,6 +168,12 @@ def create_app(config: Settings | None = None):
     # ==========================================================================
     # ENDPOINTS UNIFICADOS DE LOS 4 MOTORES (PYRASCOPE SI)
     # ==========================================================================
+    @app.get('/api/catalog/source')
+    def catalog_source():
+        from . import catalog
+        catalog.load(store.config.catalog_dir, store.config)
+        return catalog.SOURCE
+
     @app.get('/api/habitats')
     def get_habitats():
         cat = engines.load_psi_catalog(store)

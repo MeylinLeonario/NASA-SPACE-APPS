@@ -5,12 +5,16 @@ common schema: conditions, findings and sources. Each finding, ground study and 
 Citation so the assistant can cite it exactly like a paper excerpt, with the same verbatim-quote validation.
 """
 import json
+import logging
 import math
+import time
 import re
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
 from .models import Citation
+
+log = logging.getLogger(__name__)
 
 STOP = set('''a al algo ante como con cual cuales cuando de del desde donde el ella en entre es esa ese esta este
 esto hay la las le lo los mas me mi muy no o para pero por que se segun ser si sin sobre su sus tan te tiene un
@@ -63,12 +67,54 @@ def _load(path: str, mtime: float):
     return json.loads(Path(path).read_text(encoding='utf-8'))
 
 
-def load(catalog_dir: Path):
+_SUPABASE_CACHE = {'at': 0.0, 'key': None, 'value': None, 'failed_at': 0.0}
+SUPABASE_TTL = 300  # seconds
+# Where the last catalog came from: 'supabase' or 'local'. Shown by /api/catalog/source.
+SOURCE = {'catalog': 'local', 'detail': 'datasets/psi/investigations.json'}
+
+
+def _supabase_investigations(url: str, key: str):
+    """Investigation records (raw_json) from Supabase's REST API, cached for a few minutes."""
+    now = time.time()
+    if _SUPABASE_CACHE['key'] == url and now - _SUPABASE_CACHE['at'] < SUPABASE_TTL:
+        return _SUPABASE_CACHE['value']
+    if now - _SUPABASE_CACHE['failed_at'] < 60:
+        raise ValueError('last attempt failed less than a minute ago')
+    import httpx
+    try:
+        r = httpx.get(url.rstrip('/') + '/rest/v1/investigations', params={'select': 'raw_json', 'order': 'investigation_id'},
+                      headers={'apikey': key, 'Authorization': f'Bearer {key}'}, timeout=6)
+        r.raise_for_status()
+        rows = [row['raw_json'] for row in r.json() if isinstance(row.get('raw_json'), dict)]
+    except Exception:
+        _SUPABASE_CACHE['failed_at'] = now
+        raise
+    _SUPABASE_CACHE.update(at=now, key=url, value=rows)
+    return rows
+
+
+def load(catalog_dir: Path, cfg=None):
     out = {}
     for name in ('investigations', 'background'):
         p = catalog_dir / f'{name}.json'
         out[name] = _load(str(p), p.stat().st_mtime) if p.exists() else None
-    return out['investigations'], out['background']
+    cat = out['investigations']
+    SOURCE.update(catalog='local', detail='datasets/psi/investigations.json')
+    if cat and cfg is not None and getattr(cfg, 'supabase_url', '') and getattr(cfg, 'supabase_key', ''):
+        try:
+            rows = _supabase_investigations(cfg.supabase_url, cfg.supabase_key)
+            sources = cat['sources']
+            missing = {f['source'] for inv in rows for f in inv.get('findings', [])} - set(sources)
+            if not rows:
+                raise ValueError('the investigations table is empty')
+            if missing:
+                raise ValueError(f'findings cite sources missing from the catalog: {sorted(missing)[:5]}')
+            cat = dict(cat, investigations=rows)
+            SOURCE.update(catalog='supabase', detail=f'{len(rows)} investigations from {cfg.supabase_url}')
+        except Exception as error:  # network, permissions or data: keep the local catalog so the chat never breaks
+            log.warning('Supabase catalog unavailable, using local JSON: %s', error)
+            SOURCE.update(catalog='local', detail=f'Supabase unavailable: {str(error)[:200]}')
+    return cat, out['background']
 
 
 def _paper_url(store, file: str | None, page: int | None) -> str | None:
@@ -146,7 +192,7 @@ def _units(store, cat: dict, bg: dict):
 
 def search(store, query: str, limit: int = 8) -> list[Citation]:
     """Keyword ranking with IDF and Spanish/English synonyms over catalog units."""
-    cat, bg = load(store.config.catalog_dir)
+    cat, bg = load(store.config.catalog_dir, store.config)
     if not cat:
         return []
     units = _units(store, cat, bg)
