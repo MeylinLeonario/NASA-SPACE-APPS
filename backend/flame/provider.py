@@ -112,21 +112,36 @@ class Provider:
         """JSON output validated with the same Pydantic schema used for OpenAI."""
         instructions = (system + '\n\nReturn ONLY one JSON object that validates against this JSON schema, '
                         'with no text before or after it:\n' + json.dumps(schema.model_json_schema()))
-        budget = self.cfg.anthropic_max_tokens
-        while True:
-            msg = self.anthropic_client.messages.create(model=self.cfg.anthropic_model,
-                max_tokens=budget, system=instructions,
-                messages=[{'role': 'user', 'content': user}])
-            usage = self.log_usage(operation, self.cfg.anthropic_model, msg.usage.input_tokens, msg.usage.output_tokens)
-            if msg.stop_reason != 'max_tokens':
-                break
-            # Truncated: retry once with a larger budget before giving up.
-            if budget >= 32000:
-                raise ValueError('Provider answer was truncated; raise ANTHROPIC_MAX_TOKENS')
-            budget = min(budget * 2, 32000)
-        # Responses can include reasoning blocks before the text block.
-        text = ''.join(b.text for b in msg.content if getattr(b, 'type', '') == 'text')
-        match = re.search(r'\{.*\}', text, re.S)
-        if not match:
-            raise ValueError('Provider returned no JSON object')
-        return schema.model_validate_json(match.group()), usage
+        messages = [{'role': 'user', 'content': user}]
+        last_error = None
+        for attempt in range(3):
+            budget = self.cfg.anthropic_max_tokens
+            while True:
+                msg = self.anthropic_client.messages.create(model=self.cfg.anthropic_model,
+                    max_tokens=budget, system=instructions, messages=messages)
+                usage = self.log_usage(operation, self.cfg.anthropic_model, msg.usage.input_tokens, msg.usage.output_tokens)
+                if msg.stop_reason != 'max_tokens':
+                    break
+                # Truncated: retry with a larger budget before giving up.
+                if budget >= 32000:
+                    raise ValueError('Provider answer was truncated; raise ANTHROPIC_MAX_TOKENS')
+                budget = min(budget * 2, 32000)
+            if msg.stop_reason == 'refusal':
+                raise ValueError('The model declined to answer this question')
+            # Responses can include reasoning blocks before the text block.
+            text = ''.join(b.text for b in msg.content if getattr(b, 'type', '') == 'text')
+            try:
+                start = text.find('{')
+                if start < 0:
+                    raise ValueError('no JSON object in the answer')
+                obj, _ = json.JSONDecoder().raw_decode(text[start:])
+                return schema.model_validate(obj), usage
+            except Exception as error:  # empty answer, broken JSON or schema mismatch: ask once more
+                last_error = error
+                log.warning('Invalid structured answer (attempt %s): %s', attempt + 1, error)
+                messages = [{'role': 'user', 'content': user}]
+                if text.strip():
+                    messages += [{'role': 'assistant', 'content': text},
+                                 {'role': 'user', 'content': f'Your previous answer was not valid: {str(error)[:800]}. '
+                                  'Return ONLY the corrected JSON object.'}]
+        raise ValueError(f'Provider returned invalid JSON after 3 attempts: {str(last_error)[:300]}')

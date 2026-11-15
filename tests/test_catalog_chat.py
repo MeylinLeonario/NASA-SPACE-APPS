@@ -94,3 +94,20 @@ def test_health_reports_anthropic_without_exposing_key(cfg):
     assert response.json()['synthesis_ready'] is True
     assert response.json()['synthesis_model'] == 'claude-haiku-5-5'
     assert 'sk-ant-private' not in response.text
+
+def test_executive_summary_is_shown_only_when_its_numbers_are_grounded(store):
+    with_catalog(store)
+    store.config.enable_paid_api = True
+    store.config.openai_api_key = 'test'
+    claim = AnswerClaim(text='En BASS-II las llamas se apagaron al detener el ventilador.', kind='observation',
+                        citation_ids=['psi:BASS-II#3'], quote='Las llamas siempre se apagaron al detener el ventilador')
+    def answer_with(summary):
+        def fake(self, system, user, schema, operation):
+            return GeneratedAnswer(claims=[claim], executive_summary=summary, limitations=[], insufficient_evidence=False), {}
+        return fake
+    with patch('flame.provider.Provider.structured', answer_with('Cortar el flujo apagó las llamas en BASS-II (1 experimento en la ISS).')):
+        r = chat(store, ChatRequest(query='¿Sirve cortar la ventilación para apagar un fuego?', language='es'))
+    assert r.executive_summary and r.executive_summary.startswith('Cortar') and r.language == 'es'
+    with patch('flame.provider.Provider.structured', answer_with('Cortar el flujo apagó las llamas en 97 % de los casos.')):
+        r = chat(store, ChatRequest(query='¿Sirve apagar la ventilación para extinguir un fuego?', language='es'))
+    assert r.executive_summary is None and 'ventilador' in r.answer

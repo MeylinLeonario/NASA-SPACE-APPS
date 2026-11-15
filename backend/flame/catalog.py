@@ -5,12 +5,16 @@ common schema: conditions, findings and sources. Each finding, ground study and 
 Citation so the assistant can cite it exactly like a paper excerpt, with the same verbatim-quote validation.
 """
 import json
+import logging
 import math
+import time
 import re
 import unicodedata
 from functools import lru_cache
 from pathlib import Path
 from .models import Citation
+
+log = logging.getLogger(__name__)
 
 STOP = set('''a al algo ante como con cual cuales cuando de del desde donde el ella en entre es esa ese esta este
 esto hay la las le lo los mas me mi muy no o para pero por que se segun ser si sin sobre su sus tan te tiene un
@@ -63,12 +67,112 @@ def _load(path: str, mtime: float):
     return json.loads(Path(path).read_text(encoding='utf-8'))
 
 
-def load(catalog_dir: Path):
+_SUPABASE_CACHE: dict = {}  # (url, table) -> {'at', 'value', 'failed_at'}
+SUPABASE_TTL = 300  # seconds
+# Where the last catalog came from: 'supabase' or 'local'. Shown by /api/catalog/source.
+SOURCE = {'catalog': 'local', 'detail': 'datasets/psi/investigations.json'}
+
+
+def _supabase_rows(url: str, key: str, table: str, params: dict):
+    """Rows of one table from Supabase's REST API, cached for a few minutes. Raises when unavailable."""
+    now = time.time()
+    slot = _SUPABASE_CACHE.setdefault((url, table), {'at': 0.0, 'value': None, 'failed_at': 0.0})
+    if slot['value'] is not None and now - slot['at'] < SUPABASE_TTL:
+        return slot['value']
+    if now - slot['failed_at'] < 60:
+        raise ValueError('last attempt failed less than a minute ago')
+    import httpx
+    try:
+        r = httpx.get(url.rstrip('/') + '/rest/v1/' + table, params=params,
+                      headers={'apikey': key, 'Authorization': f'Bearer {key}'}, timeout=6)
+        r.raise_for_status()
+        rows = r.json()
+        if not isinstance(rows, list):
+            raise ValueError('unexpected response')
+    except Exception:
+        slot['failed_at'] = now
+        raise
+    slot.update(at=now, value=rows)
+    return rows
+
+
+def _supabase_investigations(url: str, key: str):
+    """Investigation records (raw_json column)."""
+    rows = _supabase_rows(url, key, 'investigations', {'select': 'raw_json', 'order': 'investigation_id'})
+    return [row['raw_json'] for row in rows if isinstance(row.get('raw_json'), dict)]
+
+
+def _supabase_on(cfg) -> bool:
+    return cfg is not None and bool(getattr(cfg, 'supabase_url', '')) and bool(getattr(cfg, 'supabase_key', ''))
+
+
+def load(catalog_dir: Path, cfg=None):
     out = {}
     for name in ('investigations', 'background'):
         p = catalog_dir / f'{name}.json'
         out[name] = _load(str(p), p.stat().st_mtime) if p.exists() else None
-    return out['investigations'], out['background']
+    cat = out['investigations']
+    SOURCE.update(catalog='local', detail='datasets/psi/investigations.json')
+    if cat and _supabase_on(cfg):
+        try:
+            rows = _supabase_investigations(cfg.supabase_url, cfg.supabase_key)
+            sources = cat['sources']
+            missing = {f['source'] for inv in rows for f in inv.get('findings', [])} - set(sources)
+            if not rows:
+                raise ValueError('the investigations table is empty')
+            if missing:
+                raise ValueError(f'findings cite sources missing from the catalog: {sorted(missing)[:5]}')
+            cat = dict(cat, investigations=rows)
+            SOURCE.update(catalog='supabase', detail=f'{len(rows)} investigations from {cfg.supabase_url}')
+        except Exception as error:  # network, permissions or data: keep the local catalog so the chat never breaks
+            log.warning('Supabase catalog unavailable, using local JSON: %s', error)
+            SOURCE.update(catalog='local', detail=f'Supabase unavailable: {str(error)[:200]}')
+    return cat, out['background']
+
+
+def scenarios(catalog_dir: Path, cfg=None) -> tuple[list[dict], str]:
+    """Habitat presets with one schema: Supabase table habitats_presets, else the local catalog's habitats."""
+    if _supabase_on(cfg):
+        try:
+            rows = _supabase_rows(cfg.supabase_url, cfg.supabase_key, 'habitats_presets', {'select': '*', 'order': 'preset_id'})
+            out = [{'id': r['preset_id'], 'name': r['name'], 'o2_pct': float(r['o2_pct']), 'pressure_kpa': float(r['pressure_kpa']),
+                    'pressure_psi': float(r['pressure_psi']), 'flow_cms': float(r['flow_cms']), 'gravity_g': float(r['gravity_g']),
+                    'note': r.get('note')} for r in rows]
+            if out:
+                return out, 'supabase'
+            raise ValueError('the habitats_presets table is empty')
+        except Exception as error:
+            log.warning('Supabase habitats unavailable, using local JSON: %s', error)
+    p = catalog_dir / 'investigations.json'
+    cat = _load(str(p), p.stat().st_mtime) if p.exists() else {}
+    out = []
+    for h in cat.get('habitats', []):
+        kpa = float(h['pressure'])
+        out.append({'id': h['id'], 'name': h['name'], 'o2_pct': float(h['o2']), 'pressure_kpa': kpa,
+                    'pressure_psi': float(h.get('pressure_psi') or round(kpa * 0.1450377, 1)),
+                    'flow_cms': float(h['flow']) if h.get('flow') is not None else None,
+                    'gravity_g': float(h['gravity']), 'note': h.get('note')})
+    return out, 'local'
+
+
+def tested_by(cat: dict, material: dict) -> list[dict]:
+    """Investigations of the catalog whose fuels include the material (regex over normalized fuel names)."""
+    return [i for i in cat['investigations'] if any(re.search(material['match'], norm(f)) for f in i.get('fuels', []))]
+
+
+def materials(catalog_dir: Path, cfg=None) -> list[dict]:
+    """Static list of materials to evaluate (datasets/psi/materials.json) plus what the catalog holds on each."""
+    p = catalog_dir / 'materials.json'
+    if not p.exists():
+        return []
+    cat, _ = load(catalog_dir, cfg)
+    out = []
+    for m in _load(str(p), p.stat().st_mtime)['materials']:
+        invs = tested_by(cat, m) if cat else []
+        done = [i for i in invs if i['in_psi'] != 'no_aun']
+        out.append(dict(m, investigations=[i['acronym'] for i in done], planned=[i['acronym'] for i in invs if i['in_psi'] == 'no_aun'],
+                        findings=sum(len(i.get('findings', [])) for i in done)))
+    return out
 
 
 def _paper_url(store, file: str | None, page: int | None) -> str | None:
@@ -146,7 +250,7 @@ def _units(store, cat: dict, bg: dict):
 
 def search(store, query: str, limit: int = 8) -> list[Citation]:
     """Keyword ranking with IDF and Spanish/English synonyms over catalog units."""
-    cat, bg = load(store.config.catalog_dir)
+    cat, bg = load(store.config.catalog_dir, store.config)
     if not cat:
         return []
     units = _units(store, cat, bg)

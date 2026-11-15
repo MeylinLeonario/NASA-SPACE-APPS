@@ -22,6 +22,7 @@ from .models import (
 from .ingest import ingest, safe_file
 from .retrieval import search
 from .assistant import chat, extract_metadata
+from .report import ReportRequest, ReportResponse, build as build_report
 from .discovery import import_records, parse_import
 from . import engines
 
@@ -168,6 +169,12 @@ def create_app(config: Settings | None = None):
     # ==========================================================================
     # ENDPOINTS UNIFICADOS DE LOS 4 MOTORES (PYRASCOPE SI)
     # ==========================================================================
+    @app.get('/api/catalog/source')
+    def catalog_source():
+        from . import catalog
+        catalog.load(store.config.catalog_dir, store.config)
+        return catalog.SOURCE
+
     @app.get('/api/habitats')
     def get_habitats():
         cat = engines.load_psi_catalog(store)
@@ -192,7 +199,7 @@ def create_app(config: Settings | None = None):
             "investigations": invs,
             "ground_studies": cat.get("ground_studies", []),
             "initial_ranking": initial_ranking,
-            "ood_status": ood_status(cfg.data_dir / 'combustion-observations.json')
+            "ood_status": ood_status(obs_path())
         }
 
     # --- MOTOR 1: MISSION-MATCHER (RANKING MULTICRITERIO) ---
@@ -206,6 +213,16 @@ def create_app(config: Settings | None = None):
         return {"target_habitat": target, "ranking": ranking}
 
     # --- MOTOR 2: PARTIAL-G & LOI PREDICTOR (OOD ML DE MEYLIN) ---
+    from .runs import observations_path, SOURCE as runs_source
+    def obs_path():
+        # Supabase experimental_runs (solo filas con fuente) o, si no está disponible, el archivo local.
+        return observations_path(cfg)
+
+    @app.get('/api/motor2/source')
+    def motor2_source():
+        obs_path()
+        return runs_source
+
     from .ood.schema import Query, Dataset, EvidenceQuery, GravitySweepQuery
     from .ood.service import status as ood_status, infer as ood_infer
     from .ood.evidence import inspect_evidence
@@ -213,7 +230,7 @@ def create_app(config: Settings | None = None):
     @app.post('/api/ood/evidence')
     @app.post('/api/motor2/evidence')
     def gravity_evidence(query: EvidenceQuery):
-        return inspect_evidence(cfg.data_dir / 'combustion-observations.json', query)
+        return inspect_evidence(obs_path(), query)
 
     @app.get('/api/ood/schema')
     def gravity_dataset_schema():
@@ -222,29 +239,29 @@ def create_app(config: Settings | None = None):
     @app.get('/api/ood/status')
     @app.get('/api/motor2/status')
     def gravity_status():
-        return ood_status(cfg.data_dir / 'combustion-observations.json')
+        return ood_status(obs_path())
 
     @app.post('/api/ood/gravity-sweep')
     @app.post('/api/motor2/gravity-sweep')
     def gravity_curve(query: GravitySweepQuery):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
         from .ood.sweep import gravity_sweep
-        return gravity_sweep(cfg.data_dir / 'combustion-observations.json', query)
+        return gravity_sweep(obs_path(), query)
 
     @app.post('/api/ood/predict')
     @app.post('/api/motor2/predict')
     def gravity_predict(query: Query):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
-        return ood_infer(cfg.data_dir / 'combustion-observations.json', query)
+        return ood_infer(obs_path(), query)
 
     @app.post('/api/ood/validate')
     @app.post('/api/motor2/validate')
     def gravity_validate(query: Query):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
-        return ood_infer(cfg.data_dir / 'combustion-observations.json', query, validation=True)
+        return ood_infer(obs_path(), query, validation=True)
 
     # --- MOTOR 3: EXPERIMENTAL DIFF-ENGINE (INTRA E INTER-INVESTIGACIÓN) ---
     @app.get('/api/motor3/intra/{investigation_id}')
@@ -272,10 +289,32 @@ def create_app(config: Settings | None = None):
     def run_chat(request: ChatRequest):
         return chat(store, request)
 
+    # --- INFORME DE DECISIÓN (MOTOR 4): ESCENARIO + MATERIAL -> RESUMEN CITADO ---
+    @app.get('/api/scenarios')
+    def list_scenarios():
+        """Hábitats predefinidos: tabla habitats_presets de Supabase, o el JSON local si no está disponible."""
+        from . import catalog
+        items, origin = catalog.scenarios(store.config.catalog_dir, store.config)
+        return {'source': origin, 'scenarios': items}
+
+    @app.get('/api/materials')
+    def list_materials():
+        """Materiales a evaluar (lista estática) con las investigaciones del catálogo que ensayaron cada uno."""
+        from . import catalog
+        return {'materials': [{k: v for k, v in m.items() if k != 'match'} for m in catalog.materials(store.config.catalog_dir, store.config)]}
+
+    @app.post('/api/report', response_model=ReportResponse)
+    @app.post('/api/motor4/report', response_model=ReportResponse)
+    def decision_report(request: ReportRequest):
+        try:
+            return build_report(store, request)
+        except KeyError as error:
+            raise HTTPException(404, str(error).strip("'\""))
+
     # --- EXPORTADOR CSV LIMPIO PARA MODELADO PREDICTIVO ---
     @app.get('/api/export.csv')
     def export_csv():
-        obs_file = cfg.data_dir / 'combustion-observations.json'
+        obs_file = obs_path()
         if not obs_file.exists():
             return Response("experiment_id,fuel,gravity_g,oxygen_pct,pressure_kpa,airflow_cm_s\n", media_type="text/csv")
         obs = json.loads(obs_file.read_text(encoding='utf-8')).get('observations', [])
