@@ -1,6 +1,14 @@
 // frontend/src/services/api.ts
 
-const API_BASE_URL = "http://localhost:8000/api";
+// Use the Next.js proxy so local and deployed clients share the same API origin.
+const API_BASE_URL = "/api";
+const PSI_TO_KPA = 6.89476;
+const BACKEND_PILLARS: Record<string, string> = {
+  all: "todos",
+  prevention: "prevencion",
+  detection: "deteccion",
+  suppression: "supresion",
+};
 
 export interface AtmospherePayload {
   o2: number;
@@ -12,12 +20,20 @@ export interface AtmospherePayload {
 
 export async function fetchMissionMatch(conditions: AtmospherePayload) {
   try {
-    const response = await fetch(`${API_BASE_URL}/motor1/match-missions`, {
+    const response = await fetch(`${API_BASE_URL}/motor1/match`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(conditions),
+      body: JSON.stringify({
+        o2: conditions.o2,
+        pressure: conditions.pressure_psi * PSI_TO_KPA,
+        flow: conditions.flow,
+        gravity: conditions.gravity,
+        selected_pillar: conditions.selected_pillar
+          ? BACKEND_PILLARS[conditions.selected_pillar] ?? conditions.selected_pillar
+          : undefined,
+      }),
     });
 
     if (!response.ok) {

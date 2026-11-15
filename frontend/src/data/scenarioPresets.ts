@@ -9,6 +9,12 @@ import {
 } from "../Models/scenario";
 
 export const MATERIALS_CATALOG: Record<MaterialId, MaterialSpec> = {
+  cellulose: {
+    id: "cellulose", shortName: "Cellulose",
+    name: {en: "Cellulose (paper / Kimwipes)", es: "Celulosa (papel / Kimwipes)"},
+    subtitle: {en: "Source-linked paper and tissue experiments", es: "Experimentos de papel y tejido con fuentes"},
+    baseLoi0gPct: NaN, earthTest1LoiPct: NaN,
+  },
   pmma: {
     id: "pmma",
     shortName: "PMMA",
@@ -193,7 +199,7 @@ export const GRAVITY_QUICK_STOPS = [
 const CALIBRATED_LOI_ANCHORS: {
   psi: number;
   g: number;
-  loi: Record<MaterialId, number>;
+  loi: Record<Exclude<MaterialId, "cellulose">, number>;
 }[] = [
   { psi: 10.2, g: 0.17, loi: { pmma: 16.6, sibal: 15.4, nomex: 25.1 } }, // Base Lunar Artemis
   { psi: 8.2,  g: 0.17, loi: { pmma: 16.9, sibal: 16.0, nomex: 25.5 } }, // Rover Presurizado
@@ -213,6 +219,10 @@ export function evaluateMaterialInAtmosphere(
   conditions: AtmosphereConditions
 ): MaterialEvaluation {
   const spec = MATERIALS_CATALOG[materialId];
+  if (materialId === "cellulose") return {
+    materialId, shortName: spec.shortName, minO2ToBurnPct: NaN, earthTest1Pct: NaN,
+    burnMarginPts: NaN, blindSpotPts: NaN, burns: false, available: false,
+  };
   const { o2, pressurePsi, airflowCms, gravityG } = conditions;
 
   // Efecto de curva en "U" del flujo de ventilación respecto a 10.0 cm/s

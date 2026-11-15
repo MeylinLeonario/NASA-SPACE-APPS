@@ -1,11 +1,14 @@
 'use client';
 
+import {useT} from '../../src/i18n/useT';
 import {useEffect, useRef, useState} from 'react';
-import {Download, FlaskConical, ShieldCheck} from 'lucide-react';
+import {Download} from 'lucide-react';
+import {useScenario} from '../../src/context/ScenarioContext';
+import {MATERIALS_CATALOG} from '../../src/data/scenarioPresets';
 import OODEvidence from './ood-evidence';
 import OODGravityCurve, {type CurveConditions} from './ood-gravity-curve';
 import {downloadJSON} from './ood-download';
-import {modelLabels, PredictionCard, propertyLabels, type Result, ValidationResults} from './ood-results';
+import {modelLabels, PredictionCard, propertyLabels, type Result} from './ood-results';
 
 type Coverage = {
   observations: number; gravity_levels: number[]; prediction_eligible: boolean;
@@ -17,9 +20,13 @@ type Status = {
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
-export type InitialConditions = {gravity: number; oxygen: number; pressureKpa: number; airflow: number};
+export type InitialConditions = {material?: string; gravity: number; oxygen: number; pressureKpa: number; airflow: number};
 
 export default function OODPanel({token, initialConditions}: {token: string; initialConditions?: InitialConditions}) {
+  const t = useT();
+
+  const {lang, selectedMaterial, setSelectedMaterial} = useScenario();
+  const en = lang === 'en';
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -31,12 +38,9 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
   const [cohort, setCohort] = useState('0');
   const [model, setModel] = useState('gpr');
   const [exploratory, setExploratory] = useState(false);
-  const [holdout, setHoldout] = useState('');
-  const [property, setProperty] = useState('all');
+  const [showCurve, setShowCurve] = useState(false);
   const [result, setResult] = useState<Result | null>(null);
-  const [validation, setValidation] = useState<Result[]>([]);
   const activeRequest = useRef<AbortController | null>(null);
-  const activeRequestType = useRef<'prediction' | 'validation' | null>(null);
   const form = useRef<HTMLFormElement>(null);
   const headers = {'Content-Type': 'application/json', ...(token ? {Authorization: `Bearer ${token}`} : {})};
 
@@ -60,27 +64,24 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
     setBusy(false);
     setError('');
     setResult(null);
-    setValidation([]);
-    setProperty('all');
+
     return () => activeRequest.current?.abort();
-  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, token, exploratory]);
+  }, [gravity, oxygen, pressure, airflow, temperature, cohort, model, token, exploratory, selectedMaterial]);
 
-  useEffect(() => {
-    if (activeRequestType.current === 'validation') {
-      activeRequest.current?.abort();
-      setBusy(false);
-    }
-    setValidation([]);
-  }, [holdout]);
+  useEffect(() => { setShowCurve(false); }, [oxygen, pressure, airflow, temperature, cohort, model, token, exploratory, selectedMaterial]);
 
-  const pendingReview = status?.unreviewed_observations || 0;
-  const cohortOptions = (exploratory ? status?.exploratory_cohorts : status?.cohorts) || [];
-  const selected = cohortOptions[Number(cohort)];
+  const sourceOptions = [...(status?.cohorts || []), ...(status?.exploratory_cohorts || [])].filter(item => Object.values(item.coverage).some(output => output.prediction_eligible));
+  const cohortOptions = sourceOptions.filter((item, index) =>
+    Object.values(item.coverage).some(output => output.prediction_eligible) &&
+    item.fuel.toLowerCase().includes(selectedMaterial) &&
+    sourceOptions.findIndex(other => other.fuel === item.fuel && other.configuration === item.configuration && other.temperature_available === item.temperature_available) === index
+  );
+  const selected = cohortOptions[Number(cohort)] || cohortOptions[0];
   const coverage = selected?.coverage || {};
   const availableProperties = Object.values(coverage).some(value => value.prediction_eligible);
-  const validationLevels = [...new Set(Object.values(coverage).flatMap(value => value.folds.map(fold => fold.gravity_g)))].sort((a, b) => a - b);
-  const eligibleLevel = Object.values(coverage).some(value => value.folds.some(fold => fold.gravity_g === Number(holdout) && fold.eligible));
-  const ready = !!selected && !!status?.dependencies_ready && availableProperties && (!selected.temperature_available || !!temperature);
+  const reviewed = !!selected && !!status?.cohorts.some(item => item.fuel === selected.fuel && item.configuration === selected.configuration && item.temperature_available === selected.temperature_available && Object.values(item.coverage).some(output => output.prediction_eligible));
+  const needsOptIn = !reviewed && !exploratory;
+  const ready = !needsOptIn && !!selected && !!status?.dependencies_ready && availableProperties && (!selected.temperature_available || !!temperature);
 
   const validCurveInputs = oxygen.trim() !== '' && pressure.trim() !== '' && airflow.trim() !== '' &&
     [Number(oxygen),Number(pressure),Number(airflow)].every(Number.isFinite) && Number(oxygen)>=0 && Number(oxygen)<=100 && Number(pressure)>=.001 && Number(airflow)>=0 &&
@@ -91,26 +92,24 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
   } : null;
   const curveProperties = Object.entries(coverage).filter(([,value])=>value.prediction_eligible).map(([name])=>name);
 
-  async function run(validate = false) {
-    if ((validate && exploratory) || !selected || !form.current?.reportValidity()) return;
+  async function run() {
+    if (!ready || !selected || !form.current?.reportValidity()) return;
     activeRequest.current?.abort();
     const controller = new AbortController();
     activeRequest.current = controller;
-    activeRequestType.current = validate ? 'validation' : 'prediction';
     setBusy(true);
     setError('');
     setResult(null);
-    setValidation([]);
     const payload = {
       data_mode: exploratory ? 'exploratory' : 'reviewed',
       gravity_g: gravity, oxygen_pct: Number(oxygen), pressure_kpa: Number(pressure), airflow_cm_s: Number(airflow),
       temperature_k: selected.temperature_available ? Number(temperature) : null,
       fuel: selected.fuel, configuration: selected.configuration,
-      holdout_g: validate ? Number(holdout) : null,
+      holdout_g: null,
     };
     try {
-      const responses = await Promise.all((validate ? ['gpr', 'boosting'] : [model]).map(async candidate => {
-        const response = await fetch(`/api/ood/${validate ? 'validate' : 'predict'}`, {
+      const responses = await Promise.all([model].map(async candidate => {
+        const response = await fetch('/api/ood/predict', {
           method: 'POST', headers, signal: controller.signal, body: JSON.stringify({...payload, model: candidate}),
         });
         const data = await response.json();
@@ -118,8 +117,8 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
         return data as Result;
       }));
       if (!controller.signal.aborted) {
-        if (validate) setValidation(responses);
-        else setResult(responses[0]);
+        setResult(responses[0]);
+        setShowCurve(true);
       }
     } catch (reason) {
       if (!controller.signal.aborted) {controller.abort(); setError(String(reason));}
@@ -128,91 +127,54 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
     }
   }
 
-  async function downloadSchema() {
-    try {
-      const response = await fetch('/api/ood/schema', {headers});
-      const data = await response.json();
-      if (!response.ok) throw Error(data.error?.message || 'Dataset schema unavailable');
-      downloadJSON('combustion-observations.schema.json', data);
-    } catch (reason) {setError(String(reason));}
-  }
-
   return <section className="panel ood-panel" aria-labelledby="ood-title" aria-busy={busy}>
-    <div className="ood-heading"><div><span className="eyebrow">GRAVITY GENERALIZATION LAB</span>
-      <h3 id="ood-title">Predict fire behaviour at gravities never tested</h3>
-      <p>Explore what the evidence supports across gravity levels.</p></div>
-      <span className={`tag ${status?.reviewed_direct_observations ? '' : 'neutral'}`}><ShieldCheck size={12}/> {status?.reviewed_direct_observations ? 'Reviewed observations loaded' : pendingReview ? `${pendingReview} observations awaiting review` : 'Awaiting experimental data'}</span>
-    </div>
-    <div className="ood-gravity"><label htmlFor="ood-gravity">Gravitational acceleration <output htmlFor="ood-gravity">{gravity.toFixed(3)} g</output></label>
-      <input id="ood-gravity" type="range" min="0" max="1" step="0.001" value={gravity} onChange={event => setGravity(Number(event.target.value))}/>
-      <div className="ood-references">{[['Orbit', 0], ['Moon', .165], ['Mars', .38], ['Earth', 1]].map(([name, value]) =>
-        <button type="button" className={`ood-reference ${gravity === value ? 'selected' : ''}`} aria-pressed={gravity === value} key={name} onClick={() => setGravity(Number(value))}>{name}<small>{value} g</small></button>)}</div>
-      <p>g is relative to 9.80665 m/s². An unmeasured gravity inside the training range is interpolation; joint OOD support requires separate evidence.</p>
-    </div>
-    <details open><summary>Scientific Extrapolation &amp; OOD Generalization</summary>
-      {error && <div className="alert" role="alert">{error}</div>}
-      {!status && !error && <p role="status">Loading scientific data availability…</p>}
-      {status && <>
-        {!status.reviewed_direct_observations && <div className="ood-empty"><FlaskConical size={26}/><div>
-          <h4>{pendingReview ? 'Measurements extracted; scientific review pending.' : 'Bring observations, then test generalization.'}</h4><p>{status.reason}</p>
-          {pendingReview ? <><p>Review the imported observations against their PDF pages, table rows, source notes, and exclusions. Extraction does not establish scientific validation.</p><p>The paper bundle includes an extraction audit and a CSV for inspection. Approve compatible records in the local dataset only after scientific review, then reload this page.</p></> : <ol><li>Prepare run-level measurements with citations, units, and dependency groups.</li><li>Review fuel, geometry, and provenance before marking observations as reviewed.</li><li>Save the dataset as combustion-observations.json in the backend data directory.</li></ol>}
-          <div className="action-row">{!pendingReview && <button type="button" className="button secondary" onClick={() => downloadJSON('combustion-observations.json', {schema_version: 1, observations: []})}><Download size={14}/> Empty dataset template</button>}
-            <button type="button" className="button secondary" onClick={() => void downloadSchema()}>Download field schema</button></div>
-        </div></div>}
-        {!status.dependencies_ready && <p className="ood-warning">Scientific dependencies are missing. Install the science optional dependencies before fitting models.</p>}
-        {!!status.exploratory_cohorts?.length && pendingReview > 0 && <div className="ood-exploratory">
-          <label className="ood-mode-toggle"><input type="checkbox" checked={exploratory} onChange={event => {
-            const nextOptions = event.target.checked ? status.exploratory_cohorts || [] : status.cohorts;
-            const firstEligible = nextOptions.findIndex(item => Object.values(item.coverage).some(output => output.prediction_eligible));
-            setExploratory(event.target.checked); setCohort(String(Math.max(0, firstEligible))); setHoldout(''); setTemperature('');
-          }}/><span>Use extracted observations for exploratory estimates</span></label>
-          <p>Explicit opt-in: includes direct observations whose transcription is pending scientific review. Estimates are not experimentally validated. This does not approve records or enable scientific validation.</p>
-          {exploratory && <strong role="status">Exploratory mode active · unreviewed source transcriptions</strong>}
-        </div>}
-        <form ref={form} onSubmit={event => {event.preventDefault(); void run();}}>
-          <div className="ood-controls">
-            <label>Regression model<select value={model} onChange={event => setModel(event.target.value)}>
-              {Object.entries(modelLabels).map(([key, label]) => <option key={key} value={key}>{label}{key === 'gpr' ? ' · Matérn 3/2' : ''}</option>)}
-              <option disabled>Physics-guided GPR · baseline unavailable</option></select></label>
-            <label>Fuel / experimental configuration<select value={cohort} onChange={event => {setCohort(event.target.value); setHoldout(''); setTemperature('');}} disabled={!cohortOptions.length}>
-              {!cohortOptions.length && <option value="0">{exploratory ? 'No compatible extracted cohort available' : 'No reviewed cohort available'}</option>}
-              {cohortOptions.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}{Object.values(value.coverage).some(output => output.prediction_eligible) ? ' · estimates available' : ' · observations only'}</option>)}</select></label>
-            <label>Oxygen (%)<input type="number" required min="0" max="100" step="any" value={oxygen} onChange={event => setOxygen(event.target.value)}/></label>
-            <label>Pressure (kPa)<input type="number" required min="0.001" step="any" value={pressure} onChange={event => setPressure(event.target.value)}/></label>
-            <label>Airflow (cm/s)<input type="number" required min="0" step="any" value={airflow} onChange={event => setAirflow(event.target.value)}/></label>
-            {selected?.temperature_available && <label>Initial temperature (K)<input type="number" required min="1" step="any" value={temperature} onChange={event => setTemperature(event.target.value)}/></label>}
-          </div>
-          {selected && <div className="ood-coverage"><h4>Evidence available for this cohort</h4><div className="ood-results">{Object.entries(coverage).map(([key, value]) => <div className="ood-coverage-item" key={key}>
-            <strong>{propertyLabels[key]}</strong><small>{value.observations} observations · {value.gravity_levels.length} gravity levels</small>
-            <span>{value.prediction_eligible ? exploratory ? 'Eligible for exploratory fitting · unvalidated' : 'Eligible for fitting · not a validation claim' : value.observations ? 'Measurements available · insufficient gravity coverage or rows for fitting' : 'No measured values available'}</span></div>)}</div></div>}
-          {selected?.observed_ranges && <div className="ood-condition-ranges"><h4>Recorded input coverage for this configuration</h4><p>These ranges describe the observations. Keeping each input within its range does not establish joint support.</p><div className="ood-badges">{Object.entries(selected.observed_ranges).map(([field, range]) => <span className="tag neutral" key={field}>{({oxygen_pct: 'Oxygen (%)', pressure_kpa: 'Pressure (kPa)', airflow_cm_s: 'Airflow (cm/s)', temperature_k: 'Temperature (K)'} as Record<string,string>)[field]}: {range[0]}{range[0] !== range[1] ? ` to ${range[1]}` : ' only'}</span>)}</div></div>}
-          <button className="button primary" disabled={!ready || busy}>{busy ? 'Computing…' : 'Estimate supported properties'}</button>
-          {selected && !availableProperties && <p>Observations-only configuration: inspect its measurements below. Estimation requires at least three compatible rows across two gravity levels per output; that minimum does not establish scientific sufficiency.</p>}
-        </form>
-        {selected && !availableProperties && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token} observationsOnly/>}
-        <p className="small-note">Trees have limited ability to extrapolate trends. GPR outputs are fitted independently. Physics-guided GPR requires a documented, applicable physical baseline; no model guarantees extrapolation.</p>
-        {availableProperties && <OODGravityCurve conditions={curveConditions} properties={curveProperties} gravity={gravity} onGravityChange={setGravity} onAirflowChange={setAirflow} token={token}/>}
-        {result && <div aria-live="polite">{result.data_mode === 'exploratory' && <div className="alert"><strong>Exploratory estimate · not experimentally validated</strong><p>{result.warning}</p></div>}<p>{result.reason}</p>{Object.entries(result.unavailable_outputs || {}).map(([key, reason]) => <p className="ood-warning" key={key}>{propertyLabels[key]}: {reason}</p>)}{Object.keys(result.results).length > 0 && <>
-          <div className="ood-result-toolbar"><label>Properties<select value={property} onChange={event => setProperty(event.target.value)}><option value="all">Compare supported properties</option>{Object.keys(result.results).map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}</select></label>
-            <button type="button" className="button secondary" onClick={() => downloadJSON('ood-prediction.json', result)}><Download size={14}/> Export prediction</button></div>
-          <div className="ood-results">{Object.entries(result.results).filter(([key]) => property === 'all' || property === key).map(([key, estimate]) => <PredictionCard key={key} name={key} estimate={estimate}/>)}</div>
-        </>}</div>}
-        <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
-          <p>Inspect the recorded observations at each gravity and preview which rows remain after related campaign groups are excluded. Reviewed data and an eligible split are required to compare model predictions with held-out measurements.</p>
-          <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={!validationLevels.length} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · inspect observations; validation unavailable'}</option>)}</select></label>
-            <button type="button" className="button secondary" disabled={exploratory || !ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
-          {exploratory && <p className="ood-warning">You can inspect observations in exploratory mode. Scientific validation requires reviewed observations and independent held-out groups.</p>}
-          {!validationLevels.length && <p>Validation unavailable: this cohort has no reviewed direct measurements to hold out.</p>}
-          {holdout !== '' && !eligibleLevel && <p>Validation unavailable at this level: after excluding related groups, no output retains at least three training observations across two other gravity levels.</p>}
-          {selected && availableProperties && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token}/>}
-          {!!validation.length && <><button type="button" className="button secondary" onClick={() => downloadJSON('ood-held-out-validation.json', validation)}><Download size={14}/> Export validation</button><ValidationResults results={validation}/></>}
+    <h2 id="ood-title" className="text-xl font-bold">{t(en ? 'Explore an experiment in 3 steps' : 'Explora un experimento en 3 pasos')}</h2>
+    <p>{t(en ? 'Start with a material, choose a source-backed experiment, then estimate its supported properties.' : 'Parte del material, elige un experimento con fuentes y estima las propiedades disponibles.')}</p>
+    {error && <div className="alert" role="alert">{t(error)}</div>}
+    {!status && !error && <p role="status">{t(en ? 'Loading available experiments…' : 'Cargando experimentos disponibles…')}</p>}
+    <form ref={form} onSubmit={event => {event.preventDefault(); void run();}}>
+      <fieldset className="lab-step"><legend>1 · {t(en ? 'Material and experiment' : 'Material y experimento')}</legend>
+        <div className="lab-materials" role="group" aria-label={en ? 'Material' : 'Material'}>
+          {Object.values(MATERIALS_CATALOG).map(item => <button key={item.id} type="button" aria-pressed={selectedMaterial === item.id} onClick={() => {setSelectedMaterial(item.id); setCohort('0'); setTemperature('');}}>
+            <strong>{t(item.name[lang])}</strong><small>{t(item.subtitle[lang])}</small>
+          </button>)}
         </div>
-        <details className="ood-provenance"><summary>Dataset provenance</summary><p>SHA-256: <small>{status.dataset_sha256 || 'No observation dataset loaded'}</small></p>
-          {Object.entries(status.provenance_counts).map(([source, count]) => <p key={source}>{source.replaceAll('_', ' ')}: {count} records</p>)}
-          <p>E-FIELD analogs, simulations, and model predictions are excluded. Unreviewed direct observations are included only after explicit exploratory opt-in; reviewed-mode fitting excludes them. Exported results include the exact request, dataset hash, pipeline version, and scientific package versions.</p>
-        </details>
+        {status && !cohortOptions.length && <p role="status">{t(en ? 'No experiment with enough data for prediction is available for this material. Choose cellulose or another material with compatible observations.' : 'Este material no tiene experimentos con datos suficientes para predecir. Elige celulosa u otro material con observaciones compatibles.')}</p>}
+        {!!cohortOptions.length && <label>{t(en ? 'Available experiment' : 'Experimento disponible')}<select value={cohort} onChange={event => {setCohort(event.target.value); setTemperature('');}}>
+          {cohortOptions.map((item, index) => <option key={index} value={index}>{t(item.fuel)} · {t(item.configuration)}</option>)}
+        </select></label>}
+        {selected && <div className="lab-facts">{Object.entries(coverage).filter(([,value]) => value.prediction_eligible).map(([key,value]) => <span key={key}><strong>{t(propertyLabels[key])}</strong> · {t(value.observations)} {t(en ? 'observations' : 'observaciones')} · {t(value.gravity_levels.length)} {t(en ? 'gravity levels' : 'niveles de gravedad')}</span>)}</div>}
+      </fieldset>
+      {selected && <>
+        <fieldset className="lab-step"><legend>2 · {t(en ? 'Conditions to explore' : 'Condiciones que quieres explorar')}</legend>
+          <p>{t(en ? 'These values start with your scenario. They describe the prediction target, not the original measurements.' : 'Estos valores parten de tu escenario. Definen la estimación, no las mediciones originales.')}</p>
+          <label htmlFor="ood-gravity">{t(en ? 'Gravity' : 'Gravedad')}: {t(gravity.toFixed(3))} g</label>
+          <input id="ood-gravity" type="range" min="0" max="1" step="0.001" value={gravity} onChange={event => setGravity(Number(event.target.value))}/>
+          <div className="ood-references">{[['Orbit',0],['Moon',.165],['Mars',.38],['Earth',1]].map(([name,value]) => <button key={name} type="button" aria-pressed={gravity === value} onClick={() => setGravity(Number(value))}>{t(name)} · {t(value)} g</button>)}</div>
+          <div className="ood-controls">
+            <label>{t(en ? 'Oxygen (%)' : 'Oxígeno (%)')}<input type="number" required min="0" max="100" step="any" value={oxygen} onChange={event => setOxygen(event.target.value)}/></label>
+            <label>{t(en ? 'Pressure (kPa)' : 'Presión (kPa)')}<input type="number" required min="0.001" step="any" value={pressure} onChange={event => setPressure(event.target.value)}/></label>
+            <label>{t(en ? 'Airflow (cm/s)' : 'Flujo de aire (cm/s)')}<input type="number" required min="0" step="any" value={airflow} onChange={event => setAirflow(event.target.value)}/></label>
+            {selected.temperature_available && <label>{t(en ? 'Initial temperature (K)' : 'Temperatura inicial (K)')}<input type="number" required min="1" step="any" value={temperature} onChange={event => setTemperature(event.target.value)}/></label>}
+          </div>
+          {selected.observed_ranges && <details><summary>{t(en ? 'Compare with measured conditions' : 'Comparar con las condiciones medidas')}</summary><div className="lab-facts">{Object.entries(selected.observed_ranges).map(([key,range]) => <span key={key}>{t(({oxygen_pct:'Oxygen (%)', pressure_kpa:'Pressure (kPa)', airflow_cm_s:'Airflow (cm/s)', temperature_k:'Temperature (K)'} as Record<string,string>)[key])}: {t(range[0])} – {t(range[1])}</span>)}</div><p>{t(en ? 'A value inside each individual range does not prove the combination was tested.' : 'Estar dentro de cada rango por separado no demuestra que la combinación haya sido probada.')}</p></details>}
+        </fieldset>
+        <fieldset className="lab-step"><legend>3 · {t(en ? 'Estimate and understand the result' : 'Estima y entiende el resultado')}</legend>
+          {!reviewed && <div className="ood-exploratory"><label className="ood-mode-toggle"><input type="checkbox" checked={exploratory} onChange={event => setExploratory(event.target.checked)}/><span>{t(en ? 'Use extracted observations for exploratory estimates' : 'Usar observaciones extraídas para estimaciones exploratorias')}</span></label><p>{t(en ? 'These measurements await scientific review. Enable this option to explore them; results remain unvalidated.' : 'Estas mediciones esperan revisión científica. Activa esta opción para explorarlas; los resultados no están validados.')}</p></div>}
+          <details><summary>{t(en ? 'Model options' : 'Opciones del modelo')}</summary><label>{t(en ? 'Regression model' : 'Modelo de regresión')}<select value={model} onChange={event => setModel(event.target.value)}>{Object.entries(modelLabels).map(([key,label]) => <option key={key} value={key}>{t(label)}</option>)}</select></label></details>
+          {!status?.dependencies_ready && <p role="status">{t(en ? 'The prediction service is missing its scientific dependencies.' : 'Al servicio de predicción le faltan sus dependencias científicas.')}</p>}
+          {selected.temperature_available && !temperature && <p>{t(en ? 'Enter the initial temperature to continue.' : 'Ingresa la temperatura inicial para continuar.')}</p>}
+          <button className="button primary" disabled={!ready || busy || !validCurveInputs}>{t(busy ? (en ? 'Computing…' : 'Calculando…') : (en ? 'Estimate supported properties' : 'Estimar propiedades disponibles'))}</button>
+          <p className="small-note">{t(en ? 'Research estimates only. They do not certify safety or determine whether a fire will extinguish.' : 'Estimaciones para investigación. No certifican seguridad ni determinan si un fuego se extinguirá.')}</p>
+        </fieldset>
       </>}
-      <div className="ood-safety"><ShieldCheck size={15}/><span>Research exploration only. Unvalidated predictions are insufficient for spacecraft fire-safety certification.</span></div>
-    </details>
+    </form>
+    {result && <section className="lab-result" aria-live="polite"><h3>{t(en ? 'Your result' : 'Tu resultado')}</h3><p>{t(result.warning || result.reason)}</p>
+      <div className="ood-results">{Object.entries(result.results).map(([key,estimate]) => <PredictionCard key={key} name={key} estimate={estimate}/>)}</div>
+      {Object.entries(result.unavailable_outputs || {}).map(([key,reason]) => <p key={key}>{t(propertyLabels[key])}: {t(reason)}</p>)}
+      <button type="button" onClick={() => downloadJSON('ood-prediction.json',result)} className="button secondary"><Download size={14}/>{t(en ? 'Download result' : 'Descargar resultado')}</button>
+    </section>}
+    {showCurve && <OODGravityCurve conditions={curveConditions} properties={curveProperties} gravity={gravity} onGravityChange={setGravity} onAirflowChange={setAirflow} token={token}/>}
+    {selected && <details className="lab-step"><summary>{t(en ? 'View measurements and paper sources' : 'Ver mediciones y fuentes del paper')}</summary><OODEvidence key={`${selected.fuel}/${selected.configuration}`} cohort={selected} gravity={null} dataMode={reviewed ? 'reviewed' : 'exploratory'} token={token}/></details>}
   </section>;
 }

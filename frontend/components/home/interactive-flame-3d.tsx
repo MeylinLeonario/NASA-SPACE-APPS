@@ -1,6 +1,7 @@
 // frontend/components/home/interactive-flame-3d.tsx
 'use client';
 
+import {useT} from '../../src/i18n/useT';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { Wind, Zap } from 'lucide-react';
 import { FLAME_PHYSICS_STOPS } from '../../data/mocks/flare.mock';
@@ -22,6 +23,8 @@ export default function InteractiveFlame3D({
   gravityG,
   onGravityChange,
 }: InteractiveFlame3DProps) {
+  const t = useT();
+
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const targetGRef = useRef<number>(gravityG);
   const smoothGRef = useRef<number>(gravityG);
@@ -426,11 +429,9 @@ export default function InteractiveFlame3D({
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div>
           <span className="block font-mono text-[11px] font-bold uppercase tracking-[0.2em] text-sky-400">
-            PRUÉBALO AHORA
-          </span>
+            {" "}{t("PRUÉBALO AHORA")}{" "}</span>
           <h3 className="mt-1 font-display text-lg font-bold text-white">
-            Arrastra la gravedad y mira cómo cambia la llama
-          </h3>
+            {" "}{t("Arrastra la gravedad y mira cómo cambia la llama")}{" "}</h3>
         </div>
 
         {/* Botones de física experimental (Ventilación ISS y Viento Iónico E-FIELD) */}
@@ -438,7 +439,7 @@ export default function InteractiveFlame3D({
           <button
             type="button"
             onClick={() => setAirflowCms(airflowCms > 0 ? 0 : 10)}
-            title="Alternar flujo de ventilación de cabina (10 cm/s vs 0 cm/s)"
+            title={t("Alternar flujo de ventilación de cabina (10 cm/s vs 0 cm/s)")}
             className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 font-mono text-[10px] font-semibold transition-all ${
               airflowCms > 0
                 ? 'border-sky-500/50 bg-sky-500/15 text-sky-300'
@@ -446,12 +447,12 @@ export default function InteractiveFlame3D({
             }`}
           >
             <Wind className="h-3 w-3" />
-            {airflowCms > 0 ? '10 cm/s' : 'Sin flujo'}
+            {t(airflowCms > 0 ? '10 cm/s' : 'Sin flujo')}
           </button>
           <button
             type="button"
             onClick={() => setEFieldActive(!eFieldActive)}
-            title="Activar campo eléctrico E-FIELD (10 kV) que arrastra iones emulando gravedad parcial"
+            title={t("Activar campo eléctrico E-FIELD (10 kV) que arrastra iones emulando gravedad parcial")}
             className={`inline-flex items-center gap-1 rounded-lg border px-2.5 py-1 font-mono text-[10px] font-semibold transition-all ${
               eFieldActive
                 ? 'border-amber-400/60 bg-amber-400/15 text-amber-300 shadow-[0_0_12px_rgba(251,191,36,0.25)]'
@@ -459,8 +460,7 @@ export default function InteractiveFlame3D({
             }`}
           >
             <Zap className="h-3 w-3" />
-            E-FIELD
-          </button>
+            {" "}{t("E-FIELD")}{" "}</button>
         </div>
       </div>
 
@@ -477,12 +477,12 @@ export default function InteractiveFlame3D({
         {/* Píldoras de telemetría en esquina superior izquierda */}
         <div className="pointer-events-none absolute left-3.5 top-3.5 flex flex-col gap-1.5">
           <div className="rounded-lg border border-slate-800/90 bg-[#0b1120]/85 px-2.5 py-1 font-mono text-[11px] text-slate-300 backdrop-blur-md transition-all">
-            O₂ mín (PMMA):{' '}
-            <strong className="text-sky-400">{currentInfo.loi}%</strong>
+            {" "}{t("O₂ mín (PMMA):")}{" "}{" "}{t(' ')}{" "}
+            <strong className="text-sky-400">{t(currentInfo.loi)}%</strong>
           </div>
           <div className="rounded-lg border border-slate-800/90 bg-[#0b1120]/85 px-2.5 py-1 font-mono text-[11px] text-slate-300 backdrop-blur-md transition-all">
-            Propagación:{' '}
-            <strong className="text-amber-400">{currentInfo.spread} mm/s</strong>
+            {" "}{t("Propagación:")}{" "}{" "}{t(' ')}{" "}
+            <strong className="text-amber-400">{t(currentInfo.spread)} {" "}{t("mm/s")}{" "}</strong>
           </div>
         </div>
 
@@ -497,13 +497,13 @@ export default function InteractiveFlame3D({
                 : 'border-orange-500/40 bg-orange-500/10 text-orange-300'
             }`}
           >
-            {eFieldActive && gravityG < 0.22
+            {t(eFieldActive && gravityG < 0.22
               ? '⚡ Viento iónico (~0.22g eq.)'
               : currentInfo.effectiveG < 0.15
               ? 'Difusión molecular'
               : currentInfo.effectiveG < 0.5
               ? 'Convección parcial'
-              : 'Flotabilidad natural'}
+              : 'Flotabilidad natural')}
           </span>
         </div>
       </div>
@@ -517,7 +517,7 @@ export default function InteractiveFlame3D({
           step={0.01}
           value={gravityG}
           onChange={(e) => onGravityChange(parseFloat(e.target.value))}
-          aria-label="Ajustar gravedad entre 0g y 1g"
+          aria-label={t("Ajustar gravedad entre 0g y 1g")}
           className="flare-slider"
         />
 
@@ -536,13 +536,13 @@ export default function InteractiveFlame3D({
                     : 'border-slate-800/90 bg-[#070c18] text-slate-400 hover:border-slate-700 hover:text-slate-200'
                 }`}
               >
-                {stop.id === 'orbit'
+                {t(stop.id === 'orbit'
                   ? '0g Órbita'
                   : stop.id === 'moon'
                   ? '0.17g Luna'
                   : stop.id === 'mars'
                   ? '0.38g Marte'
-                  : '1g Tierra'}
+                  : '1g Tierra')}
               </button>
             );
           })}
@@ -553,14 +553,13 @@ export default function InteractiveFlame3D({
       <div className="mt-5 border-t border-slate-800/80 pt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <strong className="font-mono text-base font-bold text-white transition-all">
-            {currentInfo.title}
+            {t(currentInfo.title)}
           </strong>
           <span className="text-[11px] text-slate-500">
-            Ilustración física interactiva, no una imagen real
-          </span>
+            {" "}{t("Ilustración física interactiva, no una imagen real")}{" "}</span>
         </div>
         <p className="mt-1.5 text-xs leading-relaxed text-slate-300">
-          {currentInfo.closest.description}
+          {t(currentInfo.closest.description)}
         </p>
       </div>
     </div>
