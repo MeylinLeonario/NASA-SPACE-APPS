@@ -8,6 +8,7 @@ import {
 import { AtmosphereTunerPanel } from "./AtmosphereTunerPanel";
 import { FlameCanvasSvg } from "./FlameCanvasSvg";
 import { HabitatSelectorGrid } from "./HabitatSelectorGrid";
+import { DecisionReportCard } from "../copilot/DecisionReportCard";
 
 export const Step1ScenarioView: React.FC = () => {
   const t = useT();
@@ -197,6 +198,11 @@ export const Step1ScenarioView: React.FC = () => {
         <div className="lg:col-span-4">
           <AtmosphereTunerPanel />
         </div>
+      </div>
+
+      {/* Informe de decisión del Motor 4 para el hábitat, material y atmósfera elegidos */}
+      <div className="mt-6">
+        <DecisionReportCard />
       </div>
     </section>
   );
