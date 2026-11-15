@@ -1,14 +1,17 @@
-# The backend project uses the repository root. The Next.js project uses frontend/.
-.git/
-.venv/
-work/
-tests/
-evaluation/
-docs/*
-!docs/curated_metadata.json
+# Shared by the backend (root) and frontend (frontend/) Vercel projects.
+# Anchor local folders so frontend/data and frontend/src/data stay included.
+/.git/
+/.venv/
+/work/
+/tests/
+/evaluation/
+/docs/*
+!/docs/curated_metadata.json
+/frontend/node_modules/
+/frontend/.next/
 **/__pycache__/
 **/*.pyc
-.pytest_cache/
-data/
-requirements.lock.txt
+/.pytest_cache/
+/data/
+/requirements.lock.txt
 # Keep backend/, datasets/ and papers/: API routes read these at runtime.

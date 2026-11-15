@@ -8,7 +8,7 @@ repositorio no los migra a funciones efímeras de Vercel.
 
 Para un proyecto FastAPI separado usa la raíz del repositorio como Root Directory
 y el preset FastAPI. `pyproject.toml` declara el entrypoint. `.vercelignore`
-excluye el frontend, pruebas y archivos locales, conservando backend, catálogo,
+excluye los artefactos del frontend, pruebas y archivos locales, conservando backend, catálogo,
 observaciones y PDF. La instalación básica no incluye ChromaDB ni sus dependencias
 de inferencia vectorial; la recuperación por palabras clave y el catálogo siguen
 disponibles, y la generación requiere claves y habilitación en el backend.
