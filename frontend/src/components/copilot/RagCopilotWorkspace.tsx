@@ -143,6 +143,19 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
     };
   }, [loading]);
 
+  useEffect(() => {
+    const handleCopilotQuery = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        // Ejecuta la consulta automáticamente al abrirse
+        void executeQuestion(customEvent.detail);
+      }
+    };
+
+    window.addEventListener('triggerCopilot', handleCopilotQuery);
+    return () => window.removeEventListener('triggerCopilot', handleCopilotQuery);
+  }, [lang, includeScenarioContext, activeHabitat, conditions, selectedMaterial]);
+
   const suggestedQuestions = useMemo(
     () =>
       getDynamicSuggestedQuestions(
@@ -282,7 +295,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
           : 'w-full'
       }`}
     >
-      {/* 1. CABECERA CON ESTADO DE CONEXIÓN AL BACKEND Y SUPABASE */}
+      {/* 1. CABECERA LIMPIA (Sin indicadores que interfieran con el botón de cerrar) */}
       <div className="flex items-center justify-between border-b border-slate-800/90 bg-[#080F1E] px-5 py-3.5 rounded-t-2xl">
         <div className="flex items-center gap-3">
           <span className="flex h-9 w-9 items-center justify-center rounded-xl border border-sky-500/40 bg-gradient-to-br from-sky-500/20 to-blue-600/20 text-sky-400 shadow-inner">
@@ -302,6 +315,9 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             </p>
           </div>
         </div>
+        
+        {/* Aquí iba el indicador DB: PSI LOCAL. Lo quitamos para dejar el espacio libre a la "X". */}
+      </div>
 
         {/* Indicador de Fuente de Datos (Supabase vs JSON Local) y Estado del LLM */}
         <div className="flex flex-col items-end gap-1">
@@ -327,7 +343,6 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             </span>
           )}
         </div>
-      </div>
 
       {/* 2. BARRA DE CONTEXTO DEL ESCENARIO Y MATERIAL PRE-CARGADO */}
       <div className="border-b border-slate-800/80 bg-[#0D172A] px-4 py-3">
