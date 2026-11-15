@@ -309,3 +309,4 @@ def compare_inter_investigations(inv_a: Dict[str, Any], inv_b: Dict[str, Any]) -
             "shared_facility": inv_a.get("facility") if same_facility else None
         }
     }
+
