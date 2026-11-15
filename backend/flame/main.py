@@ -205,7 +205,6 @@ def create_app(config: Settings | None = None):
             "ood_status": ood_status(obs_path())
         }
 
-    @app.post('/api/motor1/match-missions')  # <-- Ruta añadida para corregir el 404
     @app.post('/api/motor1/match')
     @app.post('/api/rank')
     def motor1_rank(req: HabitatScenarioRequest):
