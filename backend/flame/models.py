@@ -101,15 +101,29 @@ class GeneratedConflict(BaseModel):
     citation_ids: list[str] = Field(min_length=2)
     evidence: list[ConflictQuote] = Field(min_length=2)
 
+def _summary_required(schema, *_):
+    # Keep a default for code and tests, but tell the model the field is mandatory.
+    if 'executive_summary' not in schema.setdefault('required', []):
+        schema['required'].append('executive_summary')
+
 class GeneratedAnswer(BaseModel):
+    model_config = ConfigDict(json_schema_extra=_summary_required)
     claims: list[AnswerClaim]
+    # Counter-intuitive microgravity fire behavior relevant to the question, if the evidence states one.
+    physical_alert: AnswerClaim | None = None
+    # One or two sentences: the bottom line and how strong the evidence is. Restates claims only.
+    executive_summary: str = ''
     limitations: list[str]
     conflicts: list[GeneratedConflict] = []
     insufficient_evidence: bool
 
 class ChatResponse(BaseModel):
     answer: str
+    executive_summary: str | None = None
+    language: str | None = None
     claims: list[AnswerClaim] = []
+    physical_alert: str | None = None
+    physical_alert_claim: AnswerClaim | None = None
     citations: list[Citation]
     limitations: list[str]
     conflicts: list[str] = []
