@@ -19,9 +19,10 @@ desaparecer. La carpeta de PDF incluida es de solo lectura; las cargas necesitan
 almacenamiento externo. No se incluye una migración a una base de datos remota.
 No configures `DATA_DIR` con una ruta del código desplegado.
 
-ChromaDB es opcional (`pip install -e '.[semantic]'`) y los modelos científicos
-también (`.[science]`). El perfil básico no permite estimaciones de los modelos;
-los endpoints de estado y evidencia siguen disponibles. No instales el lock
+NumPy, SciPy y scikit-learn se instalan por defecto para habilitar los modelos
+científicos en Vercel. El extra `science` se conserva por compatibilidad con los
+comandos locales anteriores. ChromaDB sigue siendo opcional
+(`pip install -e '.[semantic]'`). No instales el lock
 local completo en Vercel: vuelve a incluir las dependencias pesadas. Si necesitas
 todas estas funciones con persistencia, usa el servidor descrito a continuación.
 
