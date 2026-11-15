@@ -1,7 +1,8 @@
-"""Opt-in OpenAI calls, persistent embedding cache, isolated Chroma collections."""
+"""Opt-in OpenAI/Anthropic calls, persistent embedding cache, isolated Chroma collections."""
 import hashlib
 import json
 import logging
+import re
 from openai import OpenAI
 from .store import Store
 
@@ -86,6 +87,8 @@ class Provider:
         return result['ids'][0]
 
     def structured(self, system, user, schema, operation):
+        if self.cfg.llm_provider == 'anthropic':
+            return self._structured_anthropic(system, user, schema, operation)
         result = self.client.chat.completions.parse(model=self.cfg.openai_model, temperature=0.1,
             messages=[{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
             response_format=schema, max_completion_tokens=2500)
@@ -94,3 +97,36 @@ class Provider:
         if parsed is None:
             raise ValueError('Provider returned no validated structured answer')
         return parsed, usage
+
+    @property
+    def anthropic_client(self):
+        if not self.cfg.enable_paid_api or not self.cfg.anthropic_api_key:
+            raise ValueError('Paid API is disabled or ANTHROPIC_API_KEY is missing')
+        if getattr(self, '_anthropic', None) is None:
+            import anthropic
+            self._anthropic = anthropic.Anthropic(api_key=self.cfg.anthropic_api_key,
+                timeout=self.cfg.openai_timeout_seconds, max_retries=self.cfg.openai_max_retries)
+        return self._anthropic
+
+    def _structured_anthropic(self, system, user, schema, operation):
+        """JSON output validated with the same Pydantic schema used for OpenAI."""
+        instructions = (system + '\n\nReturn ONLY one JSON object that validates against this JSON schema, '
+                        'with no text before or after it:\n' + json.dumps(schema.model_json_schema()))
+        budget = self.cfg.anthropic_max_tokens
+        while True:
+            msg = self.anthropic_client.messages.create(model=self.cfg.anthropic_model,
+                max_tokens=budget, system=instructions,
+                messages=[{'role': 'user', 'content': user}])
+            usage = self.log_usage(operation, self.cfg.anthropic_model, msg.usage.input_tokens, msg.usage.output_tokens)
+            if msg.stop_reason != 'max_tokens':
+                break
+            # Truncated: retry once with a larger budget before giving up.
+            if budget >= 32000:
+                raise ValueError('Provider answer was truncated; raise ANTHROPIC_MAX_TOKENS')
+            budget = min(budget * 2, 32000)
+        # Responses can include reasoning blocks before the text block.
+        text = ''.join(b.text for b in msg.content if getattr(b, 'type', '') == 'text')
+        match = re.search(r'\{.*\}', text, re.S)
+        if not match:
+            raise ValueError('Provider returned no JSON object')
+        return schema.model_validate_json(match.group()), usage

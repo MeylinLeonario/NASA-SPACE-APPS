@@ -113,7 +113,7 @@ def create_app(config: Settings | None = None):
 
     @app.get('/health', response_model=Health)
     def health():
-        return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': bool(cfg.enable_paid_api and cfg.openai_api_key), 'synthesis_model': cfg.openai_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
+        return {'status': 'ok', 'paid_api_enabled': cfg.enable_paid_api, 'synthesis_ready': cfg.synthesis_ready, 'synthesis_model': cfg.synthesis_model, 'embedding_model': cfg.openai_embedding_model, 'consensus': 'manual_import_only'}
 
     from .ood.schema import Query, Dataset, EvidenceQuery, GravitySweepQuery
     from .ood.service import status as ood_status, infer as ood_infer

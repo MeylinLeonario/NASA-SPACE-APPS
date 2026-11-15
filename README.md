@@ -222,3 +222,29 @@ La importación no necesita credenciales de Consensus. Añade los PDF permitidos
 Overview includes a data-gated gravity module with independent Matérn GPR and histogram gradient boosting, grouped leave-one-gravity-out evaluation, per-source errors, and explicit uncertainty limitations. A [source-linked PDF transcription](datasets/papers/README.md) is bundled with 91 compatible-schema rows pending scientific review; reviewed-mode predictions require reviewed compatible observations. An explicit exploratory opt-in can estimate properties from pending direct transcriptions, with unvalidated labels and scientific validation disabled. Import with `python scripts/import_paper_observations.py` after checking its source notes. Physics-guided regression is disabled pending a documented applicable physical baseline. See [dataset schema, API, methods and limitations](docs/ood-generalization.md). Install optional dependencies with `pip install -e '.[science,test]'`.
 
 The gravity module also includes an interactive response chart with source-matched measurement markers, model intervals and Orbit/Moon/Mars/Earth controls. See [PDF acquisition, conversion and validation requirements](docs/pdf-acquisition-and-validation.md) for the local/public-PDF JSON exporter and why converting more text does not automatically supply independent training data.
+
+## Catálogo de PSI en el asistente (rama `lesic`)
+
+El asistente (`/api/chat`) busca en dos fuentes a la vez:
+
+- **Los papers** de `papers/`, como antes, con cita a la página del PDF.
+- **El catálogo de investigaciones de PSI** en `datasets/psi/investigations.json`: 31 investigaciones,
+  61 hallazgos con su fuente y página, 5 estudios en tierra que reutilizaron datos de PSI y 12 definiciones
+  del enunciado (`background.json`). Ver `datasets/psi/CATALOGO.md`.
+
+Cada hallazgo del catálogo es una evidencia más (`psi:BASS-II#3`, `psi:PSI-117`, `fondo:1`) y pasa por la misma
+validación de citas textuales que los papers. La respuesta agrega `physical_alert`: un comportamiento del fuego en
+microgravedad que contradice la intuición terrestre, validado igual que las demás afirmaciones, o `null`.
+
+### Usar Anthropic en vez de OpenAI
+
+En `.env`:
+
+```dotenv
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=tu-clave
+ENABLE_PAID_API=true
+```
+
+Solo cambia la redacción de respuestas. La búsqueda semántica sigue necesitando `OPENAI_API_KEY`; sin ella el
+asistente usa la búsqueda por palabras clave, que funciona sin pagar. Pruebas: `pytest tests/test_catalog_chat.py`.
