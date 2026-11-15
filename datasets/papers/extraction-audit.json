@@ -1,5 +1,5 @@
 {
-  "extraction_version": "papers-transcription-v2",
+  "extraction_version": "papers-transcription-v3",
   "review_status": "pending_scientific_review",
   "sources": [
     {
@@ -102,9 +102,9 @@
       "pages": 10,
       "native_text_characters": 38439,
       "text_method": "native",
-      "records_extracted": 0,
-      "exported_observations": 0,
-      "assessment": "BASS-II confinement experiments; main output points appear in figures. Additional extraction requires digitization with baffle/material conditioning.",
+      "records_extracted": 9,
+      "exported_observations": 9,
+      "assessment": "Nine experimental SIBAL concurrent-flow spread rates manually raster-digitized from Fig. 7a; explicit nominal pressure/oxygen and 7 cm/s imposed flow. Separate baffle types and distances. Overlapping D=3 cm markers excluded.",
       "numerical_candidate_pages": [
         1,
         2,
@@ -120,9 +120,9 @@
       "pages": 13,
       "native_text_characters": 68515,
       "text_method": "native",
-      "records_extracted": 0,
-      "exported_observations": 0,
-      "assessment": "ISS confinement experiments; Table 1 is a test matrix, not an output table. Figures need digitization with baffle and sidedness conditioning.",
+      "records_extracted": 11,
+      "exported_observations": 11,
+      "assessment": "Eleven SIBAL opposed-flow stage measurements manually raster-digitized from Fig. 13 using Table 1 flow settings. Stages share campaign dependencies; no repeated figures counted. Explicit nominal atmosphere; width discrepancy retained for review.",
       "numerical_candidate_pages": [
         1,
         2,
@@ -5968,6 +5968,1188 @@
       "review_status": "pending_scientific_review",
       "exported_observation_id": "pmma-thin-0.5mm-0g-flow25",
       "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-black-D2cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; black anodized aluminum; D=2 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=2 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.83
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-black-D2cm-flow7",
+        "native_marker_pixel": [
+          321,
+          568
+        ],
+        "reported_x": 2,
+        "calibrated_x": 1.997452229299363,
+        "spread_mm_s": 0.83,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-black-D2cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-black-D4cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; black anodized aluminum; D=4 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.95
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-black-D4cm-flow7",
+        "native_marker_pixel": [
+          518,
+          212
+        ],
+        "reported_x": 4,
+        "calibrated_x": 4.005095541401274,
+        "spread_mm_s": 1.95,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-black-D4cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-black-D5cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; black anodized aluminum; D=5 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=5 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.79
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-black-D5cm-flow7",
+        "native_marker_pixel": [
+          616,
+          262
+        ],
+        "reported_x": 5,
+        "calibrated_x": 5.003821656050955,
+        "spread_mm_s": 1.79,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-black-D5cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-reflective-D2cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; reflective polished aluminum; D=2 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=2 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.8
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-reflective-D2cm-flow7",
+        "native_marker_pixel": [
+          321,
+          575
+        ],
+        "reported_x": 2,
+        "calibrated_x": 1.997452229299363,
+        "spread_mm_s": 0.8,
+        "baffle": "reflective polished aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-reflective-D2cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-reflective-D4cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; reflective polished aluminum; D=4 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=4 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 2.16
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-reflective-D4cm-flow7",
+        "native_marker_pixel": [
+          518,
+          147
+        ],
+        "reported_x": 4,
+        "calibrated_x": 4.005095541401274,
+        "spread_mm_s": 2.16,
+        "baffle": "reflective polished aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-reflective-D4cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-reflective-D5cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; reflective polished aluminum; D=5 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=5 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.95
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-reflective-D5cm-flow7",
+        "native_marker_pixel": [
+          616,
+          212
+        ],
+        "reported_x": 5,
+        "calibrated_x": 5.003821656050955,
+        "spread_mm_s": 1.95,
+        "baffle": "reflective polished aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-reflective-D5cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-transparent-D2cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; transparent polycarbonate; D=2 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 0.96
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-transparent-D2cm-flow7",
+        "native_marker_pixel": [
+          321,
+          526
+        ],
+        "reported_x": 2,
+        "calibrated_x": 1.997452229299363,
+        "spread_mm_s": 0.96,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-transparent-D2cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-transparent-D4cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; transparent polycarbonate; D=4 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=4 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.74
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-transparent-D4cm-flow7",
+        "native_marker_pixel": [
+          518,
+          279
+        ],
+        "reported_x": 4,
+        "calibrated_x": 4.005095541401274,
+        "spread_mm_s": 1.74,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-transparent-D4cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "li2020-fig7a-transparent-D5cm-flow7",
+      "source_file": "Effects of Confinement on Flame Spread in Microgravity.pdf",
+      "source_sha256": "3096713e1da5122b0d06235a0194ecc2ccaa0fac0df40d11095241401bfb916a",
+      "pdf_pages": [
+        3,
+        4,
+        6,
+        7,
+        8
+      ],
+      "location": "Fig. 7a; transparent polycarbonate; D=5 cm; flow=7 cm/s",
+      "evidence_role": "primary_experiment_plot",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=5 cm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.63
+      },
+      "transcribed_cells": {
+        "id": "li2020-fig7a-transparent-D5cm-flow7",
+        "native_marker_pixel": [
+          616,
+          313
+        ],
+        "reported_x": 5,
+        "calibrated_x": 5.003821656050955,
+        "spread_mm_s": 1.63,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Spread rate is the slope measured over the middle sample region (4–7 cm); Fig. 7 error bars are 95% confidence intervals and are not converted to sigma."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "li2020-fig7a-transparent-D5cm-flow7",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-black-D4cm-flow7.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; black anodized aluminum; D=4 cm; flow=7.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.24
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-black-D4cm-flow7.3",
+        "native_marker_pixel": [
+          367,
+          238
+        ],
+        "reported_x": 7.3,
+        "calibrated_x": 7.297872340425532,
+        "spread_mm_s": 1.24,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-black-D4cm-flow7.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-black-D4cm-flow10.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; black anodized aluminum; D=4 cm; flow=10.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.26
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-black-D4cm-flow10.3",
+        "native_marker_pixel": [
+          791,
+          214
+        ],
+        "reported_x": 10.3,
+        "calibrated_x": 10.304964539007091,
+        "spread_mm_s": 1.26,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-black-D4cm-flow10.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-black-D3cm-flow6.1",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; black anodized aluminum; D=3 cm; flow=6.1 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 6.1,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.13
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-black-D3cm-flow6.1",
+        "native_marker_pixel": [
+          198,
+          376
+        ],
+        "reported_x": 6.1,
+        "calibrated_x": 6.099290780141844,
+        "spread_mm_s": 1.13,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-black-D3cm-flow6.1",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-black-D3cm-flow7.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; black anodized aluminum; D=3 cm; flow=7.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.19
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-black-D3cm-flow7.3",
+        "native_marker_pixel": [
+          367,
+          301
+        ],
+        "reported_x": 7.3,
+        "calibrated_x": 7.297872340425532,
+        "spread_mm_s": 1.19,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-black-D3cm-flow7.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-black-D3cm-flow10.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; black anodized aluminum; D=3 cm; flow=10.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.25
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-black-D3cm-flow10.3",
+        "native_marker_pixel": [
+          791,
+          225
+        ],
+        "reported_x": 10.3,
+        "calibrated_x": 10.304964539007091,
+        "spread_mm_s": 1.25,
+        "baffle": "black anodized aluminum"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-black-D3cm-flow10.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D3cm-flow6.1",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=3 cm; flow=6.1 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 6.1,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.08
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D3cm-flow6.1",
+        "native_marker_pixel": [
+          198,
+          438
+        ],
+        "reported_x": 6.1,
+        "calibrated_x": 6.099290780141844,
+        "spread_mm_s": 1.08,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D3cm-flow6.1",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D3cm-flow7.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=3 cm; flow=7.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.11
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D3cm-flow7.3",
+        "native_marker_pixel": [
+          367,
+          400
+        ],
+        "reported_x": 7.3,
+        "calibrated_x": 7.297872340425532,
+        "spread_mm_s": 1.11,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D3cm-flow7.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D3cm-flow10.3",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=3 cm; flow=10.3 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10.3,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.14
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D3cm-flow10.3",
+        "native_marker_pixel": [
+          791,
+          363
+        ],
+        "reported_x": 10.3,
+        "calibrated_x": 10.304964539007091,
+        "spread_mm_s": 1.14,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D3cm-flow10.3",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D2cm-flow7.4",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=2 cm; flow=7.4 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 7.4,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.02
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D2cm-flow7.4",
+        "native_marker_pixel": [
+          380,
+          513
+        ],
+        "reported_x": 7.4,
+        "calibrated_x": 7.390070921985815,
+        "spread_mm_s": 1.02,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D2cm-flow7.4",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D2cm-flow8.8",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=2 cm; flow=8.8 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 8.8,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.08
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D2cm-flow8.8",
+        "native_marker_pixel": [
+          584,
+          438
+        ],
+        "reported_x": 8.8,
+        "calibrated_x": 8.836879432624114,
+        "spread_mm_s": 1.08,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D2cm-flow8.8",
+      "missing_required_inputs": []
+    },
+    {
+      "id": "sharma2024-fig13-transparent-D2cm-flow10.5",
+      "source_file": "Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf",
+      "source_sha256": "33e95f76b1d149a6a67075900c30cb3f1585bff525ff7e8652e12fecf222063c",
+      "pdf_pages": [
+        3,
+        4,
+        5,
+        9
+      ],
+      "location": "Fig. 13; transparent polycarbonate; D=2 cm; flow=10.5 cm/s",
+      "evidence_role": "primary_experiment_flow_stage",
+      "conditions": {
+        "gravity_g": 0.0,
+        "oxygen_pct": 22.0,
+        "pressure_kpa": 101.325,
+        "airflow_cm_s": 10.5,
+        "fuel": "Cotton-fiberglass (SIBAL)",
+        "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+        "temperature_k": null
+      },
+      "outputs": {
+        "spread_mm_s": 1.02
+      },
+      "transcribed_cells": {
+        "id": "sharma2024-fig13-transparent-D2cm-flow10.5",
+        "native_marker_pixel": [
+          814,
+          513
+        ],
+        "reported_x": 10.5,
+        "calibrated_x": 10.46808510638298,
+        "spread_mm_s": 1.02,
+        "baffle": "transparent polycarbonate"
+      },
+      "extraction_method": "Manual raster marker-center digitization; source-pinned native image and linear tick calibration; no intermediate curve samples.",
+      "flags": [
+        "raster_digitized",
+        "nominal_oxygen_condition",
+        "nominal_microgravity_coordinate",
+        "campaign_dependency_preserved",
+        "within_burn_flow_stage",
+        "source_width_discrepancy"
+      ],
+      "notes": [
+        "Digitized published experimental markers, not raw independent run records.",
+        "Oxygen is nominally 22%; the sources report daily variation from 21.3% to 22.9%. Per-point oxygen readings were not recovered.",
+        "Pressure is explicitly 1 atm, converted to 101.325 kPa. Temperature is not imputed.",
+        "Airflow is the reported imposed/section-average speed, not a corrected local near-flame velocity.",
+        "0 g is a nominal ISS microgravity coordinate, not a measurement of zero residual acceleration.",
+        "Values rounded to 0.01 mm/s reflect digitization resolution, not measurement standard deviation.",
+        "All rows share a conservative Confined Combustion campaign dependency group; no independent validation is implied.",
+        "These configurations only contain microgravity observations; they do not enable fitting a gravity-generalization model.",
+        "Flow is changed in steps within a burn, with about 20 s allowed at each setting for SIBAL; stages are not independent experiments.",
+        "The paper lists an exposed width of 22 mm in its methods but uses 21 mm for present-work labels in Fig. 14; the methods value is retained and this discrepancy requires review."
+      ],
+      "review_status": "pending_scientific_review",
+      "exported_observation_id": "sharma2024-fig13-transparent-D2cm-flow10.5",
+      "missing_required_inputs": []
     }
   ],
   "rules": [
@@ -5977,6 +7159,7 @@
     "Microgravity zero coordinates in the NASA export are nominal as used in report Table II, not accelerometer measurements.",
     "Appendix A averages are not independent rows.",
     "Conservative leakage groups cover entire source campaigns.",
-    "Uncertainties reported as bounds, repeatability or intervals are not converted into per-row Gaussian sigma."
+    "Uncertainties reported as bounds, repeatability or intervals are not converted into per-row Gaussian sigma.",
+    "Twenty confined-combustion markers were manually raster-digitized with recorded native pixel centers and labeled-axis calibrations; repeated plots, line samples, and ambiguous overlapping D=3 cm concurrent markers were excluded."
   ]
 }

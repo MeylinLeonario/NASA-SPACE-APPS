@@ -15,9 +15,9 @@ def test_export_preserves_source_cells_and_exclusions():
     rows, _ = load_dataset(BUNDLE / 'combustion-observations.json')
     audit = json.loads((BUNDLE / 'extraction-audit.json').read_text())
     by_id = {row.experiment_id: row for row in rows}
-    assert len(rows) == len(by_id) == 91
+    assert len(rows) == len(by_id) == 111
     assert len(audit['sources']) == 19
-    assert len(audit['records']) == 123
+    assert len(audit['records']) == 143
     assert not any(row.reviewed for row in rows)
     assert by_id['olson1987-A-II-row04'].outputs['spread_mm_s'] == 11.2
     assert by_id['olson1987-A-II-row04'].outputs['length_mm'] == 17
@@ -41,12 +41,12 @@ def test_export_preserves_source_cells_and_exclusions():
 
 def test_import_is_idempotent_preserves_local_reviews_and_stays_data_gated(tmp_path):
     destination = tmp_path/'combustion-observations.json'
-    assert import_observations(destination, check=True)['would_add'] == 91
+    assert import_observations(destination, check=True)['would_add'] == 111
     assert not destination.exists()
-    assert import_observations(destination)['added'] == 91
+    assert import_observations(destination)['added'] == 111
     assert import_observations(destination)['added'] == 0
     loaded = status(destination)
-    assert loaded['observations'] == loaded['unreviewed_observations'] == 91
+    assert loaded['observations'] == loaded['unreviewed_observations'] == 111
     assert loaded['reviewed_direct_observations'] == 0
     assert 'await scientific review' in loaded['reason']
     rows, _ = load_dataset(destination)
@@ -101,7 +101,7 @@ def test_exploration_is_explicit_does_not_approve_data_and_cannot_validate(tmp_p
     with TestClient(create_app(config)) as client:
         availability = client.get('/api/ood/status').json()
         assert availability['cohorts'] == []
-        assert len(availability['exploratory_cohorts']) == 6
+        assert len(availability['exploratory_cohorts']) == 19
         assert client.post('/api/ood/predict', json=query.model_dump()).json()['status'] == 'unavailable'
         body = query.model_dump() | {'data_mode': 'exploratory', 'gravity_g': .38, 'oxygen_pct': 21}
         for model in ('gpr', 'boosting'):

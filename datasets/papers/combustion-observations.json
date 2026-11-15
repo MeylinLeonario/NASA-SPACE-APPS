@@ -1780,6 +1780,386 @@
         "spread_mm_s": 2.6
       },
       "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=2 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-black-D2cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: black anodized aluminum; D=2 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.83
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-black-D4cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: black anodized aluminum; D=4 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.95
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=5 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-black-D5cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: black anodized aluminum; D=5 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.79
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=2 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-reflective-D2cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: reflective polished aluminum; D=2 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.8
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=4 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-reflective-D4cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: reflective polished aluminum; D=4 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 2.16
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; reflective polished aluminum baffles; inter-baffle distance D=5 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-reflective-D5cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: reflective polished aluminum; D=5 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.95
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-transparent-D2cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: transparent polycarbonate; D=2 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 0.96
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=4 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-transparent-D4cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: transparent polycarbonate; D=4 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.74
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "ICES-2020-407; concurrent flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=5 cm",
+      "temperature_k": null,
+      "experiment_id": "li2020-fig7a-transparent-D5cm-flow7",
+      "source": "ICES-2020-407",
+      "citation": "Y. Li, Y.-T. T. Liao, P. V. Ferkul, M. C. Johnston and C. Bunnell (2020), ICES-2020-407, Fig. 7a, PDF p8; geometry p3; nominal atmosphere p4; measurement definition p6. Baffles: transparent polycarbonate; D=5 cm; flow=7 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.63
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-black-D4cm-flow7.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: black anodized aluminum; D=4 cm; flow=7.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.24
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=4 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-black-D4cm-flow10.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: black anodized aluminum; D=4 cm; flow=10.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.26
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 6.1,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-black-D3cm-flow6.1",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: black anodized aluminum; D=3 cm; flow=6.1 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.13
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-black-D3cm-flow7.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: black anodized aluminum; D=3 cm; flow=7.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.19
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; black anodized aluminum baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-black-D3cm-flow10.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: black anodized aluminum; D=3 cm; flow=10.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.25
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 6.1,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D3cm-flow6.1",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=3 cm; flow=6.1 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.08
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D3cm-flow7.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=3 cm; flow=7.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.11
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.3,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=3 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D3cm-flow10.3",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=3 cm; flow=10.3 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.14
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 7.4,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D2cm-flow7.4",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=2 cm; flow=7.4 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.02
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 8.8,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D2cm-flow8.8",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=2 cm; flow=8.8 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.08
+      },
+      "uncertainty": {}
+    },
+    {
+      "gravity_g": 0.0,
+      "oxygen_pct": 22.0,
+      "pressure_kpa": 101.325,
+      "airflow_cm_s": 10.5,
+      "fuel": "Cotton-fiberglass (SIBAL)",
+      "configuration": "10.1007/s12217-024-10106-y; opposed flow; double-sided SIBAL; exposed sheet 22x100 mm; transparent polycarbonate baffles; inter-baffle distance D=2 cm; thickness 0.33 mm",
+      "temperature_k": null,
+      "experiment_id": "sharma2024-fig13-transparent-D2cm-flow10.5",
+      "source": "10.1007/s12217-024-10106-y",
+      "citation": "A. Sharma et al. (2024), Effects of Confinement on Opposed-Flow Flame Spread over Cellulose, Microgravity Science and Technology 36:20, DOI 10.1007/s12217-024-10106-y, Fig. 13, PDF p9; atmosphere/material p3; assembly p4; Table 1 and stepped-flow protocol p5. Baffles: transparent polycarbonate; D=2 cm; flow=10.5 cm/s; digitized experimental marker.",
+      "leakage_group": "ISS-Confined-Combustion-SIBAL-campaign",
+      "provenance": "microgravity",
+      "reviewed": false,
+      "outputs": {
+        "spread_mm_s": 1.02
+      },
+      "uncertainty": {}
     }
   ]
 }
