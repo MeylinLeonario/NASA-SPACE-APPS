@@ -1,5 +1,4 @@
 # The backend project uses the repository root. The Next.js project uses frontend/.
-frontend/
 .git/
 .venv/
 work/
