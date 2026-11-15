@@ -1,18 +1,10 @@
 "use client";
 
 import {useT} from '../src/i18n/useT';
-import { useEffect, useRef, useState, type FormEvent } from "react";
-import { Download, Send } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { Download } from "lucide-react";
 import { useScenario } from "../src/context/ScenarioContext";
 import OODPanel, { type InitialConditions } from "./ood/ood-panel";
-
-type Answer = {
-  answer: string;
-  citations: { id: string; title: string; page: number; text: string }[];
-  limitations: string[];
-  conflicts: string[];
-  insufficient_evidence: boolean;
-};
 
 export default function PredictAsk({
   initialConditions,
@@ -23,53 +15,15 @@ export default function PredictAsk({
 
   const {lang} = useScenario();
   const en = lang === "en";
-  const tabLabels: Record<string, string> = {"Predict partial gravity": en ? "Estimate properties" : "Estimar propiedades", "Extract clean data": en ? "Download observations" : "Descargar observaciones", "Ask Copilot": en ? "Ask the assistant" : "Preguntar al asistente"};
+  const tabLabels: Record<string, string> = {"Predict partial gravity": en ? "Estimate properties" : "Estimar propiedades", "Extract clean data": en ? "Download observations" : "Descargar observaciones"};
   const [tab, setTab] = useState("Predict partial gravity");
-  const [token, setToken] = useState("");
-  const [tokenInput, setTokenInput] = useState("");
-  const [question, setQuestion] = useState("");
-  const [answer, setAnswer] = useState<Answer | null>(null);
+  // Token de la API (FLAME_API_TOKEN). Vacío salvo que el backend lo exija; el Copilot está en el paso 4.
+  const [token] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const request = useRef<AbortController | null>(null);
   useEffect(() => () => request.current?.abort(), []);
-  useEffect(() => {request.current?.abort(); setBusy(false); setAnswer(null); setError("");}, [lang]);
-
-  async function ask(event: FormEvent) {
-    event.preventDefault();
-    if (!question.trim() || busy) return;
-    request.current?.abort();
-    const controller = new AbortController();
-    request.current = controller;
-    setBusy(true);
-    setError("");
-    setAnswer(null);
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        signal: controller.signal,
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-        body: JSON.stringify({
-          query: question.trim(),
-          limit: 5,
-          filters: {},
-          language: lang,
-        }),
-      });
-      const data = await response.json();
-      if (!response.ok)
-        throw Error(data.error?.message || "Research assistant unavailable");
-      if (!controller.signal.aborted) setAnswer(data);
-    } catch (reason) {
-      if (!controller.signal.aborted) setError((reason as Error).message);
-    } finally {
-      if (request.current === controller && !controller.signal.aborted)
-        setBusy(false);
-    }
-  }
+  useEffect(() => {request.current?.abort(); setBusy(false); setError("");}, [lang]);
 
   async function downloadDataset() {
     setBusy(true);
@@ -102,7 +56,7 @@ export default function PredictAsk({
   return (
     <section className="sf-panel sf-predict" aria-label={t("Predict & Ask")}>
       <div className="sf-segments sf-view-tabs">
-        {["Predict partial gravity", "Extract clean data", "Ask Copilot"].map(
+        {["Predict partial gravity", "Extract clean data"].map(
           (name) => (
             <button
               key={name}
@@ -120,28 +74,6 @@ export default function PredictAsk({
       </div>
       <p className="sf-footnote">
         {" "}{t("Predictions and evidence use the backend’s combustion-observations.json. Cohorts, units, review status and provenance are preserved. Experimental configurations are filtered by your scenario material.")}{" "}</p>
-      <details className="sf-api-access">
-        <summary>{" "}{t("API access token (if required)")}{" "}</summary>
-        <form
-          onSubmit={(event) => {
-            event.preventDefault();
-            request.current?.abort();
-            setBusy(false);
-            setAnswer(null);
-            setError("");
-            setToken(tokenInput);
-          }}
-        >
-          <input
-            aria-label={t("API access token")}
-            type="password"
-            autoComplete="off"
-            value={tokenInput}
-            onChange={(event) => setTokenInput(event.target.value)}
-          />
-          <button type="submit">{" "}{t("Apply token")}{" "}</button>
-        </form>
-      </details>
       <div hidden={tab !== "Predict partial gravity"}>
         <OODPanel token={token} initialConditions={initialConditions} />
       </div>
@@ -158,64 +90,6 @@ export default function PredictAsk({
             <Download size={16} />
             {t(busy ? "Downloading…" : "Download observations JSON")}
           </button>
-        </>
-      )}
-      {tab === "Ask Copilot" && (
-        <>
-          <h2>{" "}{t("Ask the research assistant")}{" "}</h2>
-          <p>
-            {" "}{t("Answers come from the existing research API and include its source citations and limitations.")}{" "}</p>
-          <form className="sf-ask" onSubmit={(event) => void ask(event)}>
-            <input
-              aria-label={t("Ask Copilot")}
-              placeholder={t("Why does gravity change flame behavior?")}
-              value={question}
-              onChange={(event) => setQuestion(event.target.value)}
-            />
-            <button
-              disabled={busy || !question.trim()}
-              aria-label={t("Send question")}
-            >
-              <Send size={18} />
-            </button>
-          </form>
-          {busy && <p role="status">{" "}{t("Searching research evidence…")}{" "}</p>}
-          {answer && (
-            <div className="sf-answer" role="status">
-              <p style={{ whiteSpace: "pre-wrap" }}>{t(answer.answer)}</p>
-              {answer.insufficient_evidence && (
-                <p>{" "}{t("Insufficient evidence for a complete answer.")}{" "}</p>
-              )}
-              {answer.citations.map((citation) => (
-                <details key={citation.id}>
-                  <summary>
-                    {t(citation.id)} · {t(citation.title)} · p. {t(citation.page)}
-                  </summary>
-                  <blockquote>{t(citation.text)}</blockquote>
-                </details>
-              ))}
-              {answer.limitations.length > 0 && (
-                <>
-                  <h3>{" "}{t("Limitations")}{" "}</h3>
-                  <ul>
-                    {answer.limitations.map((text, index) => (
-                      <li key={index}>{t(text)}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-              {answer.conflicts.length > 0 && (
-                <>
-                  <h3>{" "}{t("Conflicting evidence")}{" "}</h3>
-                  <ul>
-                    {answer.conflicts.map((text, index) => (
-                      <li key={index}>{t(text)}</li>
-                    ))}
-                  </ul>
-                </>
-              )}
-            </div>
-          )}
         </>
       )}
       {error && (

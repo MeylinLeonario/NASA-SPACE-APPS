@@ -20,7 +20,7 @@ def test_scenarios_and_materials_come_from_catalog_files(rstore):
     luna = next(s for s in items if s['id'] == 'luna')
     assert luna['o2_pct'] == 30.0 and luna['pressure_kpa'] == 70.3 and luna['gravity_g'] == 0.167
     mats = {m['id']: m for m in catalog.materials(rstore.config.catalog_dir, rstore.config)}
-    assert set(mats) == {'pmma', 'sibal', 'nomex'} and 'SoFIE' in mats['pmma']['investigations'] and mats['sibal']['planned'] == ['FM2']
+    assert set(mats) == {"cellulose", "pmma", "sibal", "nomex"} and 'SoFIE' in mats['pmma']['investigations'] and mats['sibal']['planned'] == ['FM2']
 
 
 def test_scenarios_prefer_supabase_and_fall_back(rstore):

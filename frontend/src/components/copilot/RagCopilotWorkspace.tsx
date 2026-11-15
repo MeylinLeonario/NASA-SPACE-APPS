@@ -30,16 +30,16 @@ import {
   CatalogSourceStatus,
   fetchRagStatus,
   getCitationKind,
-  getDynamicSuggestedQuestions,
   HealthStatus,
   queryRagCopilot,
   RagChatResponse,
   RagCitation,
   resolveSourceUrl,
 } from '../../../services/ragService';
+import { DecisionReportCard } from './DecisionReportCard';
 
 interface RagCopilotWorkspaceProps {
-  variant?: 'embedded' | 'drawer';
+  variant?: 'embedded' | 'drawer' | 'page';
   onCloseDrawer?: () => void;
 }
 
@@ -100,11 +100,10 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
     activeHabitat,
     conditions,
     selectedMaterial,
-    activeMaterialEvaluation,
   } = useScenario();
 
   const [input, setInput] = useState('');
-  const [includeScenarioContext, setIncludeScenarioContext] = useState(true);
+  const [includeScenarioContext, setIncludeScenarioContext] = useState(false);
   const [askedQuestion, setAskedQuestion] = useState('');
   const [response, setResponse] = useState<RagChatResponse | null>(null);
   const [loading, setLoading] = useState(false);
@@ -159,17 +158,6 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
     window.addEventListener('triggerCopilot', handleCopilotQuery);
     return () => window.removeEventListener('triggerCopilot', handleCopilotQuery);
   }, [lang, includeScenarioContext, activeHabitat, conditions, selectedMaterial]);
-
-  const suggestedQuestions = useMemo(
-    () =>
-      getDynamicSuggestedQuestions(
-        activeHabitat,
-        conditions,
-        selectedMaterial,
-        lang
-      ),
-    [activeHabitat, conditions, selectedMaterial, lang]
-  );
 
   // Mapa rápido de ID de cita -> número [1..N]
   const citationIndexMap = useMemo(() => {
@@ -293,6 +281,8 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
       className={`flex h-full flex-col bg-[#0A1224] text-slate-100 ${
         variant === 'embedded'
           ? 'w-full lg:w-[430px] xl:w-[460px] shrink-0 rounded-2xl border border-slate-800 shadow-2xl'
+          : variant === 'page'
+          ? 'mt-4 w-full min-h-[680px] rounded-2xl border border-slate-800 shadow-2xl'
           : 'w-full'
       }`}
     >
@@ -316,11 +306,8 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
           </div>
         </div>
         
-        {/* Aquí iba el indicador DB: PSI LOCAL. Lo quitamos para dejar el espacio libre a la "X". */}
-      </div>
-
-        {/* Indicador de Fuente de Datos (Supabase vs JSON Local) y Estado del LLM */}
-        <div className="flex flex-col items-end gap-1">
+        {/* Indicador de Fuente de Datos (Supabase vs JSON Local) y Estado del LLM; deja espacio a la "X" del cajón */}
+        <div className={`flex flex-col items-end gap-1 ${variant === 'drawer' ? 'mr-10' : ''}`}>
           <div className="inline-flex items-center gap-1.5 rounded-full border border-slate-800 bg-slate-900/90 px-2.5 py-0.5 font-mono text-[9px] text-slate-300">
             <span
               className={`h-1.5 w-1.5 rounded-full ${
@@ -342,6 +329,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               {" "}{t("Modo solo-evidencia (Activa ENABLE_PAID_API=true)")}{" "}</span>
           )}
         </div>
+      </div>
 
       {/* 2. BARRA DE CONTEXTO DEL ESCENARIO Y MATERIAL PRE-CARGADO */}
       <div className="border-b border-slate-800/80 bg-[#0D172A] px-4 py-3">
@@ -377,66 +365,44 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[10px] font-semibold text-sky-300">
               {t(activeMaterialSpec.shortName)}
             </span>
-            <span
-              className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${
-                activeMaterialEvaluation.available === false ? 'bg-slate-800 text-slate-300 border border-slate-600' : activeMaterialEvaluation.burns
-                  ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
-                  : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
-              }`}
-            >
-              {t(activeMaterialEvaluation.available === false ? (lang === 'en' ? 'Oxygen threshold unavailable' : 'Umbral de oxígeno no disponible') : activeMaterialEvaluation.burns
-                ? `${lang === 'en' ? 'Burns' : 'Arde'} +${activeMaterialEvaluation.burnMarginPts.toFixed(1)} pts`
-                : lang === 'en'
-                ? 'Safe'
-                : 'Seguro')}
-            </span>
+
           </div>
         </div>
       </div>
 
       {/* 3. ÁREA CENTRAL DE CONVERSACIÓN Y VISUALIZACIÓN RAG */}
       <div className="flex-1 space-y-4 overflow-y-auto p-4 text-xs">
-        {/* Estado inicial: Explicación + Preguntas sugeridas adaptadas al escenario */}
-        {!askedQuestion && !loading && (
-          <div className="space-y-4">
-            <div className="rounded-xl border border-slate-800/90 bg-[#081020] p-4">
-              <div className="flex items-center gap-2 text-sky-400 font-semibold">
-                <ShieldCheck className="h-4 w-4 shrink-0" />
-                <span>
-                  {t(lang === 'en'
-                    ? 'Zero-Hallucination Scientific RAG'
-                    : 'RAG Científico con Validación Estricta de Citas')}
-                </span>
-              </div>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
-                {t(lang === 'en'
-                  ? 'Every claim generated by the assistant is cross-checked by regex against verbatim quotes in our indexed PDFs and NASA PSI catalog. Unverified claims are automatically discarded.'
-                  : 'Cada afirmación generada se valida contra citas textuales exactas (verbatim quotes) en los PDFs científicos y el catálogo NASA PSI. Cualquier dato sin respaldo directo se descarta automáticamente.')}
-              </p>
-            </div>
+        {/* Informe de decisión del Motor 4 (POST /api/report), arriba del chat */}
+        <DecisionReportCard />
 
-            <div>
-              <span className="mb-2.5 block font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {t(lang === 'en'
-                  ? `SUGGESTED FOR ${activeHabitat.name.en.toUpperCase()} & ${activeMaterialSpec.shortName}`
-                  : `SUGERIDAS PARA ${activeHabitat.name.es.toUpperCase()} Y ${activeMaterialSpec.shortName}`)}
-              </span>
-              <div className="flex flex-col gap-2">
-                {suggestedQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    type="button"
-                    onClick={() => void executeQuestion(q)}
-                    className="group flex items-start justify-between gap-2.5 rounded-xl border border-slate-800 bg-[#081020] p-3 text-left text-[11px] font-medium text-slate-200 transition-all hover:border-sky-500/50 hover:bg-[#0E1A32] hover:text-white"
-                  >
-                    <span className="leading-snug">{t(q)}</span>
-                    <span className="mt-0.5 font-mono text-sky-400 transition-transform group-hover:translate-x-0.5">
-                      ↗
-                    </span>
-                  </button>
-                ))}
-              </div>
-            </div>
+        {/* Recuadro de conversación: aquí aparecen la pregunta y la respuesta */}
+        <div
+          className={`space-y-4 rounded-xl border border-slate-800 bg-[#060C19] p-4 ${
+            variant === 'page' ? 'min-h-[460px]' : 'min-h-[300px]'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
+              {t(lang === 'en' ? 'Conversation' : 'Conversación')}
+            </span>
+            <span className="inline-flex items-center gap-1 text-[10px] text-slate-500">
+              <ShieldCheck className="h-3 w-3 text-emerald-400" />
+              {t(lang === 'en' ? 'Every claim cites a verbatim passage' : 'Cada afirmación cita un pasaje textual')}
+            </span>
+          </div>
+
+        {/* Estado inicial: espacio vacío donde aparecerá la respuesta */}
+        {!askedQuestion && !loading && (
+          <div className={`flex flex-col items-center justify-center gap-2 text-center ${variant === 'page' ? 'min-h-[380px]' : 'min-h-[220px]'}`}>
+            <Sparkles className="h-8 w-8 text-sky-400/60" />
+            <p className="text-sm font-semibold text-slate-200">
+              {t(lang === 'en' ? 'Ask a question below' : 'Escribe tu pregunta abajo')}
+            </p>
+            <p className="max-w-md text-[11px] leading-relaxed text-slate-500">
+              {t(lang === 'en'
+                ? 'The answer appears here: executive summary, physical alert, verified claims and their sources. Unverified claims are discarded.'
+                : 'La respuesta aparecerá aquí: resumen ejecutivo, alerta física, afirmaciones verificadas y sus fuentes. Lo que no se pueda verificar se descarta.')}
+            </p>
           </div>
         )}
 
@@ -788,30 +754,9 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               </details>
             )}
 
-            {/* Chips rápidos para seguir explorando */}
-            <div className="pt-1">
-              <span className="mb-1.5 block font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                {t(lang === 'en' ? 'FOLLOW-UP QUESTIONS' : 'SEGUIR EXPLORANDO')}
-              </span>
-              <div className="flex flex-col gap-1.5">
-                {suggestedQuestions
-                  .filter((q) => q !== askedQuestion)
-                  .slice(0, 2)
-                  .map((q, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onClick={() => void executeQuestion(q)}
-                      className="flex items-center justify-between rounded-lg border border-slate-800 bg-[#070D19] px-3 py-2 text-left text-[11px] text-slate-300 transition hover:border-sky-500/40 hover:text-white"
-                    >
-                      <span className="truncate">{t(q)}</span>
-                      <span className="ml-2 text-sky-400">↗</span>
-                    </button>
-                  ))}
-              </div>
-            </div>
           </div>
         )}
+        </div>
       </div>
 
       {/* 5. FORMULARIO DE ENTRADA CON ENVÍO AL MOTOR RAG */}

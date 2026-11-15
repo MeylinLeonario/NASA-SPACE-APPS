@@ -1,6 +1,6 @@
 // frontend/models/flare.model.ts
 
-export type ViewStep = 'home' | 'scenario' | 'ranking' | 'predict';
+export type ViewStep = 'home' | 'scenario' | 'ranking' | 'predict' | 'copilot';
 export type Language = 'es' | 'en';
 export type SafetyPillar = 'all' | 'prevention' | 'detection' | 'suppression';
 export type MaterialId = 'pmma' | 'sibal' | 'nomex';

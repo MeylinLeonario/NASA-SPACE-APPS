@@ -17,8 +17,8 @@ import {
 interface ScenarioContextValue {
   lang: Language;
   setLang: (lang: Language) => void;
-  activeStep: 1 | 2 | 3;
-  setActiveStep: (step: 1 | 2 | 3) => void;
+  activeStep: 1 | 2 | 3 | 4;
+  setActiveStep: (step: 1 | 2 | 3 | 4) => void;
   selectedHabitatId: HabitatId;
   activeHabitat: HabitatPreset;
   selectHabitat: (id: HabitatId) => void;
@@ -49,7 +49,7 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   // Idioma español por defecto tal como en el mockup image_b17a5f.png
   const [lang, setLang] = useState<Language>("es");
-  const [activeStep, setActiveStep] = useState<1 | 2 | 3>(1);
+  const [activeStep, setActiveStep] = useState<1 | 2 | 3 | 4>(1);
   const [selectedHabitatId, setSelectedHabitatId] = useState<HabitatId>(
     "artemis_lunar_base"
   );

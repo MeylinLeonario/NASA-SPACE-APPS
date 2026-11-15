@@ -36,10 +36,11 @@ export default function Navbar({
   const steps: { id: ViewStep; num: number; labelEs: string; labelEn: string }[] = [
     { id: 'scenario', num: 1, labelEs: 'Escenario', labelEn: 'Scenario' },
     { id: 'ranking', num: 2, labelEs: 'Ranking y alertas', labelEn: 'Ranking & alerts' },
-    { id: 'predict', num: 3, labelEs: 'Predecir y preguntar', labelEn: 'Predict & ask' },
+    { id: 'predict', num: 3, labelEs: 'Predecir', labelEn: 'Predict' },
+    { id: 'copilot', num: 4, labelEs: 'Copilot', labelEn: 'Copilot' },
   ];
 
-  const stepOrder = ['home', 'scenario', 'ranking', 'predict'];
+  const stepOrder = ['home', 'scenario', 'ranking', 'predict', 'copilot'];
   const currentIdx = stepOrder.indexOf(activeStep);
 
   return (
@@ -67,7 +68,7 @@ export default function Navbar({
 
         {/* 2. Stepper Central Guiado (1 Escenario · 2 Ranking y alertas · 3 Predecir y preguntar) */}
         <nav
-          aria-label={t("Flujo guiado de tres pasos")}
+          aria-label={t(language === 'es' ? 'Flujo guiado de cuatro pasos' : 'Four-step guided flow')}
           className="hidden lg:flex items-center gap-1 rounded-full border border-slate-800/90 bg-[#0b1120]/95 p-1 shadow-inner"
         >
           {steps.map((step) => {

@@ -15,17 +15,18 @@ import { useScenario, ScenarioProvider } from "../src/context/ScenarioContext";
 import { Step1ScenarioView } from "../src/components/step1-scenario/Step1ScenarioView";
 import { Step2RankingView } from "../src/components/step2-ranking/Step2RankingView";
 import { Step3PredictorView } from "../src/components/step3-predictor/Step3PredictorView";
+import { Step4CopilotView } from "../src/components/step4-copilot/Step4CopilotView";
 
 function MainAppContent() {
   const scenario = useScenario();
   const [home, setHome] = useState(true);
-  const steps: ViewStep[] = ['scenario', 'ranking', 'predict'];
+  const steps: ViewStep[] = ['scenario', 'ranking', 'predict', 'copilot'];
   const activeStep: ViewStep = home ? 'home' : steps[scenario.activeStep - 1];
 
   const setActiveStep = (step: ViewStep) => {
     setHome(step === 'home');
     if (step !== 'home') {
-      scenario.setActiveStep((steps.indexOf(step) + 1) as 1 | 2 | 3);
+      scenario.setActiveStep((steps.indexOf(step) + 1) as 1 | 2 | 3 | 4);
     }
   };
 
@@ -34,11 +35,15 @@ function MainAppContent() {
   const language = scenario.lang;
   const setLanguage = scenario.setLang;
 
+  // Otras vistas lanzan preguntas al Copilot con el evento 'triggerCopilot'. En el paso 4 ya está a pantalla
+  // completa y responde ahí mismo; en los demás pasos se abre el cajón lateral.
   React.useEffect(() => {
-    const handleTrigger = () => setCopilotOpen(true);
+    const handleTrigger = () => {
+      if (activeStep !== 'copilot') setCopilotOpen(true);
+    };
     window.addEventListener('triggerCopilot', handleTrigger);
     return () => window.removeEventListener('triggerCopilot', handleTrigger);
-  }, []);
+  }, [activeStep]);
 
   const handleQuickSelectHabitat = (habitat: HabitatPreset) => {
     setActiveHabitat(habitat);
@@ -52,13 +57,13 @@ function MainAppContent() {
       <Navbar
         activeStep={activeStep}
         onSelectStep={setActiveStep}
-        onOpenCopilot={() => setCopilotOpen(true)}
+        onOpenCopilot={() => setActiveStep('copilot')}
         language={language}
         onToggleLanguage={setLanguage}
       />
 
       {/* Cinta de Telemetría del Escenario (visible en los Pasos 1, 2 y 3) */}
-      {activeStep !== 'home' && activeStep !== 'predict' && (
+      {activeStep !== 'home' && activeStep !== 'predict' && activeStep !== 'copilot' && (
         <ScenarioRibbon
           habitat={activeHabitat}
           activeStep={activeStep}
@@ -85,10 +90,11 @@ function MainAppContent() {
         {activeStep === 'scenario' && <Step1ScenarioView />}
         {activeStep === 'ranking' && <Step2RankingView />}
         {activeStep === 'predict' && <Step3PredictorView />}
+        {activeStep === 'copilot' && <Step4CopilotView />}
       </main>
 
       <CopilotDrawer
-        open={copilotOpen}
+        open={copilotOpen && activeStep !== 'copilot'}
         onClose={() => setCopilotOpen(false)}
       />
     </div>
