@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Download, Send } from "lucide-react";
+import { useScenario } from "../src/context/ScenarioContext";
 import OODPanel, { type InitialConditions } from "./ood/ood-panel";
 
 type Answer = {
@@ -17,6 +18,9 @@ export default function PredictAsk({
 }: {
   initialConditions: InitialConditions;
 }) {
+  const {lang} = useScenario();
+  const en = lang === "en";
+  const tabLabels: Record<string, string> = {"Predict partial gravity": en ? "Estimate properties" : "Estimar propiedades", "Extract clean data": en ? "Download observations" : "Descargar observaciones", "Ask Copilot": en ? "Ask the assistant" : "Preguntar al asistente"};
   const [tab, setTab] = useState("Predict partial gravity");
   const [token, setToken] = useState("");
   const [tokenInput, setTokenInput] = useState("");
@@ -98,21 +102,21 @@ export default function PredictAsk({
           (name) => (
             <button
               key={name}
+              type="button"
               aria-pressed={tab === name}
               onClick={() => {
                 setTab(name);
                 setError("");
               }}
             >
-              {name}
+              {tabLabels[name]}
             </button>
           ),
         )}
       </div>
       <p className="sf-footnote">
         Predictions and evidence use the backend’s combustion-observations.json.
-        Cohorts, units, review status and provenance are preserved. Scenario
-        material presets do not select an experimental cohort.
+        Cohorts, units, review status and provenance are preserved. Experimental configurations are filtered by your scenario material.
       </p>
       <details className="sf-api-access">
         <summary>API access token (if required)</summary>

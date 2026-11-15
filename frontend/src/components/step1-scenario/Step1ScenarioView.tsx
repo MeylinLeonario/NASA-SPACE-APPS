@@ -13,6 +13,7 @@ export const Step1ScenarioView: React.FC = () => {
     lang,
     conditions,
     selectedMaterial,
+    setSelectedMaterial,
     activeMaterialEvaluation,
   } = useScenario();
 
@@ -97,6 +98,12 @@ export const Step1ScenarioView: React.FC = () => {
 
           {/* Grilla de los 6 Hábitats */}
           <HabitatSelectorGrid />
+          <div className="rounded-xl border border-slate-700 bg-[#081124] p-5">
+            <label htmlFor="scenario-material" className="mb-2 block text-sm font-bold">{lang === "en" ? "Material for your scenario" : "Material para tu escenario"}</label>
+            <select id="scenario-material" value={selectedMaterial} onChange={event => setSelectedMaterial(event.target.value as typeof selectedMaterial)} className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3">
+              {Object.values(MATERIALS_CATALOG).map(material => <option key={material.id} value={material.id}>{material.name[lang]} — {material.subtitle[lang]}</option>)}
+            </select>
+          </div>
 
           {/* Tarjeta Inferior: VISTA PREVIA DE LA LLAMA (En la Tierra vs En tu escenario) */}
           <div className="rounded-2xl border border-slate-800/90 bg-[#081124]/90 p-5">

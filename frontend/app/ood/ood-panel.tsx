@@ -17,7 +17,7 @@ type Status = {
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
-export type InitialConditions = {gravity: number; oxygen: number; pressureKpa: number; airflow: number};
+export type InitialConditions = {material?: string; gravity: number; oxygen: number; pressureKpa: number; airflow: number};
 
 export default function OODPanel({token, initialConditions}: {token: string; initialConditions?: InitialConditions}) {
   const [status, setStatus] = useState<Status | null>(null);
@@ -74,8 +74,11 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
   }, [holdout]);
 
   const pendingReview = status?.unreviewed_observations || 0;
-  const cohortOptions = (exploratory ? status?.exploratory_cohorts : status?.cohorts) || [];
-  const selected = cohortOptions[Number(cohort)];
+  const cohortOptions = ((exploratory ? status?.exploratory_cohorts : status?.cohorts) || []).filter(item =>
+    Object.values(item.coverage).some(output => output.prediction_eligible) &&
+    (!initialConditions?.material || item.fuel.toLowerCase().includes(initialConditions.material))
+  );
+  const selected = cohortOptions[Number(cohort)] || cohortOptions[0];
   const coverage = selected?.coverage || {};
   const availableProperties = Object.values(coverage).some(value => value.prediction_eligible);
   const validationLevels = [...new Set(Object.values(coverage).flatMap(value => value.folds.map(fold => fold.gravity_g)))].sort((a, b) => a - b);
@@ -153,6 +156,7 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
       {error && <div className="alert" role="alert">{error}</div>}
       {!status && !error && <p role="status">Loading scientific data availability…</p>}
       {status && <>
+        {!cohortOptions.length && <p role="status" className="ood-warning">No executable configuration is available for this material in the selected data mode. Choose another scenario material or enable exploratory estimates when available.</p>}
         {!status.reviewed_direct_observations && <div className="ood-empty"><FlaskConical size={26}/><div>
           <h4>{pendingReview ? 'Measurements extracted; scientific review pending.' : 'Bring observations, then test generalization.'}</h4><p>{status.reason}</p>
           {pendingReview ? <><p>Review the imported observations against their PDF pages, table rows, source notes, and exclusions. Extraction does not establish scientific validation.</p><p>The paper bundle includes an extraction audit and a CSV for inspection. Approve compatible records in the local dataset only after scientific review, then reload this page.</p></> : <ol><li>Prepare run-level measurements with citations, units, and dependency groups.</li><li>Review fuel, geometry, and provenance before marking observations as reviewed.</li><li>Save the dataset as combustion-observations.json in the backend data directory.</li></ol>}
@@ -162,9 +166,7 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
         {!status.dependencies_ready && <p className="ood-warning">Scientific dependencies are missing. Install the science optional dependencies before fitting models.</p>}
         {!!status.exploratory_cohorts?.length && pendingReview > 0 && <div className="ood-exploratory">
           <label className="ood-mode-toggle"><input type="checkbox" checked={exploratory} onChange={event => {
-            const nextOptions = event.target.checked ? status.exploratory_cohorts || [] : status.cohorts;
-            const firstEligible = nextOptions.findIndex(item => Object.values(item.coverage).some(output => output.prediction_eligible));
-            setExploratory(event.target.checked); setCohort(String(Math.max(0, firstEligible))); setHoldout(''); setTemperature('');
+            setExploratory(event.target.checked); setCohort('0'); setHoldout(''); setTemperature('');
           }}/><span>Use extracted observations for exploratory estimates</span></label>
           <p>Explicit opt-in: includes direct observations whose transcription is pending scientific review. Estimates are not experimentally validated. This does not approve records or enable scientific validation.</p>
           {exploratory && <strong role="status">Exploratory mode active · unreviewed source transcriptions</strong>}
@@ -173,7 +175,7 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
           <div className="ood-controls">
             <label>Regression model<select value={model} onChange={event => setModel(event.target.value)}>
               {Object.entries(modelLabels).map(([key, label]) => <option key={key} value={key}>{label}{key === 'gpr' ? ' · Matérn 3/2' : ''}</option>)}
-              <option disabled>Physics-guided GPR · baseline unavailable</option></select></label>
+            </select></label>
             <label>Fuel / experimental configuration<select value={cohort} onChange={event => {setCohort(event.target.value); setHoldout(''); setTemperature('');}} disabled={!cohortOptions.length}>
               {!cohortOptions.length && <option value="0">{exploratory ? 'No compatible extracted cohort available' : 'No reviewed cohort available'}</option>}
               {cohortOptions.map((value, i) => <option key={i} value={i}>{value.fuel} / {value.configuration}{value.temperature_available ? ' / measured temperature' : ''}{Object.values(value.coverage).some(output => output.prediction_eligible) ? ' · estimates available' : ' · observations only'}</option>)}</select></label>
@@ -197,7 +199,7 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
             <button type="button" className="button secondary" onClick={() => downloadJSON('ood-prediction.json', result)}><Download size={14}/> Export prediction</button></div>
           <div className="ood-results">{Object.entries(result.results).filter(([key]) => property === 'all' || property === key).map(([key, estimate]) => <PredictionCard key={key} name={key} estimate={estimate}/>)}</div>
         </>}</div>}
-        <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
+        {selected && !exploratory && validationLevels.some(level => Object.values(coverage).some(value => value.folds.some(fold => fold.gravity_g === level && fold.eligible))) && <div className="ood-validation"><h4>Test Generalization Across Gravity Levels</h4>
           <p>Inspect the recorded observations at each gravity and preview which rows remain after related campaign groups are excluded. Reviewed data and an eligible split are required to compare model predictions with held-out measurements.</p>
           <div className="ood-result-toolbar"><label>Gravity to hold out<select disabled={!validationLevels.length} value={holdout} onChange={event => setHoldout(event.target.value)}><option value="">Choose a level in this cohort</option>{validationLevels.map(value => <option key={value} value={value}>{value} g{Object.values(coverage).some(item => item.folds.some(f => f.gravity_g === value && f.eligible)) ? '' : ' · inspect observations; validation unavailable'}</option>)}</select></label>
             <button type="button" className="button secondary" disabled={exploratory || !ready || busy || holdout === '' || !eligibleLevel} onClick={() => void run(true)}>Compare held-out predictions</button></div>
@@ -206,7 +208,7 @@ export default function OODPanel({token, initialConditions}: {token: string; ini
           {holdout !== '' && !eligibleLevel && <p>Validation unavailable at this level: after excluding related groups, no output retains at least three training observations across two other gravity levels.</p>}
           {selected && availableProperties && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token}/>}
           {!!validation.length && <><button type="button" className="button secondary" onClick={() => downloadJSON('ood-held-out-validation.json', validation)}><Download size={14}/> Export validation</button><ValidationResults results={validation}/></>}
-        </div>
+        </div>}
         <details className="ood-provenance"><summary>Dataset provenance</summary><p>SHA-256: <small>{status.dataset_sha256 || 'No observation dataset loaded'}</small></p>
           {Object.entries(status.provenance_counts).map(([source, count]) => <p key={source}>{source.replaceAll('_', ' ')}: {count} records</p>)}
           <p>E-FIELD analogs, simulations, and model predictions are excluded. Unreviewed direct observations are included only after explicit exploratory opt-in; reviewed-mode fitting excludes them. Exported results include the exact request, dataset hash, pipeline version, and scientific package versions.</p>

@@ -2,9 +2,10 @@ import { useScenario } from "../../context/ScenarioContext";
 import PredictAsk from "../../../app/predict-ask";
 
 export const Step3PredictorView = () => {
-  const { lang, conditions, setActiveStep } = useScenario();
+  const { lang, conditions, selectedMaterial, setActiveStep } = useScenario();
   const en = lang === "en";
   const initialConditions = {
+    material: selectedMaterial,
     gravity: conditions.gravityG, oxygen: conditions.o2,
     pressureKpa: conditions.pressurePsi * 6.894757293168, airflow: conditions.airflowCms,
   };
