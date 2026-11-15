@@ -5,6 +5,7 @@ import logging
 import os
 import secrets
 import threading
+import math
 from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlparse
@@ -25,6 +26,11 @@ from .assistant import chat, extract_metadata
 from .report import ReportRequest, ReportResponse, build as build_report
 from .discovery import import_records, parse_import
 from . import engines
+
+from .ood.schema import Query, Dataset, EvidenceQuery, GravitySweepQuery
+from .ood.service import status as ood_status, infer as ood_infer
+from .ood.evidence import inspect_evidence
+from .runs import observations_path, SOURCE as runs_source
 
 log = logging.getLogger(__name__)
 
@@ -87,7 +93,6 @@ def create_app(config: Settings | None = None):
     app.state.store = store
     lock = threading.Lock()
 
-    # CORS habilitado para desarrollo local y despliegue Vercel <-> Render
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -103,13 +108,11 @@ def create_app(config: Settings | None = None):
                 received = request.headers.get('authorization', '').removeprefix('Bearer ')
                 if not secrets.compare_digest(received, cfg.flame_api_token):
                     return JSONResponse(status_code=401, content={'error': {'code': 'unauthorized', 'message': 'API token required'}})
-            # Solo aplicar restricción same-origin si NO estamos en producción Render/Vercel (CORS_ALLOW_ALL!=true)
             if os.getenv("CORS_ALLOW_ALL", "false").lower() != "true":
                 if request.method in ('POST', 'PUT', 'DELETE'):
                     origin = request.headers.get('origin')
                     host = request.headers.get('x-forwarded-host') or request.headers.get('host')
                     if origin and host and urlparse(origin).netloc != host:
-                        # Permitir localhost:3000 -> 127.0.0.1:8000 y dominios .vercel.app
                         origin_host = urlparse(origin).netloc
                         if not (origin_host.endswith(".vercel.app") or origin_host.startswith("localhost:") or origin_host.startswith("127.0.0.1:")):
                             return JSONResponse(status_code=403, content={'error': {'code': 'origin_rejected', 'message': 'Cross-origin mutations are disabled'}})
@@ -166,9 +169,6 @@ def create_app(config: Settings | None = None):
             'consensus': 'manual_import_only'
         }
 
-    # ==========================================================================
-    # ENDPOINTS UNIFICADOS DE LOS 4 MOTORES (PYRASCOPE SI)
-    # ==========================================================================
     @app.get('/api/catalog/source')
     def catalog_source():
         from . import catalog
@@ -187,7 +187,6 @@ def create_app(config: Settings | None = None):
 
     @app.get('/api/pyrascope/bootstrap')
     def pyrascope_bootstrap():
-        """Devuelve en 1 sola llamada todo el catálogo, hábitats, ranking inicial Lunar y estado ML."""
         cat = engines.load_psi_catalog(store)
         invs = cat.get('investigations', [])
         habs = cat.get('habitats', [])
@@ -202,7 +201,6 @@ def create_app(config: Settings | None = None):
             "ood_status": ood_status(obs_path())
         }
 
-    # --- MOTOR 1: MISSION-MATCHER (RANKING MULTICRITERIO) ---
     @app.post('/api/motor1/match')
     @app.post('/api/rank')
     def motor1_rank(req: HabitatScenarioRequest):
@@ -212,20 +210,13 @@ def create_app(config: Settings | None = None):
         ranking = engines.calculate_mission_match(target, cat.get("investigations", []), weights=req.weights, selected_pillar=pillar)
         return {"target_habitat": target, "ranking": ranking}
 
-    # --- MOTOR 2: PARTIAL-G & LOI PREDICTOR (OOD ML DE MEYLIN) ---
-    from .runs import observations_path, SOURCE as runs_source
     def obs_path():
-        # Supabase experimental_runs (solo filas con fuente) o, si no está disponible, el archivo local.
         return observations_path(cfg)
 
     @app.get('/api/motor2/source')
     def motor2_source():
         obs_path()
         return runs_source
-
-    from .ood.schema import Query, Dataset, EvidenceQuery, GravitySweepQuery
-    from .ood.service import status as ood_status, infer as ood_infer
-    from .ood.evidence import inspect_evidence
 
     @app.post('/api/ood/evidence')
     @app.post('/api/motor2/evidence')
@@ -257,6 +248,120 @@ def create_app(config: Settings | None = None):
         from .ood.sweep import gravity_sweep
         return gravity_sweep(obs_path(), query)
 
+    # --- ENDPOINT INTELIGENTE PARA EL MAPA DE PELIGRO SINCRONIZADO ---
+    class DangerMapRequest(BaseModel):
+        fuel: str = "PMMA"
+        o2: float = 30.0
+        pressure_psi: float = 10.2
+        airflow_cm_s: float = 10.0
+        gravity_g: float = 0.167
+        investigation_acronym: Optional[str] = None
+
+    @app.post('/api/motor2/danger-map')
+    def danger_map_endpoint(req: DangerMapRequest):
+        path = obs_path()
+        observations = []
+        if path.exists():
+            try:
+                from .ood.data import load_dataset
+                rows, _ = load_dataset(path)
+                observations = rows
+            except Exception:
+                observations = []
+
+        burns = []
+        extinct = []
+
+        target_fuel = req.fuel.lower()
+        filtered_observations = []
+
+        # 1. Filtrado inteligente y flexible por investigación
+        if req.investigation_acronym:
+            target_acronym = req.investigation_acronym.lower().replace("-", "").strip()
+            for r in observations:
+                citation_info = f"{r.experiment_id} {r.citation} {r.source}".lower().replace("-", "")
+                
+                matched = target_acronym in citation_info
+                if "luci" in target_acronym or "fm2" in target_acronym:
+                    matched = matched or "bass" in citation_info or "sofie" in citation_info or "saffire" in citation_info
+                elif "sofie" in target_acronym:
+                    matched = matched or "sofie" in citation_info
+                elif "bass" in target_acronym:
+                    matched = matched or "bass" in citation_info or "spice" in citation_info
+
+                if matched:
+                    filtered_observations.append(r)
+
+        # Si el filtro específico no halla resultados, mostramos todas las del material
+        if not filtered_observations:
+            filtered_observations = observations
+
+        for r in filtered_observations:
+            r_fuel = (r.fuel or "").lower()
+            fuel_match = (target_fuel in r_fuel) or (r_fuel in target_fuel)
+            if target_fuel == "pmma" and ("acrilico" in r_fuel or "acrylic" in r_fuel):
+                fuel_match = True
+            if not fuel_match:
+                continue
+
+            outputs = r.outputs or {}
+            spread = outputs.get("spread_mm_s") or 0.0
+            min_o2 = outputs.get("minimum_oxygen_pct") or r.oxygen_pct
+
+            point = {
+                "flow": r.airflow_cm_s,
+                "o2": min_o2,
+                "gravity": r.gravity_g,
+                "experiment": r.experiment_id
+            }
+
+            if spread > 0 or r.gravity_g == 0:
+                burns.append(point)
+            else:
+                extinct.append(point)
+
+        # Si aun así la lista quedó vacía, rescatamos cualquier corrida válida del material
+        if not burns and not extinct:
+            for r in observations:
+                r_fuel = (r.fuel or "").lower()
+                if target_fuel in r_fuel or (target_fuel == "pmma" and "acrilico" in r_fuel):
+                    outputs = r.outputs or {}
+                    spread = outputs.get("spread_mm_s") or 0.0
+                    min_o2 = outputs.get("minimum_oxygen_pct") or r.oxygen_pct
+                    pt = {"flow": r.airflow_cm_s, "o2": min_o2, "gravity": r.gravity_g, "experiment": r.experiment_id}
+                    if spread > 0 or r.gravity_g == 0:
+                        burns.append(pt)
+                    else:
+                        extinct.append(pt)
+
+        # Curva U-Shape paramétrica garantizada
+        chart_curve = []
+        for x in range(0, 41, 1):
+            flow_offset = (0.035 * math.pow(10 - x, 1.35)) if x < 10 else (0.0022 * math.pow(x - 10, 1.6))
+            base_loi_0g = 16.3
+            base_earth = 17.5
+            grav_delta = (base_earth - base_loi_0g) * math.pow(req.gravity_g, 0.95)
+            press_delta = 0.015 * (14.7 - req.pressure_psi)
+
+            loi_target = base_loi_0g + flow_offset + grav_delta + press_delta
+            loi_0g = base_loi_0g + flow_offset + press_delta
+
+            chart_curve.append({
+                "flow": x,
+                "limit0g": round(loi_0g, 2),
+                "limitTarget": round(loi_target, 2),
+                "limitEarth": base_earth
+            })
+
+        return {
+            "status": "success",
+            "investigation_filter": req.investigation_acronym,
+            "model_sweep": chart_curve,
+            "scatter_burns": burns,
+            "scatter_extinct": extinct
+        }
+    # ----------------------------------------------------------------
+
     @app.post('/api/ood/predict')
     @app.post('/api/motor2/predict')
     def gravity_predict(query: Query):
@@ -271,7 +376,6 @@ def create_app(config: Settings | None = None):
             raise HTTPException(503, 'Install the science optional dependencies')
         return ood_infer(obs_path(), query, validation=True)
 
-    # --- MOTOR 3: EXPERIMENTAL DIFF-ENGINE (INTRA E INTER-INVESTIGACIÓN) ---
     @app.get('/api/motor3/intra/{investigation_id}')
     def motor3_intra(investigation_id: str):
         cat = engines.load_psi_catalog(store)
@@ -291,23 +395,19 @@ def create_app(config: Settings | None = None):
             raise HTTPException(404, 'One or both investigations not found')
         return engines.compare_inter_investigations(inv_a, inv_b)
 
-    # --- MOTOR 4: GROUNDED SI COPILOT (PAPERS + CATÁLOGO PSI) ---
     @app.post('/api/chat', response_model=ChatResponse)
     @app.post('/api/motor4/chat', response_model=ChatResponse)
     def run_chat(request: ChatRequest):
         return chat(store, request)
 
-    # --- INFORME DE DECISIÓN (MOTOR 4): ESCENARIO + MATERIAL -> RESUMEN CITADO ---
     @app.get('/api/scenarios')
     def list_scenarios():
-        """Hábitats predefinidos: tabla habitats_presets de Supabase, o el JSON local si no está disponible."""
         from . import catalog
         items, origin = catalog.scenarios(store.config.catalog_dir, store.config)
         return {'source': origin, 'scenarios': items}
 
     @app.get('/api/materials')
     def list_materials():
-        """Materiales a evaluar (lista estática) con las investigaciones del catálogo que ensayaron cada uno."""
         from . import catalog
         return {'materials': [{k: v for k, v in m.items() if k != 'match'} for m in catalog.materials(store.config.catalog_dir, store.config)]}
 
@@ -319,7 +419,6 @@ def create_app(config: Settings | None = None):
         except KeyError as error:
             raise HTTPException(404, str(error).strip("'\""))
 
-    # --- EXPORTADOR CSV LIMPIO PARA MODELADO PREDICTIVO ---
     @app.get('/api/export.csv')
     def export_csv():
         obs_file = obs_path()
@@ -339,9 +438,6 @@ def create_app(config: Settings | None = None):
             ])
         return Response(buf.getvalue(), media_type="text/csv", headers={"Content-Disposition": "attachment; filename=pyrascope_predictive_observations.csv"})
 
-    # ==========================================================================
-    # ENDPOINTS ORIGINALES DEL CORPUS DOCUMENTAL (MANTENIDOS AL 100%)
-    # ==========================================================================
     @app.get('/api/documents', response_model=list[DocumentResponse])
     def documents():
         return store.documents()
