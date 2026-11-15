@@ -1,12 +1,14 @@
 {
  "meta": {
   "description": "Contexto general para el copiloto: definiciones y datos del enunciado del desafío. NO son datos de PSI. Cada entrada se cita como FONDO#n según su posición; agregar entradas siempre al final.",
-  "version": "0.1 (2026-11-14)"
+  "version": "0.2 (2026-11-14)"
  },
  "sources": {
   "challenge": {"title": "Enunciado del desafío Flame in Freefall (NASA Space Apps 2026)", "url": null},
   "nasa_combustion": {"title": "NASA Glenn - Combustion Science", "url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/"},
-  "fm2": {"title": "NASA Glenn - FM2", "url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/"}
+  "fm2": {"title": "NASA Glenn - FM2", "url": "https://www.nasa.gov/glenn/glenn-expertise-space-exploration/physical-sciences-program/combustion-science/flammability-of-materials-on-the-moon-fm2/"},
+   "nssdc_mars": {"title": "NASA NSSDCA - Mars Fact Sheet (actualizada 19 mayo 2025)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html"},
+   "nssdc_moon": {"title": "NASA NSSDCA - Moon Fact Sheet (actualizada 11 enero 2024)", "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html"}
  },
  "entries": [
   {
@@ -80,6 +82,18 @@
    "keywords": ["cohete", "cohetes", "propelente", "motor", "lanzamiento"],
    "text": "La seguridad contra incendios de cohetes y propelentes queda en general fuera de la investigación disponible en PSI: las altas velocidades dentro de un motor cohete hacen que su combustión sea prácticamente independiente de la gravedad.",
    "source": "challenge"
+  },
+  {
+   "title": "Gravedad en la superficie de Marte",
+   "keywords": ["gravedad", "marte", "marciana", "mars", "martian", "superficie", "valor", "cuanto"],
+   "text": "Según la hoja de datos de Marte de NASA, la gravedad media en la superficie de Marte es 3,73 m/s², es decir 0,380 veces la de la Tierra (9,82 m/s²). Es un dato de referencia del planeta, no un resultado de combustión.",
+   "source": "nssdc_mars"
+  },
+  {
+   "title": "Gravedad en la superficie de la Luna",
+   "keywords": ["gravedad", "luna", "lunar", "moon", "superficie", "valor", "cuanto"],
+   "text": "Según la hoja de datos de la Luna de NASA, la gravedad en la superficie de la Luna es 1,62 m/s², es decir 0,165 veces la de la Tierra (9,80 m/s²). Es un dato de referencia, no un resultado de combustión.",
+   "source": "nssdc_moon"
   }
  ]
 }
