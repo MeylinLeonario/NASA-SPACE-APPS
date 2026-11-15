@@ -436,3 +436,4 @@ body {
   transition:none!important;
   scroll-behavior:auto!important}
 }
+.exec-summary{margin:12px 0 4px;padding:14px 16px;border:1px solid #3a5a7a;background:#1b2a3a;border-radius:6px}.exec-summary strong{display:block;font-size:9px;letter-spacing:1.4px;text-transform:uppercase;color:#9cc3e8;font-weight:600;margin-bottom:6px}.exec-summary p{font-size:13px;line-height:1.7;color:#e6edf5;white-space:pre-wrap}
