@@ -103,6 +103,8 @@ class GeneratedConflict(BaseModel):
 
 class GeneratedAnswer(BaseModel):
     claims: list[AnswerClaim]
+    # Counter-intuitive microgravity fire behavior relevant to the question, if the evidence states one.
+    physical_alert: AnswerClaim | None = None
     limitations: list[str]
     conflicts: list[GeneratedConflict] = []
     insufficient_evidence: bool
@@ -110,6 +112,8 @@ class GeneratedAnswer(BaseModel):
 class ChatResponse(BaseModel):
     answer: str
     claims: list[AnswerClaim] = []
+    physical_alert: str | None = None
+    physical_alert_claim: AnswerClaim | None = None
     citations: list[Citation]
     limitations: list[str]
     conflicts: list[str] = []
