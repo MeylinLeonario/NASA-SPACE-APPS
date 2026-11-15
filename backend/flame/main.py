@@ -22,6 +22,7 @@ from .models import (
 from .ingest import ingest, safe_file
 from .retrieval import search
 from .assistant import chat, extract_metadata
+from .report import ReportRequest, ReportResponse, build as build_report
 from .discovery import import_records, parse_import
 from . import engines
 
@@ -277,6 +278,28 @@ def create_app(config: Settings | None = None):
     @app.post('/api/motor4/chat', response_model=ChatResponse)
     def run_chat(request: ChatRequest):
         return chat(store, request)
+
+    # --- INFORME DE DECISIÓN (MOTOR 4): ESCENARIO + MATERIAL -> RESUMEN CITADO ---
+    @app.get('/api/scenarios')
+    def list_scenarios():
+        """Hábitats predefinidos: tabla habitats_presets de Supabase, o el JSON local si no está disponible."""
+        from . import catalog
+        items, origin = catalog.scenarios(store.config.catalog_dir, store.config)
+        return {'source': origin, 'scenarios': items}
+
+    @app.get('/api/materials')
+    def list_materials():
+        """Materiales a evaluar (lista estática) con las investigaciones del catálogo que ensayaron cada uno."""
+        from . import catalog
+        return {'materials': [{k: v for k, v in m.items() if k != 'match'} for m in catalog.materials(store.config.catalog_dir, store.config)]}
+
+    @app.post('/api/report', response_model=ReportResponse)
+    @app.post('/api/motor4/report', response_model=ReportResponse)
+    def decision_report(request: ReportRequest):
+        try:
+            return build_report(store, request)
+        except KeyError as error:
+            raise HTTPException(404, str(error).strip("'\""))
 
     # --- EXPORTADOR CSV LIMPIO PARA MODELADO PREDICTIVO ---
     @app.get('/api/export.csv')
