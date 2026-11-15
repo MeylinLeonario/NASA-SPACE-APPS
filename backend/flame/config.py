@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from typing import Literal
 from functools import lru_cache
 from pydantic import Field
@@ -9,7 +10,9 @@ ROOT = Path(__file__).resolve().parents[2]
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=str(ROOT / '.env'), extra='ignore')
     papers_dir: Path = ROOT / 'papers'
-    data_dir: Path = ROOT / 'data'
+    # The deployment bundle is read-only in serverless functions. DATA_DIR can
+    # still override this default when persistent storage is available.
+    data_dir: Path = Field(default_factory=lambda: Path('/tmp/flame-data') if os.getenv('VERCEL') else ROOT / 'data')
     # Curated PSI investigation catalog (versioned in Git, unlike data/).
     catalog_dir: Path = ROOT / 'datasets' / 'psi'
     # Optional Supabase project holding the same catalog (supabase_seed.sql). Empty = local JSON only.

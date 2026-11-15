@@ -4,10 +4,36 @@ La aplicación usa Next.js en Vercel y un backend Python externo. SQLite, Chroma
 los PDF, las cargas y la indexación necesitan almacenamiento persistente; este
 repositorio no los migra a funciones efímeras de Vercel.
 
-## Backend necesario
+## Backend en Vercel (perfil ligero)
+
+Para un proyecto FastAPI separado usa la raíz del repositorio como Root Directory
+y el preset FastAPI. `pyproject.toml` declara el entrypoint. `.vercelignore`
+excluye el frontend, pruebas y archivos locales, conservando backend, catálogo,
+observaciones y PDF. La instalación básica no incluye ChromaDB ni sus dependencias
+de inferencia vectorial; la recuperación por palabras clave y el catálogo siguen
+disponibles, y la generación requiere claves y habilitación en el backend.
+
+En Vercel, SQLite se crea en `/tmp/flame-data` por defecto. Ese directorio es
+efímero y no se comparte entre instancias: índices, cachés e importaciones pueden
+desaparecer. La carpeta de PDF incluida es de solo lectura; las cargas necesitan
+almacenamiento externo. No se incluye una migración a una base de datos remota.
+No configures `DATA_DIR` con una ruta del código desplegado.
+
+ChromaDB es opcional (`pip install -e '.[semantic]'`) y los modelos científicos
+también (`.[science]`). El perfil básico no permite estimaciones de los modelos;
+los endpoints de estado y evidencia siguen disponibles. No instales el lock
+local completo en Vercel: vuelve a incluir las dependencias pesadas. Si necesitas
+todas estas funciones con persistencia, usa el servidor descrito a continuación.
+
+Tras subir estos cambios, vuelve a desplegar el proyecto backend sin reutilizar
+la caché de build y comprueba `/health` y `/api/investigations`. Después configura
+su URL como `BACKEND_URL` del proyecto frontend. El tamaño final lo valida Vercel
+durante su build; el tamaño local de dependencias es solo una referencia.
+
+## Backend con persistencia y búsqueda vectorial
 
 Despliega primero el backend en un servidor con Python 3.11+, disco persistente
-y HTTPS. Desde la raíz del repositorio instala `pip install -e '.[science]'` y
+y HTTPS. Desde la raíz del repositorio instala `pip install -e '.[science,semantic]'` y
 arranca un único worker con:
 
 ```bash

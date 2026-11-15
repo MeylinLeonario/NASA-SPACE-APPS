@@ -24,7 +24,10 @@ class Provider:
         return self._client
 
     def collection(self):
-        import chromadb
+        try:
+            import chromadb
+        except ModuleNotFoundError as error:
+            raise RuntimeError('Semantic indexing requires the optional semantic dependencies: pip install -e ".[semantic]". Keyword retrieval remains available.') from error
         from chromadb.config import Settings as ChromaSettings
         client = chromadb.PersistentClient(path=str(self.cfg.data_dir / 'chroma'), settings=ChromaSettings(anonymized_telemetry=False))
         name = 'flame-' + hashlib.sha256(self.cfg.openai_embedding_model.encode()).hexdigest()[:16]

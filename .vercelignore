@@ -1,0 +1,15 @@
+# The backend project uses the repository root. The Next.js project uses frontend/.
+frontend/
+.git/
+.venv/
+work/
+tests/
+evaluation/
+docs/*
+!docs/curated_metadata.json
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+data/
+requirements.lock.txt
+# Keep backend/, datasets/ and papers/: API routes read these at runtime.

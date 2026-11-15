@@ -1,4 +1,5 @@
 import json
+import pytest
 from types import SimpleNamespace
 from unittest.mock import patch, Mock
 from openai import OpenAI
@@ -25,6 +26,7 @@ def test_embedding_batches_cache_and_model_separation(indexed):
     assert len(calls)==3
 
 def test_actual_chroma_index_and_hybrid_retrieval(indexed):
+    pytest.importorskip('chromadb', reason='Install .[semantic,test] to test the optional vector index')
     indexed.config.enable_paid_api=True;indexed.config.openai_api_key='test'
     vector=[0.2,0.8,0.4]
     with patch.object(Provider,'embed',side_effect=lambda texts,force=False:[vector for t in texts]) as embed:
@@ -62,6 +64,7 @@ def test_strict_provider_schemas_do_not_have_arbitrary_maps():
 
 
 def test_missing_vectors_are_restored_from_embedding_cache(indexed):
+    pytest.importorskip('chromadb', reason='Install .[semantic,test] to test the optional vector index')
     indexed.config.enable_paid_api = True
     indexed.config.openai_api_key = 'test'
     client = SimpleNamespace(embeddings=SimpleNamespace(create=Mock(return_value=SimpleNamespace(

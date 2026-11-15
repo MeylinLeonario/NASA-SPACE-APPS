@@ -13,6 +13,11 @@ This is a research MVP, not a validated spacecraft fire-safety decision system o
 - Page-by-page PyMuPDF extraction; stable SHA-256 document/chunk identities; extraction warnings; exact-byte duplicate detection; incremental local indexing.
 - SQLite metadata, original page text, FTS5 keyword search, usage and caches; ChromaDB persistence for OpenAI embeddings.
 - Optional `text-embedding-3-small` embeddings and GPT-4o grounded answers. Paid operations require **both** a key and `ENABLE_PAID_API=true`.
+
+ChromaDB is an optional dependency: install `pip install -e '.[semantic]'` for
+vector indexing and hybrid retrieval. The default lightweight backend retains
+keyword retrieval and catalog-grounded answers. See [Vercel deployment profiles](docs/vercel.md)
+for serverless storage and optional scientific-model limitations.
 - Hybrid retrieval through reciprocal rank fusion, metadata filters, chunk deduplication, page citations, bilingual query expansion, and explicit insufficient-evidence responses.
 - Structured scientific metadata extraction through GPT-4o, Pydantic validation, exact quote/page checks, and a small source-checked curated metadata file.
 - Responsive dark dashboard: overview, assistant, research explorer, document/page inspector, experiment comparison, evidence methods, PDF upload, dry-run and local indexing, Consensus CSV/JSON import.
