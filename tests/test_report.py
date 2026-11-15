@@ -86,3 +86,57 @@ def test_unknown_ids_and_overrides(rstore):
         build(rstore, ReportRequest(scenario_id='venus', material_id='pmma'))
     r = build(rstore, ReportRequest(scenario_id='luna', material_id='sibal', o2_pct=40))
     assert r.scenario['o2_pct'] == 40 and r.scenario['customized'] and any('40 %' in g for g in r.gaps)
+
+
+def test_motors_1_and_3_read_the_same_catalog_as_the_chat(rstore):
+    from flame import engines
+    rstore.config.supabase_url, rstore.config.supabase_key = 'https://x.supabase.co', 'k'
+    local = json.loads((ROOT / 'datasets' / 'psi' / 'investigations.json').read_text(encoding='utf-8'))
+    only = [i for i in local['investigations'] if i['id'] in ('bass', 'sofie')]
+    row = {'preset_id': 'luna', 'name': 'Base lunar', 'o2_pct': 30, 'pressure_kpa': 70.3, 'pressure_psi': 10.2, 'flow_cms': 10, 'gravity_g': 0.167, 'note': None}
+    class R:
+        def __init__(self, data): self.data = data
+        def raise_for_status(self): pass
+        def json(self): return self.data
+    def fake_get(url, **kw):
+        return R([{'raw_json': i} for i in only] if url.endswith('/investigations') else [row])
+    catalog._SUPABASE_CACHE.clear()
+    with patch('httpx.get', side_effect=fake_get):
+        cat = engines.load_psi_catalog(rstore)
+    catalog._SUPABASE_CACHE.clear()
+    assert [i['id'] for i in cat['investigations']] == ['bass', 'sofie']
+    assert cat['habitats'] == [{'id': 'luna', 'name': 'Base lunar', 'o2': 30.0, 'pressure': 70.3, 'pressure_psi': 10.2, 'flow': 10.0, 'gravity': 0.167, 'note': None}]
+    ranking = engines.calculate_mission_match({'o2': 30, 'pressure': 70.3, 'flow': 10, 'gravity': 0.167}, cat['investigations'])
+    assert {r['acronym'] for r in ranking} == {'BASS', 'SoFIE'}
+
+
+def test_motor2_reads_only_source_linked_runs_from_supabase(rstore):
+    from flame import runs
+    from flame.ood.data import load_dataset
+    rstore.config.supabase_url, rstore.config.supabase_key = 'https://x.supabase.co', 'k'
+    bundle = json.loads(runs.BUNDLE.read_text(encoding='utf-8'))['observations']
+    def as_row(o, reviewed=True):
+        out = o['outputs']
+        return {'experiment_id': o['experiment_id'], 'fuel': o['fuel'], 'configuration': o['configuration'], 'gravity_g': o['gravity_g'],
+                'oxygen_pct': o['oxygen_pct'], 'pressure_kpa': o['pressure_kpa'], 'pressure_psi': 14.7, 'airflow_cm_s': o['airflow_cm_s'],
+                'spread_mm_s': out.get('spread_mm_s'), 'minimum_oxygen_pct': out.get('minimum_oxygen_pct'), 'length_mm': out.get('length_mm'),
+                'provenance': o['provenance'], 'reviewed': reviewed, 'source': o['source'], 'citation': o['citation']}
+    invented = dict(as_row(bundle[0]), experiment_id='bass2-pmma-0g-flow10', spread_mm_s=1.15, minimum_oxygen_pct=16.3)
+    class R:
+        def raise_for_status(self): pass
+        def json(self): return [as_row(o) for o in bundle] + [invented]
+    catalog._SUPABASE_CACHE.clear(); runs._LAST['at'] = 0
+    with patch('httpx.get', return_value=R()):
+        path = runs.observations_path(rstore.config)
+    catalog._SUPABASE_CACHE.clear()
+    rows, _ = load_dataset(path)
+    assert path.name == 'combustion-observations.supabase.json' and runs.SOURCE['observations'] == 'supabase'
+    assert len(rows) == len(bundle) and 'bass2-pmma-0g-flow10' not in {r.experiment_id for r in rows}
+    assert not any(r.reviewed for r in rows) and 'bass2-pmma-0g-flow10' in runs.SOURCE['detail']
+    original = {o['experiment_id']: o for o in bundle}
+    assert all(r.outputs == original[r.experiment_id]['outputs'] and r.leakage_group == original[r.experiment_id]['leakage_group'] for r in rows)
+
+
+def test_motor2_falls_back_to_the_bundle_without_supabase(rstore):
+    from flame import runs
+    assert runs.observations_path(rstore.config) == runs.BUNDLE and runs.SOURCE['observations'] == 'local'

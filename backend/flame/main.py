@@ -199,7 +199,7 @@ def create_app(config: Settings | None = None):
             "investigations": invs,
             "ground_studies": cat.get("ground_studies", []),
             "initial_ranking": initial_ranking,
-            "ood_status": ood_status(cfg.data_dir / 'combustion-observations.json')
+            "ood_status": ood_status(obs_path())
         }
 
     # --- MOTOR 1: MISSION-MATCHER (RANKING MULTICRITERIO) ---
@@ -213,6 +213,16 @@ def create_app(config: Settings | None = None):
         return {"target_habitat": target, "ranking": ranking}
 
     # --- MOTOR 2: PARTIAL-G & LOI PREDICTOR (OOD ML DE MEYLIN) ---
+    from .runs import observations_path, SOURCE as runs_source
+    def obs_path():
+        # Supabase experimental_runs (solo filas con fuente) o, si no está disponible, el archivo local.
+        return observations_path(cfg)
+
+    @app.get('/api/motor2/source')
+    def motor2_source():
+        obs_path()
+        return runs_source
+
     from .ood.schema import Query, Dataset, EvidenceQuery, GravitySweepQuery
     from .ood.service import status as ood_status, infer as ood_infer
     from .ood.evidence import inspect_evidence
@@ -220,7 +230,7 @@ def create_app(config: Settings | None = None):
     @app.post('/api/ood/evidence')
     @app.post('/api/motor2/evidence')
     def gravity_evidence(query: EvidenceQuery):
-        return inspect_evidence(cfg.data_dir / 'combustion-observations.json', query)
+        return inspect_evidence(obs_path(), query)
 
     @app.get('/api/ood/schema')
     def gravity_dataset_schema():
@@ -229,29 +239,29 @@ def create_app(config: Settings | None = None):
     @app.get('/api/ood/status')
     @app.get('/api/motor2/status')
     def gravity_status():
-        return ood_status(cfg.data_dir / 'combustion-observations.json')
+        return ood_status(obs_path())
 
     @app.post('/api/ood/gravity-sweep')
     @app.post('/api/motor2/gravity-sweep')
     def gravity_curve(query: GravitySweepQuery):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
         from .ood.sweep import gravity_sweep
-        return gravity_sweep(cfg.data_dir / 'combustion-observations.json', query)
+        return gravity_sweep(obs_path(), query)
 
     @app.post('/api/ood/predict')
     @app.post('/api/motor2/predict')
     def gravity_predict(query: Query):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
-        return ood_infer(cfg.data_dir / 'combustion-observations.json', query)
+        return ood_infer(obs_path(), query)
 
     @app.post('/api/ood/validate')
     @app.post('/api/motor2/validate')
     def gravity_validate(query: Query):
-        if not ood_status(cfg.data_dir / 'combustion-observations.json')['dependencies_ready']:
+        if not ood_status(obs_path())['dependencies_ready']:
             raise HTTPException(503, 'Install the science optional dependencies')
-        return ood_infer(cfg.data_dir / 'combustion-observations.json', query, validation=True)
+        return ood_infer(obs_path(), query, validation=True)
 
     # --- MOTOR 3: EXPERIMENTAL DIFF-ENGINE (INTRA E INTER-INVESTIGACIÓN) ---
     @app.get('/api/motor3/intra/{investigation_id}')
@@ -304,7 +314,7 @@ def create_app(config: Settings | None = None):
     # --- EXPORTADOR CSV LIMPIO PARA MODELADO PREDICTIVO ---
     @app.get('/api/export.csv')
     def export_csv():
-        obs_file = cfg.data_dir / 'combustion-observations.json'
+        obs_file = obs_path()
         if not obs_file.exists():
             return Response("experiment_id,fuel,gravity_g,oxygen_pct,pressure_kpa,airflow_cm_s\n", media_type="text/csv")
         obs = json.loads(obs_file.read_text(encoding='utf-8')).get('observations', [])

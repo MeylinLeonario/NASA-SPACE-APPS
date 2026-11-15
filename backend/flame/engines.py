@@ -27,7 +27,20 @@ BASIS_CONFIDENCE = {
 
 
 def load_psi_catalog(store=None) -> Dict[str, Any]:
-    """Carga datasets/psi/investigations.json (o data/investigations.json como respaldo)."""
+    """Catálogo para los motores 1 y 3: investigaciones (tabla investigations) y hábitats (tabla habitats_presets)
+    desde Supabase cuando está configurado; si no, o si falla, datasets/psi/investigations.json."""
+    if store is not None and hasattr(store.config, "catalog_dir"):
+        try:
+            from . import catalog
+            cat, _ = catalog.load(Path(store.config.catalog_dir), store.config)
+            if cat:
+                presets, _origin = catalog.scenarios(Path(store.config.catalog_dir), store.config)
+                habitats = [{"id": h["id"], "name": h["name"], "o2": h["o2_pct"], "pressure": h["pressure_kpa"],
+                             "pressure_psi": h["pressure_psi"], "flow": h["flow_cms"], "gravity": h["gravity_g"],
+                             "note": h.get("note")} for h in presets]
+                return dict(cat, habitats=habitats or cat.get("habitats", []))
+        except Exception:  # cualquier problema: se usa la lectura directa del JSON de abajo
+            pass
     candidates = []
     if store is not None and hasattr(store.config, "catalog_dir"):
         candidates.append(Path(store.config.catalog_dir) / "investigations.json")
