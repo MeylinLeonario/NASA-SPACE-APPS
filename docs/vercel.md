@@ -50,6 +50,39 @@ antes de exponer las operaciones de carga o indexación a visitantes públicos.
 
 ## Configuración en Vercel
 
+### Anthropic en el proyecto backend
+
+Configura estas variables en **el proyecto FastAPI**, para el entorno desplegado,
+y vuelve a desplegar después de guardarlas:
+
+```dotenv
+LLM_PROVIDER=anthropic
+ANTHROPIC_API_KEY=tu-clave-privada
+ANTHROPIC_MODEL=claude-haiku-5-5
+ENABLE_PAID_API=true
+```
+
+`ANTHROPIC_MODEL` debe estar habilitado para tu cuenta. Las claves del frontend
+o del proyecto local no se transfieren al backend en Vercel. No uses el prefijo
+`NEXT_PUBLIC_` para claves. `auto` selecciona Anthropic si solo su clave está
+configurada; con ambas claves configura `anthropic` explícitamente.
+
+`GET /health` informa `synthesis_provider`, `synthesis_status` y
+`synthesis_model`. `configured_not_verified` confirma configuración local, no
+autenticación remota. Para comprobar clave, red y acceso al modelo sin generar
+texto ni consumir tokens:
+
+```bash
+curl -X POST https://TU-BACKEND.vercel.app/api/provider/check
+```
+
+Si usas `FLAME_API_TOKEN`, añade la cabecera de autorización del backend.
+`status=connected` confirma acceso al catálogo del modelo, no una generación.
+Un error identifica autenticación, permisos, modelo no disponible, límite de uso,
+timeout o conexión. Los mensajes no incluyen claves ni cuerpos del proveedor.
+
+### Frontend
+
 1. Importa el repositorio y selecciona la rama que contenga estos cambios.
 2. Establece **Root Directory: `frontend`** y **Framework Preset: Next.js**.
 3. Usa **Node.js 24.x**, instalación `npm ci`, build `npm run build` y deja

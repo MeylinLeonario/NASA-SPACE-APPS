@@ -16,6 +16,7 @@ from pydantic import BaseModel, Field
 
 from .config import Settings, settings
 from .store import Store
+from .provider import Provider, ProviderError
 from .models import (
     DocumentResponse, IngestRequest, IngestResponse, SearchRequest, SearchResponse,
     ChatRequest, ChatResponse, ImportRequest
@@ -40,6 +41,8 @@ class Health(BaseModel):
     paid_api_enabled: bool
     synthesis_ready: bool
     synthesis_model: str
+    synthesis_provider: str
+    synthesis_status: str
     embedding_model: str
     consensus: str
 
@@ -138,6 +141,10 @@ def create_app(config: Settings | None = None):
     async def http_error(request, exc):
         return JSONResponse(status_code=exc.status_code, content={'error': {'code': f'http_{exc.status_code}', 'message': exc.detail}})
 
+    @app.exception_handler(ProviderError)
+    async def provider_error(request, exc):
+        return JSONResponse(status_code=exc.status_code, content={'error': {'code': exc.code, 'message': str(exc)}})
+
     @app.exception_handler(Exception)
     async def unexpected(request, exc):
         log.error('Request failed: %s', type(exc).__name__)
@@ -169,9 +176,16 @@ def create_app(config: Settings | None = None):
             'paid_api_enabled': cfg.enable_paid_api,
             'synthesis_ready': synthesis_ready,
             'synthesis_model': synthesis_model,
+            'synthesis_provider': cfg.synthesis_provider,
+            'synthesis_status': cfg.synthesis_status,
             'embedding_model': cfg.openai_embedding_model,
             'consensus': 'manual_import_only'
         }
+
+    @app.post('/api/provider/check')
+    def check_provider():
+        # Checks credentials/model access without generating text or spending tokens.
+        return Provider(store).check_connection()
 
     @app.get('/api/catalog/source')
     def catalog_source():

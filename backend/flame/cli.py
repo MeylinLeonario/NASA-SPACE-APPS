@@ -22,7 +22,7 @@ if __name__ == '__main__':
                        'key_configured': bool(cfg.openai_api_key),
                        'paid_api_enabled': cfg.enable_paid_api,
                        'status': 'configured_not_verified' if cfg.enable_paid_api and cfg.openai_api_key else 'disabled'},
-            'synthesis': {'provider': cfg.llm_provider, 'model': cfg.synthesis_model,
+            'synthesis': {'provider': cfg.synthesis_provider, 'model': cfg.synthesis_model,
                           'anthropic_key_configured': bool(cfg.anthropic_api_key),
                           'status': 'configured_not_verified' if cfg.synthesis_ready else 'disabled'},
             'consensus': {'status': 'manual_import_only',

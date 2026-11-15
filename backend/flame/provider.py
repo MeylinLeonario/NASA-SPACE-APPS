@@ -8,6 +8,12 @@ from .store import Store
 
 log = logging.getLogger(__name__)
 
+class ProviderError(RuntimeError):
+    def __init__(self, code, message, status_code=502):
+        super().__init__(message)
+        self.code, self.status_code = code, status_code
+
+
 class Provider:
     def __init__(self, store: Store):
         self.store = store
@@ -90,8 +96,8 @@ class Provider:
         return result['ids'][0]
 
     def structured(self, system, user, schema, operation):
-        if self.cfg.llm_provider == 'anthropic':
-            return self._structured_anthropic(system, user, schema, operation)
+        if self.cfg.synthesis_provider == 'anthropic':
+            return self._anthropic_request(lambda: self._structured_anthropic(system, user, schema, operation))
         result = self.client.chat.completions.parse(model=self.cfg.openai_model, temperature=0.1,
             messages=[{'role': 'system', 'content': system}, {'role': 'user', 'content': user}],
             response_format=schema, max_completion_tokens=2500)
@@ -100,6 +106,36 @@ class Provider:
         if parsed is None:
             raise ValueError('Provider returned no validated structured answer')
         return parsed, usage
+
+    def _anthropic_request(self, action):
+        import anthropic
+        try:
+            return action()
+        except anthropic.APIStatusError as error:
+            code, message = {
+                400: ('anthropic_request_invalid', 'Anthropic rechazó la solicitud. Revisa el modelo, sus límites y la facturación de la cuenta.'),
+                401: ('anthropic_authentication_failed', 'Anthropic rechazó ANTHROPIC_API_KEY. Revisa la clave del proyecto backend en Vercel y vuelve a desplegar.'),
+                403: ('anthropic_permission_denied', 'La cuenta de Anthropic no tiene permiso para esta operación o modelo.'),
+                404: ('anthropic_model_not_found', 'ANTHROPIC_MODEL no está disponible para esta cuenta. Configura un modelo habilitado y vuelve a desplegar.'),
+                429: ('anthropic_rate_limited', 'Anthropic alcanzó su límite de uso. Revisa los límites y el saldo de la cuenta.'),
+            }.get(error.status_code, ('anthropic_unavailable', 'Anthropic no está disponible temporalmente. Vuelve a intentarlo.'))
+            log.warning('Anthropic request failed: status=%s code=%s', error.status_code, code)
+            raise ProviderError(code, message, 429 if error.status_code == 429 else 502) from error
+        except anthropic.APITimeoutError as error:
+            raise ProviderError('anthropic_timeout', 'La solicitud a Anthropic excedió el tiempo de espera.', 504) from error
+        except anthropic.APIConnectionError as error:
+            raise ProviderError('anthropic_connection_failed', 'El backend no pudo conectarse a api.anthropic.com. Revisa la salida HTTPS del servidor.', 503) from error
+
+    def check_connection(self):
+        if not self.cfg.synthesis_ready:
+            raise ProviderError(self.cfg.synthesis_status,
+                'Configura LLM_PROVIDER, la clave del proveedor y ENABLE_PAID_API=true en el backend y vuelve a desplegar.', 503)
+        if self.cfg.synthesis_provider == 'anthropic':
+            self._anthropic_request(lambda: self.anthropic_client.models.retrieve(self.cfg.anthropic_model))
+        else:
+            self.client.models.retrieve(self.cfg.openai_model)
+        return {'status': 'connected', 'provider': self.cfg.synthesis_provider,
+                'model': self.cfg.synthesis_model, 'generation_verified': False}
 
     @property
     def anthropic_client(self):

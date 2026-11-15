@@ -2,7 +2,7 @@ from pathlib import Path
 import os
 from typing import Literal
 from functools import lru_cache
-from pydantic import Field
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     supabase_url: str = ''
     supabase_key: str = ''
     # Answer synthesis provider. Embeddings remain OpenAI-only.
-    llm_provider: Literal['openai', 'anthropic'] = 'openai'
+    llm_provider: Literal['auto', 'openai', 'anthropic'] = 'auto'
     anthropic_api_key: str = ''
     anthropic_model: str = 'claude-haiku-5-5'
     anthropic_max_tokens: int = Field(default=12000, ge=500, le=32000)
@@ -41,14 +41,31 @@ class Settings(BaseSettings):
     output_usd_per_million: float = 0.60
     flame_api_token: str = ''
 
+    @field_validator('anthropic_api_key', 'openai_api_key', 'anthropic_model', 'openai_model', 'llm_provider', mode='before')
+    @classmethod
+    def strip_provider_settings(cls, value):
+        return value.strip() if isinstance(value, str) else value
+
+    @property
+    def synthesis_provider(self) -> str:
+        if self.llm_provider != 'auto':
+            return self.llm_provider
+        return 'anthropic' if self.anthropic_api_key and not self.openai_api_key else 'openai'
+
     @property
     def synthesis_model(self) -> str:
-        return self.anthropic_model if self.llm_provider == 'anthropic' else self.openai_model
+        return self.anthropic_model if self.synthesis_provider == 'anthropic' else self.openai_model
+
+    @property
+    def synthesis_status(self) -> str:
+        if not self.enable_paid_api:
+            return 'paid_api_disabled'
+        key = self.anthropic_api_key if self.synthesis_provider == 'anthropic' else self.openai_api_key
+        return 'configured_not_verified' if key else 'api_key_missing'
 
     @property
     def synthesis_ready(self) -> bool:
-        key = self.anthropic_api_key if self.llm_provider == 'anthropic' else self.openai_api_key
-        return bool(self.enable_paid_api and key)
+        return self.synthesis_status == 'configured_not_verified'
 
 @lru_cache
 def settings() -> Settings:
