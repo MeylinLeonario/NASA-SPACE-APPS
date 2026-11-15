@@ -1,11 +1,12 @@
 # Mediciones extraídas de los PDF de `papers`
 
-Se examinaron los **19 PDF** del repositorio. Este paquete contiene **123 registros de extracción**, no 123 experimentos independientes. Las tablas y los valores seleccionados se transcribieron con sus páginas; las cuatro tablas principales de NASA TM-100195 se comprobaron visualmente. Las ampliaciones de PMMA se digitalizaron desde marcadores vectoriales identificados en la figura original; no se generaron puntos intermedios de curvas ni se inventaron condiciones ausentes.
+Se examinaron los **19 PDF** del repositorio. Este paquete contiene **143 registros de extracción**, no 143 experimentos independientes. Las tablas y los valores seleccionados se transcribieron con sus páginas; las cuatro tablas principales de NASA TM-100195 se comprobaron visualmente. Las ampliaciones de PMMA se digitalizaron desde marcadores vectoriales identificados en la figura original; no se generaron puntos intermedios de curvas ni se inventaron condiciones ausentes.
 
 ## Archivos
 
-- `combustion-observations.json`: 91 filas con los campos obligatorios del contrato OOD; todas tienen `reviewed: false`. Contienen 91 velocidades de propagación y 51 longitudes de llama. No contienen umbrales de oxígeno convertidos artificialmente en observaciones puntuales ni temperaturas de llama inventadas.
-- `extracted-measurements.csv`: los 123 registros, incluidos resultados incompletos, celdas originales, banderas y campos ausentes; se puede abrir en Excel. Las listas y celdas compuestas están serializadas como JSON en sus columnas.
+- `combustion-observations.json`: 111 filas con los campos obligatorios del contrato OOD; todas tienen `reviewed: false`. Contienen 111 velocidades de propagación y 51 longitudes de llama. No contienen umbrales de oxígeno convertidos artificialmente en observaciones puntuales ni temperaturas de llama inventadas.
+- `extracted-measurements.csv`: los 143 registros, incluidos resultados incompletos, celdas originales, banderas y campos ausentes; se puede abrir en Excel. Las listas y celdas compuestas están serializadas como JSON en sus columnas.
+- `confined-digitization.json`: 20 puntos digitalizados manualmente de combustión confinada; incluye centros en píxeles de las imágenes originales, calibración de ejes, filas exportadas y auditoría. Se reproduce con `python scripts/extract_confined_observations.py`.
 - `pmma-figure4-digitization.json`: coordenadas, calibración y puntos reproducibles de la figura de PMMA.
 - `extraction-audit.json`: inventario de los 19 documentos, huellas SHA-256, páginas PDF (numeración desde 1), ubicación de cada tabla/fila, valores originales, conversiones, exclusiones y notas. Este archivo permite verificar qué observación procede de qué PDF.
 
@@ -32,7 +33,9 @@ El archivo de `datasets/papers/` está versionado en Git; el archivo activo de `
 | Resultados preliminares Saffire VI, ICES-2024-365 | 5 | 0 |
 | Kobayashi et al., SCEM/ISS, Fig. 1A | 2 | 0 |
 | Manuscrito de propagación concurrente sobre aislamiento de cables | 1 | 0 |
-| **Total** | **123** | **91** |
+| Li et al., ICES-2020-407, Fig. 7a | 9 | 9 |
+| Sharma et al. (2024), Fig. 13 | 11 | 11 |
+| **Total** | **143** | **111** |
 
 Las 89 entradas de Olson son 77 filas individuales de las tablas A-I–A-IV, 4 límites de extinción expresados como intervalos y 8 filas de una tabla secundaria de hipergravedad. De las 77 filas individuales se excluyeron 8 con propagación oscilatoria y 1 con una posible anomalía de impresión; quedan 68. En Olson no se añadieron como experimentos nuevos los promedios de las tablas ni sus repeticiones en la tabla II. En el manuscrito de PMMA, cada punto publicado representa una media de dos repeticiones: se conserva como una única observación agregada, sin inventar las dos filas de origen.
 
@@ -86,8 +89,8 @@ El paquete no contiene observaciones directas de la Luna o Marte. Los resultados
 | Confined Combustion of Polymeric Solid Materials in microgravity.pdf | 37 | 0 / 0 | Experimental test matrix plus figures; no table of directly linked exact output values transcribed. Requires figure digitization, not trend-to-number conversion. |
 | Dynamics of flame spread over filter papers in microgravity aboard the ISS.pdf | 8 | 2 / 0 | Two Figure 1A explicitly labeled slopes extracted. Run pressure and specimen width unresolved. |
 | Effects of Ambient Conditions on Concurrent-Flow Flame Spread over a wide thin solid in microgravity.pdf | 22 | 0 / 0 | Numerical simulations with comparisons to prior Saffire data; do not count simulations or repeated literature data as new direct measurements. |
-| Effects of Confinement on Flame Spread in Microgravity.pdf | 10 | 0 / 0 | BASS-II confinement experiments; main output points appear in figures. Additional extraction requires digitization with baffle/material conditioning. |
-| Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf | 13 | 0 / 0 | ISS confinement experiments; Table 1 is a test matrix, not an output table. Figures need digitization with baffle and sidedness conditioning. |
+| Effects of Confinement on Flame Spread in Microgravity.pdf | 10 | 9 / 9 | Nine Fig. 7a SIBAL marker readings, separated by baffle type and distance. Nominal ISS atmosphere; overlapping D=3 cm markers excluded. |
+| Effects of Confinement on Opposed-Flow Flame Spread over Cellulose.pdf | 13 | 11 / 11 | Eleven Fig. 13 SIBAL flow-stage readings linked to Table 1. Repeated figures excluded; stages share campaign dependence. |
 | Effects of oxygen concentration of oxidizer flow on laminar diffusion flame established over liquid fuel beds at microgravity.pdf | 25 | 0 / 0 | Numerical liquid-fuel study; incompatible mechanism, no simulated values promoted to observations. |
 | Fire Safety in Space – Beyond Flammability Testing of Small.pdf | 17 | 0 / 0 | Background/design and literature discussion. No additional unambiguous run-level numerical output rows extracted. |
 | Fire safety in space – Investigating flame spread interaction over wires.pdf | 7 | 0 / 0 | Image-only ScienceDirect article preview; OCR recovered abstract/snippets/recommendations, not a full experimental table. Full article needed. |
@@ -119,4 +122,42 @@ Para probar la importación sin escribir, usa `--check`. Para verificar conversi
 
 Para PMMA, el rango de flujo observado es 0–25 cm/s, mientras que oxígeno y presión están fijos a 21% y 101.325 kPa. El panel muestra estos rangos y advierte al consultar fuera de ellos. Más configuraciones no equivalen a validación independiente. Todas las filas nuevas permanecen pendientes de revisión científica.
 
-Ejecuta de nuevo `python scripts/import_paper_observations.py` después de actualizar Git: añade 21 filas a la versión anterior de 70 y conserva todas las filas y revisiones locales existentes. Una segunda importación no duplica registros.
+Ejecuta de nuevo `python scripts/import_paper_observations.py` después de actualizar Git: añade 20 filas a la versión anterior de 91 (41 si conservas la versión de 70) y conserva todas las filas y revisiones locales existentes. Una segunda importación no duplica registros.
+
+## Ampliación: 20 observaciones de combustión confinada
+
+Se conservan intactas las primeras 91 filas y se añaden **20 velocidades de
+propagación**, para un total de **111 observaciones**:
+
+- **9 puntos** de Li et al., *Effects of Confinement on Flame Spread in Microgravity*,
+  ICES-2020-407, Fig. 7a, página PDF 8. Son mediciones con flujo concurrente
+  impuesto de 7 cm/s sobre SIBAL expuesto de 22 × 100 mm, con tres tipos de
+  baffle y distancias entre baffles de 2, 4 y 5 cm. Se excluyen los tres puntos
+  superpuestos de 3 cm. El eje está en cm/s: se convierte a mm/s multiplicando por 10.
+- **11 puntos** de Sharma et al. (2024), DOI `10.1007/s12217-024-10106-y`, Fig. 13,
+  página PDF 9, enlazados a la tabla 1 de la página 5. Son etapas de flujo opuesto
+  de cuatro configuraciones SIBAL, no once ensayos independientes. Se conservan
+  los valores nominales de flujo de la tabla; no se añaden otra vez las figuras
+  11, 12 o 14 que repiten estas mediciones. La sección de métodos indica 22 mm
+  de ancho expuesto, mientras que la leyenda de la figura 14 dice 21 mm: se
+  registra esta discrepancia para revisión.
+
+Ambos documentos especifican 1 atm y aproximadamente 22% O₂, con variaciones
+diarias de 21.3–22.9%. Se conserva **22% como condición nominal**, no como lectura
+exacta de cada punto. La temperatura no se imputa. El valor de gravedad 0 g
+representa microgravedad nominal de la ISS; no se inventan mediciones lunares o
+marcianas.
+
+La digitalización es **manual sobre marcadores raster**, con reproducción de las
+conversiones mediante coordenadas y ejes registrados. El adaptador verifica la
+huella del PDF, la imagen y la presencia del color cerca de cada coordenada;
+esas comprobaciones no constituyen revisión científica independiente. Se redondea
+a 0.01 mm/s, que es resolución de lectura, no desviación estándar. Las barras de
+intervalos al 95% de la figura de 2020 no se convierten en sigma por punto.
+
+Las 20 filas quedan en `reviewed: false` y comparten un grupo conservador de
+dependencia de la campaña Confined Combustion. Añaden **13 configuraciones**
+(19 en total), todas con datos nuevos solo en microgravedad: permiten inspeccionar
+evidencia, pero no cumplen los dos niveles de gravedad requeridos para predecir
+otras gravedades. Las cuatro configuraciones ya aptas para estimación exploratoria
+siguen siendo las de Kimwipes y PMMA fino.

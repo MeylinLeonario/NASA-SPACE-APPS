@@ -34,7 +34,13 @@ async function setup(page: Page, status: (typeof loaded | typeof empty) & {obser
     await route.fulfill({json});
   });
   await page.goto('/');
-  return page.getByRole('region', {name: 'Predict fire behaviour at gravities never tested'});
+  await page.getByRole('button', {name: /Predecir y preguntar/}).first().click();
+  const panel = page.getByRole('region', {name: 'Predict fire behaviour at gravities never tested'});
+  // The app supplies the lunar scenario; scientific fixture cases use a fixed atmosphere.
+  await expect(panel.getByLabel('Oxygen (%)')).toHaveValue('30');
+  await panel.getByLabel('Oxygen (%)').fill('21');
+  await panel.getByRole('slider', {name: 'Gravitational acceleration'}).fill('0.38');
+  return panel;
 }
 
 function prediction(mean: number, oxygen: number) {
@@ -332,4 +338,46 @@ test('gravity response shows model bands, probes without refitting and flags uns
   expect(report.points).toHaveLength(1001);
   expect(report.dataset_sha256).toBe('software-fixture-only');
   expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth)).toBe(true);
+});
+
+test('SIBAL measured results remain visible without fitting or relabeling them as target-gravity predictions', async ({page}) => {
+  const measuredCoverage = {observations: 1, gravity_levels: [0], prediction_eligible: false,
+    folds: [{gravity_g: 0, eligible: false, training_n: 0, test_n: 1}]};
+  const sibal = {...loaded.cohorts[0], fuel: 'Cotton-fiberglass (SIBAL)', configuration: 'Saffire I/II 406 mm sheet',
+    coverage: {spread_mm_s: measuredCoverage, length_mm: measuredCoverage}};
+  const panel = await setup(page, {...empty, observations: 1, unreviewed_observations: 1, exploratory_cohorts: [sibal]});
+  let modelRequests = 0;
+  page.on('request', request => {if (/\/api\/ood\/(predict|gravity-sweep)$/.test(new URL(request.url()).pathname)) modelRequests++;});
+  const observation = {id: 'saffire-1-1', gravity_g: 0, oxygen_pct: 21.7, pressure_kpa: 101.325, airflow_cm_s: 20,
+    temperature_k: null, observed: 1.8, measurement_sd: null, source: 'Saffire', citation: 'Source-linked Saffire measurement fixture',
+    reviewed: false, provenance: 'microgravity', leakage_group: 'saffire-campaign'};
+  const evidence = {status:'available', reason:null, dataset_sha256:'sibal-fixture', model_fitted:false,
+    cohort_observations:1, dependency_groups:1, gravity_note:'Nominal ISS microgravity.', limitations:[],
+    outputs:{spread_mm_s:{unit:'mm/s',observations:[observation],fold_preview:null,
+      by_gravity:[{gravity_g:0,observations:1,reviewed:0}]},
+      length_mm:{unit:'mm',observations:[{...observation,observed:40}],fold_preview:null,
+        by_gravity:[{gravity_g:0,observations:1,reviewed:0}]}}};
+  await page.route('**/api/ood/evidence', route => route.fulfill({json:evidence}));
+  await panel.getByRole('checkbox', {name:'Use extracted observations for exploratory estimates'}).check();
+  const measured = panel.getByRole('region', {name:'Measured results · not predictions'});
+  await expect(measured.getByRole('article', {name:'Measured Flame-spread velocity'}).locator('.ood-estimate-value')).toHaveText('1.8 mm/s');
+  await expect(measured.getByRole('article', {name:'Measured Flame length'}).locator('.ood-estimate-value')).toHaveText('40 mm');
+  await expect(measured.getByText('0 g · 21.7% O₂ · 101.3 kPa · 20 cm/s')).toHaveCount(2);
+  await expect(panel.getByRole('button', {name:'Estimate supported properties'})).toBeDisabled();
+  await expect(panel.getByRole('region', {name:'Explore fire behaviour across gravity'})).toHaveCount(0);
+  await panel.getByRole('slider', {name:'Gravitational acceleration'}).fill('0.165');
+  await panel.getByLabel('Oxygen (%)').fill('30');
+  await expect(measured.getByText('0 g · 21.7% O₂ · 101.3 kPa · 20 cm/s')).toHaveCount(2);
+  await expect(measured.getByText(/Transcription pending scientific review/)).toHaveCount(2);
+  await measured.getByText('Source · saffire-1-1', {exact:true}).first().click();
+  await expect(measured.getByText('Source-linked Saffire measurement fixture').first()).toBeVisible();
+  await expect(panel.locator('.ood-evidence')).toHaveCount(1);
+  const downloadEvent = page.waitForEvent('download');
+  await panel.getByRole('button', {name:'Export observed evidence'}).click();
+  const stream = await (await downloadEvent).createReadStream();
+  const chunks = [];
+  for await (const chunk of stream!) chunks.push(chunk);
+  expect(JSON.parse(Buffer.concat(chunks).toString())).toEqual(evidence);
+  expect(modelRequests).toBe(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });

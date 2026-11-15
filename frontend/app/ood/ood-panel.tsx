@@ -17,14 +17,16 @@ type Status = {
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
-export default function OODPanel({token}: {token: string}) {
+export type InitialConditions = {gravity: number; oxygen: number; pressureKpa: number; airflow: number};
+
+export default function OODPanel({token, initialConditions}: {token: string; initialConditions?: InitialConditions}) {
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [gravity, setGravity] = useState(.38);
-  const [oxygen, setOxygen] = useState('21');
-  const [pressure, setPressure] = useState('101.325');
-  const [airflow, setAirflow] = useState('0');
+  const [gravity, setGravity] = useState(initialConditions?.gravity ?? .38);
+  const [oxygen, setOxygen] = useState(String(initialConditions?.oxygen ?? 21));
+  const [pressure, setPressure] = useState(String(initialConditions ? Number(initialConditions.pressureKpa.toFixed(4)) : 101.325));
+  const [airflow, setAirflow] = useState(String(initialConditions?.airflow ?? 0));
   const [temperature, setTemperature] = useState('');
   const [cohort, setCohort] = useState('0');
   const [model, setModel] = useState('gpr');
@@ -182,13 +184,14 @@ export default function OODPanel({token}: {token: string}) {
           </div>
           {selected && <div className="ood-coverage"><h4>Evidence available for this cohort</h4><div className="ood-results">{Object.entries(coverage).map(([key, value]) => <div className="ood-coverage-item" key={key}>
             <strong>{propertyLabels[key]}</strong><small>{value.observations} observations · {value.gravity_levels.length} gravity levels</small>
-            <span>{value.prediction_eligible ? exploratory ? 'Eligible for exploratory fitting · unvalidated' : 'Eligible for fitting · not a validation claim' : 'Insufficient measurements for fitting'}</span></div>)}</div></div>}
+            <span>{value.prediction_eligible ? exploratory ? 'Eligible for exploratory fitting · unvalidated' : 'Eligible for fitting · not a validation claim' : value.observations ? 'Measurements available · insufficient gravity coverage or rows for fitting' : 'No measured values available'}</span></div>)}</div></div>}
           {selected?.observed_ranges && <div className="ood-condition-ranges"><h4>Recorded input coverage for this configuration</h4><p>These ranges describe the observations. Keeping each input within its range does not establish joint support.</p><div className="ood-badges">{Object.entries(selected.observed_ranges).map(([field, range]) => <span className="tag neutral" key={field}>{({oxygen_pct: 'Oxygen (%)', pressure_kpa: 'Pressure (kPa)', airflow_cm_s: 'Airflow (cm/s)', temperature_k: 'Temperature (K)'} as Record<string,string>)[field]}: {range[0]}{range[0] !== range[1] ? ` to ${range[1]}` : ' only'}</span>)}</div></div>}
           <button className="button primary" disabled={!ready || busy}>{busy ? 'Computing…' : 'Estimate supported properties'}</button>
           {selected && !availableProperties && <p>Observations-only configuration: inspect its measurements below. Estimation requires at least three compatible rows across two gravity levels per output; that minimum does not establish scientific sufficiency.</p>}
         </form>
+        {selected && !availableProperties && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token} observationsOnly/>}
         <p className="small-note">Trees have limited ability to extrapolate trends. GPR outputs are fitted independently. Physics-guided GPR requires a documented, applicable physical baseline; no model guarantees extrapolation.</p>
-        <OODGravityCurve conditions={curveConditions} properties={curveProperties} gravity={gravity} onGravityChange={setGravity} onAirflowChange={setAirflow} token={token}/>
+        {availableProperties && <OODGravityCurve conditions={curveConditions} properties={curveProperties} gravity={gravity} onGravityChange={setGravity} onAirflowChange={setAirflow} token={token}/>}
         {result && <div aria-live="polite">{result.data_mode === 'exploratory' && <div className="alert"><strong>Exploratory estimate · not experimentally validated</strong><p>{result.warning}</p></div>}<p>{result.reason}</p>{Object.entries(result.unavailable_outputs || {}).map(([key, reason]) => <p className="ood-warning" key={key}>{propertyLabels[key]}: {reason}</p>)}{Object.keys(result.results).length > 0 && <>
           <div className="ood-result-toolbar"><label>Properties<select value={property} onChange={event => setProperty(event.target.value)}><option value="all">Compare supported properties</option>{Object.keys(result.results).map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}</select></label>
             <button type="button" className="button secondary" onClick={() => downloadJSON('ood-prediction.json', result)}><Download size={14}/> Export prediction</button></div>
@@ -201,7 +204,7 @@ export default function OODPanel({token}: {token: string}) {
           {exploratory && <p className="ood-warning">You can inspect observations in exploratory mode. Scientific validation requires reviewed observations and independent held-out groups.</p>}
           {!validationLevels.length && <p>Validation unavailable: this cohort has no reviewed direct measurements to hold out.</p>}
           {holdout !== '' && !eligibleLevel && <p>Validation unavailable at this level: after excluding related groups, no output retains at least three training observations across two other gravity levels.</p>}
-          {selected && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token}/>}
+          {selected && availableProperties && <OODEvidence cohort={selected} gravity={holdout === '' ? null : Number(holdout)} dataMode={exploratory ? 'exploratory' : 'reviewed'} token={token}/>}
           {!!validation.length && <><button type="button" className="button secondary" onClick={() => downloadJSON('ood-held-out-validation.json', validation)}><Download size={14}/> Export validation</button><ValidationResults results={validation}/></>}
         </div>
         <details className="ood-provenance"><summary>Dataset provenance</summary><p>SHA-256: <small>{status.dataset_sha256 || 'No observation dataset loaded'}</small></p>

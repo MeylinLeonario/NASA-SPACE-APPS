@@ -62,6 +62,9 @@ def test_inspection_does_not_silently_approve_or_invent_a_gravity(cfg):
 
 def test_evidence_endpoint_respects_authentication_and_requires_only_inspection_inputs(cfg):
     cfg.flame_api_token = 'local-test-token'
+    # Explicit empty override isolates inspection from the bundled fallback dataset.
+    cfg.data_dir.mkdir(parents=True, exist_ok=True)
+    (cfg.data_dir / 'combustion-observations.json').write_text('{"schema_version":1,"observations":[]}')
     with TestClient(create_app(cfg)) as client:
         assert client.post('/api/ood/evidence', json=nasa_query().model_dump()).status_code == 401
         headers = {'Authorization': 'Bearer local-test-token'}

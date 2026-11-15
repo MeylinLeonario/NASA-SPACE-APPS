@@ -30,7 +30,7 @@ def test_new_pmma_configurations_fit_separately_but_sibal_is_evidence_only(tmp_p
     path = tmp_path/'observations.json'
     import_observations(path)
     report = status(path)
-    assert len(report['exploratory_cohorts']) == 6
+    assert len(report['exploratory_cohorts']) == 19
     eligible = [c for c in report['exploratory_cohorts'] if c['prediction_eligible']]
     assert len(eligible) == 4
     pmma = [c for c in eligible if c['fuel'] == 'Cast clear PMMA']
@@ -45,7 +45,7 @@ def test_new_pmma_configurations_fit_separately_but_sibal_is_evidence_only(tmp_p
         assert prediction['results']['spread_mm_s']['interval'][0] > 0
         assert prediction['results']['spread_mm_s']['training_n'] in [8,12]
     sibal = [c for c in report['exploratory_cohorts'] if c['fuel']=='Cotton-fiberglass (SIBAL)']
-    assert len(sibal) == 2
+    assert len(sibal) == 15
     assert all(c['availability']=='observations_only' for c in sibal)
     assert all(c['coverage']['spread_mm_s']['gravity_levels']==[0] for c in sibal)
     assert not any(r.reviewed for r in load_dataset(path)[0])
@@ -57,7 +57,7 @@ def test_import_merges_new_rows_into_old_seventy_without_changing_existing_revie
     old[0]['reviewed'] = True
     path = tmp_path/'observations.json'
     path.write_text(json.dumps({'schema_version':1,'observations':old}))
-    assert import_observations(path)['added'] == 21
+    assert import_observations(path)['added'] == 41
     merged = json.loads(path.read_text())
     assert merged['observations'][:70] == old
     assert import_observations(path)['added'] == 0
