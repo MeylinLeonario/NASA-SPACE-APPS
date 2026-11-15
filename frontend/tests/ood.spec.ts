@@ -33,8 +33,14 @@ async function setup(page: Page, status: (typeof loaded | typeof empty) & {obser
       path === '/api/documents' ? [] : path === '/api/ood/gravity-sweep' ? {status:'unavailable',reason:'No model curve supplied in this software fixture.',points:[],observations:[],unit:'mm/s',training_n:0,warning:'Software fixture only.'} : path === '/api/ood/evidence' ? {status: 'unavailable', reason: 'No fixture observations supplied for this test.', cohort_observations: 0, dependency_groups: 0, outputs: {}, gravity_note: null, limitations: [], model_fitted: false, dataset_sha256: null} : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
     await route.fulfill({json});
   });
-  await page.goto('/research');
-  return page.getByRole('region', {name: 'Predict fire behaviour at gravities never tested'});
+  await page.goto('/');
+  await page.getByRole('button', {name: /Predecir y preguntar/}).first().click();
+  const panel = page.getByRole('region', {name: 'Predict fire behaviour at gravities never tested'});
+  // The app supplies the lunar scenario; scientific fixture cases use a fixed atmosphere.
+  await expect(panel.getByLabel('Oxygen (%)')).toHaveValue('30');
+  await panel.getByLabel('Oxygen (%)').fill('21');
+  await panel.getByRole('slider', {name: 'Gravitational acceleration'}).fill('0.38');
+  return panel;
 }
 
 function prediction(mean: number, oxygen: number) {

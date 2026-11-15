@@ -248,3 +248,30 @@ ENABLE_PAID_API=true
 
 Solo cambia la redacción de respuestas. La búsqueda semántica sigue necesitando `OPENAI_API_KEY`; sin ella el
 asistente usa la búsqueda por palabras clave, que funciona sin pagar. Pruebas: `pytest tests/test_catalog_chat.py`.
+
+## Predictor conectado en la rama `mey`
+
+Abre **Predecir y preguntar** en la navegación principal. El laboratorio recibe
+la gravedad, el oxígeno, la ventilación y la presión del escenario (convierte psi
+a kPa). Selecciona explícitamente el material y la configuración experimental:
+un material del escenario no identifica por sí solo una geometría de ensayo.
+
+El módulo usa `/api/ood/status`, `/api/ood/predict`, `/api/ood/gravity-sweep` y
+`/api/ood/evidence` mediante el proxy de Next.js. No genera curvas en el cliente.
+Los controles de Luna, Marte, órbita y Tierra consultan la curva del modelo;
+los marcadores muestran únicamente mediciones con condiciones coincidentes.
+La pestaña **Extract clean data** descarga el mismo conjunto de observaciones que
+usa el backend, incluido el paquete versionado cuando no hay un archivo local.
+**Ask Copilot** consulta `/api/chat` y muestra sus citas y limitaciones. El token
+API opcional se conserva en memoria y se aplica a las consultas y descargas.
+
+El paquete contiene 91 observaciones pendientes de revisión. Para explorar sus
+estimaciones, activa **Use extracted observations for exploratory estimates**.
+Las propiedades sin datos compatibles permanecen deshabilitadas. Los intervalos
+son intervalos del modelo sin calibración independiente; estimar una gravedad
+no probada no demuestra validación ni permite emitir un veredicto de seguridad.
+Los datos incluidos no permiten validar Luna o Marte mediante grupos independientes.
+
+Arranque local: backend en el puerto 8000 y `npm --prefix frontend run dev -- --port 3000`.
+`BACKEND_URL` configura un backend alternativo. Las fuentes tipográficas están
+incluidas en las dependencias para compilar sin descargar desde Google Fonts.

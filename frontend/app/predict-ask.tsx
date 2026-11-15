@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 import { Download, Send } from "lucide-react";
-import OODPanel, { type InitialConditions } from "./ood-panel";
+import OODPanel, { type InitialConditions } from "./ood/ood-panel";
 
 type Answer = {
   answer: string;

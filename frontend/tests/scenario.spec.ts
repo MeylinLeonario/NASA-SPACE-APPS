@@ -152,7 +152,7 @@ test("Predict & Ask uses scientific APIs, exports observations and displays sour
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: /Predict & Ask/ }).click();
+  await page.getByRole("button", { name: /Predecir y preguntar/ }).first().click();
   const panel = page.getByRole("region", {
     name: "Predict fire behaviour at gravities never tested",
   });
@@ -223,7 +223,7 @@ test("Predict & Ask reports service failures without fabricating data", async ({
     }),
   );
   await page.goto("/");
-  await page.getByRole("button", { name: /Predict & Ask/ }).click();
+  await page.getByRole("button", { name: /Predecir y preguntar/ }).first().click();
   await expect(page.locator(".ood-panel").getByRole("alert")).toContainText(
     "Scientific backend unavailable",
   );

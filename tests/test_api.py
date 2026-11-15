@@ -1,4 +1,5 @@
 import json
+import hashlib
 from pathlib import Path
 from unittest.mock import patch
 from fastapi.testclient import TestClient
@@ -94,9 +95,15 @@ def test_health_reports_configured_model_without_exposing_key(cfg):
 
 def test_observation_export_preserves_dataset_and_requires_auth(cfg):
     c = client(cfg)
-    assert c.get('/api/ood/dataset').status_code == 404
+    # Without a local override, export the same source-linked bundle used for fitting.
+    fallback = c.get('/api/ood/dataset')
+    assert fallback.status_code == 200
+    assert fallback.json()['observations']
+    assert c.get('/api/ood/status').json()['dataset_sha256'] == hashlib.sha256(fallback.content).hexdigest()
     bundle = Path(__file__).resolve().parents[1] / 'datasets/papers/combustion-observations.json'
-    raw = bundle.read_bytes()
+    local = json.loads(bundle.read_bytes())
+    local['observations'] = local['observations'][:3]
+    raw = json.dumps(local).encode()
     (cfg.data_dir / 'combustion-observations.json').write_bytes(raw)
     response = c.get('/api/ood/dataset')
     assert response.status_code == 200

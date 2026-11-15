@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
 import { Activity, ArrowDownToLine, ArrowRight, ArrowUpRight, BookOpen, Check, ChevronDown, CircleHelp, Database, ExternalLink, FileText, Flame, FlaskConical, GitCompareArrows, LayoutDashboard, LoaderCircle, Menu, MessageSquare, Microscope, Orbit, Plus, Search, Send, ShieldCheck, Sparkles, Upload, X } from 'lucide-react';
-import OODPanel from './ood-panel';
+import OODPanel from './ood/ood-panel';
 import { FlameComparison, ResearchContexts } from './research-contexts';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
 

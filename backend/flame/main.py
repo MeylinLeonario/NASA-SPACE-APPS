@@ -238,7 +238,7 @@ def create_app(config: Settings | None = None):
 
     @app.get('/api/ood/dataset', response_class=FileResponse)
     def gravity_dataset():
-        path = cfg.data_dir / 'combustion-observations.json'
+        path = obs_path()
         if not path.is_file():
             raise HTTPException(404, 'Observation dataset not loaded')
         Dataset.model_validate_json(path.read_bytes())
