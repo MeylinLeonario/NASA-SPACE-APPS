@@ -2,6 +2,9 @@
   "name": "flame-intelligence-dashboard",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": "24.x"
+  },
   "scripts": {
     "dev": "node dev.mjs",
     "build": "next build",

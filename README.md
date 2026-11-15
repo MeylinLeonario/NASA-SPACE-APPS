@@ -1,5 +1,9 @@
 # FLAME INTELLIGENCE
 
+Para desplegar el frontend en Vercel, sigue la [guía de despliegue](docs/vercel.md).
+Usa `frontend` como Root Directory y configura `BACKEND_URL` con el origen HTTPS
+del backend Python desplegado con almacenamiento persistente.
+
 A local scientific research dashboard for the supplied **Flame in Freefall** brief. FastAPI processes the actual PDF corpus; Next.js presents the library, evidence excerpts, source citations, experiment summaries, and bibliometric charts.
 
 This is a research MVP, not a validated spacecraft fire-safety decision system or an official NASA product. No experimental measurements are synthesized. The official challenge page could not be verified because the environment's HTTPS proxy blocked its domain.

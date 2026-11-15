@@ -10,6 +10,7 @@ data/*
 work/
 frontend/node_modules/
 frontend/.next/
+.vercel/
 frontend/next-env.d.ts
 *.tsbuildinfo
 frontend/test-results/

@@ -55,7 +55,8 @@ export interface HealthStatus {
   embedding_model: string;
 }
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || '';
+// All browser requests use the same-origin Next.js proxy configured by BACKEND_URL.
+const API_BASE = '';
 
 export type CitationKind = 'psi_catalog' | 'background' | 'catalog_summary' | 'paper';
 
