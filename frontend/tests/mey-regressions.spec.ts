@@ -12,6 +12,16 @@ test.beforeEach(async ({page}) => {
     if(path==='/api/investigations') data=records;
     if(path==='/api/motor1/match') data={ranking:records.map((entry,i)=>({...entry,investigation_id:entry.id,relevance_score:90-i*10,match_breakdown:{o2_match_pct:90,pressure_match_pct:80,flow_match_pct:70,gravity_match_pct:60}}))};
     if(path.startsWith('/api/motor3/intra/')) {const record=records.find(x=>path.endsWith(x.id))!;data={...record,fixed_conditions:[{variable:'gravity',min:0,max:0,unit:'g',label:'Fixed'}],iterated_variables:[{variable:'o2',min:record.o2.min,max:record.o2.max,unit:'%',label:'Changed'}],unreported_variables:[],diagnostics_used:[],measured_outcomes:record.findings};}
+    if(path.startsWith('/api/motor3/chart/')) {
+      const record=records.find(item=>path.endsWith(item.id))!;
+      data={investigation_id:record.id,acronym:record.acronym,ranges:[
+        {variable:'o2',unit:'%',...record.o2,note:null,basis:'medido'},
+        {variable:'pressure',unit:'kPa',...record.pressure,note:null,basis:'medido'},
+        {variable:'flow',unit:'cm/s',...record.flow,note:null,basis:'medido'},
+        {variable:'gravity',unit:'g',min:0,max:0,note:null,basis:'medido'},
+      ],observations:record.id==='scem'?[{experiment_id:'scem-row',fuel:'cellulose',configuration:'SCEM measured sample',gravity_g:0,oxygen_pct:21,pressure_kpa:101.3,airflow_cm_s:5,outputs:{spread_mm_s:0.8},citation:'SCEM paper, page 7',reviewed:false}]:[],
+      outputs:record.id==='scem'?{spread_mm_s:'mm/s'}:{},sources:[{id:record.id,title:record.name,url:null}]};
+    }
     if(path==='/api/ood/status')data={reason:null,reviewed_direct_observations:0,unreviewed_observations:12,dependencies_ready:true,cohorts:[],exploratory_cohorts:[cohort,{...cohort,configuration:'not executable',coverage:{spread_mm_s:{...coverage.spread_mm_s,prediction_eligible:false}}}],provenance_counts:{},dataset_sha256:'test'};
     if(path==='/api/ood/evidence')data={status:'available',reason:null,cohort_observations:12,dependency_groups:2,outputs:{},limitations:[]};
     if(path==='/api/ood/predict')data={status:'available',reason:null,data_mode:'exploratory',model:'gpr',results:{spread_mm_s:{unit:'mm/s',mean:1.2,training_n:12,gravity_position:'interpolation',sources:['NASA-TM-100195']}},request:route.request().postDataJSON()};
@@ -67,4 +77,32 @@ test('home copy and accessible language labels change in both directions',async(
  await page.getByRole('button',{name:'ES',exact:true}).click();
  await expect(page.getByRole('button',{name:'Configurar mi escenario'})).toBeVisible();
  await expect(page.locator('html')).toHaveAttribute('lang','es');
+});
+
+test('each ranked paper displays its own chart and sourced measurements',async({page})=>{
+  await page.goto('/');
+  await page.getByRole('button',{name:/2[. ]+Ranking y alertas/}).click();
+  const chart=page.getByRole('region',{name:'Gráfico de la investigación'});
+  await expect(chart).toHaveAttribute('data-investigation-id','bass');
+  await expect(chart.getByRole('heading',{name:'Gráfico del paper · BASS',exact:true})).toBeVisible();
+  await expect(chart.getByRole('img',{name:/Oxígeno: 17 – 21 %/})).toBeVisible();
+  await expect(chart.getByText(/El conjunto disponible no tiene mediciones numéricas/)).toBeVisible();
+  await page.getByRole('button',{name:/SCEM Cellulose study/}).click();
+  await expect(chart).toHaveAttribute('data-investigation-id','scem');
+  await expect(chart.getByRole('heading',{name:'Gráfico del paper · SCEM',exact:true})).toBeVisible();
+  await expect(chart.getByRole('img',{name:/Oxígeno: 17,5 – 21,1 %/})).toBeVisible();
+  await expect(chart.getByLabel('Configuración experimental')).toHaveValue('SCEM measured sample');
+  await chart.getByText('Mediciones y citas').click();
+  await expect(chart.getByText('SCEM paper, page 7')).toBeVisible();
+  await expect(chart.getByText('0,8 mm/s',{exact:true})).toBeVisible();
+  await page.getByRole('button',{name:'EN',exact:true}).click();
+  const englishChart=page.getByRole('region',{name:'Investigation chart'});
+  await expect(englishChart.getByRole('heading',{name:'Paper chart · SCEM',exact:true})).toBeVisible();
+  await expect(englishChart.getByLabel('Horizontal axis')).toBeVisible();
+  await englishChart.getByLabel('Horizontal axis').selectOption('airflow_cm_s');
+  await expect(englishChart.getByLabel('Horizontal axis')).toHaveValue('airflow_cm_s');
+  await page.getByRole('button',{name:/BASS.*Burning and Suppression/}).click();
+  await expect(englishChart).toHaveAttribute('data-investigation-id','bass');
+  await expect(englishChart.getByRole('heading',{name:'Paper chart · BASS',exact:true})).toBeVisible();
+  await expect(englishChart.getByText('SCEM paper, page 7')).toHaveCount(0);
 });

@@ -205,7 +205,6 @@ def create_app(config: Settings | None = None):
             "ood_status": ood_status(obs_path())
         }
 
-    @app.post('/api/motor1/match-missions')  # <-- Ruta añadida para corregir el 404
     @app.post('/api/motor1/match')
     @app.post('/api/rank')
     def motor1_rank(req: HabitatScenarioRequest):
@@ -379,140 +378,27 @@ def create_app(config: Settings | None = None):
         return ood_infer(obs_path(), query, validation=True)
 
     @app.get('/api/motor3/intra/{investigation_id}')
-    def motor3_intra_dynamic(investigation_id: str):
+    def motor3_intra(investigation_id: str):
         cat = engines.load_psi_catalog(store)
         key = investigation_id.strip().lower()
-        inv = next((i for i in cat.get("investigations", []) if i["id"].lower() == key or i["acronym"].lower() == key), None)
-        
-        inv_name = inv["acronym"] if inv else investigation_id.upper()
-        sensors_text = ", ".join(inv.get("sensors", ["Video color e IR", "radiómetros", "termopares"])) if inv else "Video color e IR, radiómetros, termopares"
+        inv = next((item for item in cat.get('investigations', [])
+                    if key in (item['id'].lower(), item['acronym'].lower())), None)
+        if inv is None:
+            raise HTTPException(404, f'Investigation {investigation_id} not found')
+        # Preserve the analysis contract used by the ranking UI. Chart measurements
+        # are served separately with exact source links, never fallback mock runs.
+        return engines.analyze_intra_investigation(inv)
 
-        path = obs_path()
-        filtered_runs = []
-        if path.exists():
-            try:
-                from .ood.data import load_dataset
-                rows, _ = load_dataset(path)
-                for r in rows:
-                    # Filtramos las observaciones asociadas a la investigación solicitada
-                    if key in f"{r.experiment_id} {r.citation} {r.source}".lower():
-                        filtered_runs.append(r)
-            except Exception:
-                pass
-
-        # Mock de seguridad: Si aún no tienes corridas reales para esta investigación en el JSON,
-        # enviamos una estructura por defecto para no romper el frontend.
-        if not filtered_runs:
-            return {
-                "investigation": inv_name,
-                "total_runs": 6,
-                "burn_count": 6,
-                "extinct_count": 0,
-                "principal_variable": "Presión (psi)",
-                "fixed": {
-                    "Gravedad": "0.00 g",
-                    "Diluyente / supresor": "N2"
-                },
-                "iterated": {
-                    "Combustible / material": ["Cotton-fiberglass (SIBAL)", "Nomex", "PMMA"],
-                    "Geometría de muestra": ["Fabric", "Thick sheet", "Thin sheet"],
-                    "Oxígeno (%)": ["21", "26.5", "30", "34"],
-                    "Presión (psi)": ["8.2", "10.2", "14.7"],
-                    "Flujo de aire (cm/s)": ["5", "8", "10", "15"]
-                },
-                "fire_response": {
-                    "spread_range": "0.07 - 6.69 mm/s",
-                    "continued_burning": "6/6",
-                    "sensors": sensors_text
-                },
-                "runs": [{"id": f"#{i}", "outcome": "Ardió"} for i in range(1, 7)]
-            }
-
-        # --- LÓGICA DINÁMICA REAL BASADA EN EL DATASET ---
-        
-        # Usamos sets para agrupar valores únicos de cada propiedad
-        props = {
-            "Gravedad": set(),
-            "Diluyente / supresor": set(["N2"]),
-            "Combustible / material": set(),
-            "Geometría de muestra": set(),
-            "Oxígeno (%)": set(),
-            "Presión (psi)": set(),
-            "Flujo de aire (cm/s)": set()
-        }
-
-        burn_count = 0
-        spreads = []
-        runs_data = []
-
-        for idx, r in enumerate(filtered_runs):
-            props["Gravedad"].add(f"{r.gravity_g:.2f} g" if r.gravity_g is not None else "0.00 g")
-            if r.fuel: props["Combustible / material"].add(r.fuel)
-            if r.configuration: props["Geometría de muestra"].add(r.configuration)
-            if r.oxygen_pct: props["Oxígeno (%)"].add(f"{r.oxygen_pct}")
-            
-            # Transformamos de kPa a psi para el contexto aeroespacial (1 kPa = 0.145038 psi)
-            psi = round(r.pressure_kpa * 0.145038, 1) if r.pressure_kpa else 14.7
-            props["Presión (psi)"].add(f"{psi}")
-            
-            if r.airflow_cm_s is not None: props["Flujo de aire (cm/s)"].add(f"{r.airflow_cm_s}")
-
-            outs = r.outputs or {}
-            spread = outs.get("spread_mm_s") or 0.0
-            
-            if spread > 0:
-                spreads.append(spread)
-                burn_count += 1
-                outcome = "Ardió"
-            else:
-                outcome = "Autoextinción"
-
-            runs_data.append({
-                "id": f"#{idx+1}",
-                "fuel": r.fuel or "N/A",
-                "oxygen": r.oxygen_pct,
-                "pressure_psi": psi,
-                "airflow": r.airflow_cm_s,
-                "spread_mm_s": spread,
-                "outcome": outcome
-            })
-
-        total_runs = len(filtered_runs)
-
-        # Clasificación algorítmica: Fijos vs Iterados
-        fixed = {}
-        iterated = {}
-        
-        for k, v in props.items():
-            if not v: continue
-            sorted_v = sorted(list(v))
-            if len(sorted_v) == 1:
-                fixed[k] = sorted_v[0]  # Si hay solo un valor único, se mantuvo fijo
-            else:
-                iterated[k] = sorted_v  # Si hay más de uno, fue una variable iterada
-
-        # Determinamos automáticamente la variable principal (la que sufrió más cambios)
-        principal_var = "Ninguna"
-        if iterated:
-            principal_var = max(iterated.keys(), key=lambda k: len(iterated[k]))
-
-        spread_range = f"{min(spreads):.2f} - {max(spreads):.2f} mm/s" if spreads else "0.00 mm/s"
-
-        return {
-            "investigation": inv_name,
-            "total_runs": total_runs,
-            "burn_count": burn_count,
-            "extinct_count": total_runs - burn_count,
-            "principal_variable": principal_var,
-            "fixed": fixed,
-            "iterated": iterated,
-            "fire_response": {
-                "spread_range": spread_range,
-                "continued_burning": f"{burn_count}/{total_runs}",
-                "sensors": sensors_text
-            },
-            "runs": runs_data
-        }
+    @app.get('/api/motor3/chart/{investigation_id}')
+    def motor3_chart(investigation_id: str):
+        from .investigation_charts import chart_data
+        cat = engines.load_psi_catalog(store)
+        key = investigation_id.strip().lower()
+        inv = next((item for item in cat.get('investigations', [])
+                    if key in (item['id'].lower(), item['acronym'].lower())), None)
+        if inv is None:
+            raise HTTPException(404, f'Investigation {investigation_id} not found')
+        return chart_data(inv, cat.get('sources', {}), obs_path())
 
     @app.get('/api/motor3/inter/{id_a}/{id_b}')
     def motor3_inter(id_a: str, id_b: str):
