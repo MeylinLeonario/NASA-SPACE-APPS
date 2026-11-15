@@ -51,3 +51,8 @@ def test_chart_endpoint_identity_and_unknown_id(cfg):
         assert response.status_code == 200
         assert response.json()['investigation_id'] == 'bass2'
         assert client.get('/api/motor3/chart/nonexistent').status_code == 404
+        analysis = client.get('/api/motor3/intra/BASS-II').json()
+        assert analysis['investigation_id'] == 'bass2'
+        assert all(key in analysis for key in ('fixed_conditions','iterated_variables','unreported_variables','measured_outcomes','diagnostics_used'))
+        assert 'runs' not in analysis  # Do not resurrect the old six fabricated runs.
+        assert client.get('/api/motor3/intra/nonexistent').status_code == 404
