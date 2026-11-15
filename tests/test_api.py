@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from unittest.mock import patch
 from fastapi.testclient import TestClient
 from flame.main import create_app
@@ -89,3 +90,19 @@ def test_health_reports_configured_model_without_exposing_key(cfg):
     assert response.json()['synthesis_ready'] is True
     assert response.json()['consensus'] == 'manual_import_only'
     assert cfg.openai_api_key not in response.text
+
+
+def test_observation_export_preserves_dataset_and_requires_auth(cfg):
+    c = client(cfg)
+    assert c.get('/api/ood/dataset').status_code == 404
+    bundle = Path(__file__).resolve().parents[1] / 'datasets/papers/combustion-observations.json'
+    raw = bundle.read_bytes()
+    (cfg.data_dir / 'combustion-observations.json').write_bytes(raw)
+    response = c.get('/api/ood/dataset')
+    assert response.status_code == 200
+    assert response.content == raw
+    assert 'combustion-observations.json' in response.headers['content-disposition']
+    assert all(not row['reviewed'] for row in response.json()['observations'])
+    cfg.flame_api_token = 'test-secret'
+    assert c.get('/api/ood/dataset').status_code == 401
+    assert c.get('/api/ood/dataset', headers={'Authorization': 'Bearer test-secret'}).content == raw

@@ -980,3 +980,51 @@
     transition: none !important;
   }
 }
+
+.sf-api-access {
+  margin: 12px 0;
+  color: #9baac0;
+  font-size: 11px;
+}
+.sf-api-access summary {
+  cursor: pointer;
+}
+.sf-api-access form {
+  display: flex;
+  gap: 8px;
+  margin: 10px 0;
+}
+.sf-api-access input {
+  min-width: 0;
+  background: #0d1523;
+  border: 1px solid #34445c;
+  border-radius: 5px;
+  color: #edf3fc;
+  padding: 7px;
+}
+.sf-api-access button {
+  border: 1px solid #34445c;
+  border-radius: 5px;
+  padding: 7px;
+}
+.sf-predict .ood-panel {
+  margin: 14px 0;
+  padding: 16px;
+  box-shadow: none;
+}
+.sf-predict [hidden] {
+  display: none !important;
+}
+.sf-answer details {
+  margin: 12px 0;
+}
+.sf-answer summary {
+  cursor: pointer;
+  color: #83baff;
+}
+.sf-answer blockquote {
+  margin: 12px 0;
+  border-left: 2px solid #83baff;
+  padding-left: 12px;
+  color: #aebdd0;
+}

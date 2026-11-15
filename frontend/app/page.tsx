@@ -14,11 +14,8 @@ import {
   Orbit,
   ShieldCheck,
   Flame,
-  Download,
-  Send,
 } from "lucide-react";
 import {
-  Area,
   CartesianGrid,
   ComposedChart,
   Line,
@@ -30,6 +27,7 @@ import {
   Tooltip,
 } from "recharts";
 import "./scenario.css";
+import PredictAsk from "./predict-ask";
 
 const habitats = [
   {
@@ -173,10 +171,7 @@ export default function ScenarioFlow() {
     [view, setView] = useState("Danger map"),
     [allAlerts, setAllAlerts] = useState(false),
     [table, setTable] = useState(false),
-    [zoom, setZoom] = useState(false),
-    [predictTab, setPredictTab] = useState("Predict partial gravity"),
-    [question, setQuestion] = useState(""),
-    [answer, setAnswer] = useState("");
+    [zoom, setZoom] = useState(false);
   const current = habitats[habitat],
     mat = materials[material];
   const limit =
@@ -203,14 +198,6 @@ export default function ScenarioFlow() {
       ),
     }));
   const active = ranked.find((i) => i.name === selected) || ranked[0];
-  const curve = Array.from({ length: 21 }, (_, i) => ({
-    g: i / 20,
-    value: 16.3 + (i / 20) * 1.2 + mat.offset,
-    band: [
-      16.1 + (i / 20) * 0.9 + mat.offset,
-      16.6 + (i / 20) * 1.3 + mat.offset,
-    ],
-  }));
   const points = Array.from({ length: 9 }, (_, i) => ({
     air: i * 5 + 2,
     oxygen: 21,
@@ -227,21 +214,6 @@ export default function ScenarioFlow() {
     setStep(next);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  function download() {
-    const blob = new Blob(
-      [
-        "mock_data,habitat,material,oxygen_pct,pressure_psi,airflow_cm_s,gravity_g\n" +
-          `true,${current.name},${mat.short},${oxygen},${pressure},${airflow},${gravity}\n`,
-      ],
-      { type: "text/csv" },
-    );
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "mock-scenario.csv";
-    a.click();
-    URL.revokeObjectURL(url);
-  }
   const filters = (
     <div className="sf-segments" aria-label="Safety focus">
       {["All", "Prevention", "Detection", "Suppression"].map((p) => (
@@ -255,22 +227,20 @@ export default function ScenarioFlow() {
       ))}
     </div>
   );
-  const chartData: Record<string, number | number[]>[] = step === 2 ? curve : points;
   const chart = (
     <ResponsiveContainer width="100%" height="100%">
       <ComposedChart
-        data={chartData}
+        data={points}
         margin={{ top: 20, right: 25, left: 0, bottom: 20 }}
       >
         <CartesianGrid stroke="#28364a" strokeDasharray="3 4" />
         <XAxis
           type="number"
-          dataKey={step === 2 ? "g" : "air"}
-          domain={step === 2 ? [0, 1] : [0, 45]}
+          dataKey="air"
+          domain={[0, 45]}
           tick={{ fill: "#94a3ba", fontSize: 11 }}
           label={{
-            value:
-              step === 2 ? "Gravity level (g)" : "Ventilation airflow (cm/s)",
+            value: "Ventilation airflow (cm/s)",
             position: "bottom",
             fill: "#94a3ba",
             fontSize: 11,
@@ -288,19 +258,16 @@ export default function ScenarioFlow() {
             borderRadius: 8,
           }}
         />
-        {step === 2 && (
-          <Area dataKey="band" fill="#83baff" fillOpacity={0.2} stroke="none" />
-        )}
         <Line
           type="monotone"
-          dataKey={step === 2 ? "value" : "threshold"}
+          dataKey="threshold"
           stroke="#83baff"
           strokeWidth={3}
           dot={false}
         />
-        {step !== 2 && <Scatter dataKey="oxygen" fill="#f8ae65" />}
+        <Scatter dataKey="oxygen" fill="#f8ae65" />
         <ReferenceLine
-          x={step === 2 ? gravity : airflow}
+          x={airflow}
           stroke="#d7e6fa"
           strokeDasharray="3 3"
           label={{ value: "YOUR SCENARIO", fill: "#d7e6fa", fontSize: 10 }}
@@ -361,11 +328,14 @@ export default function ScenarioFlow() {
           </small>
         </span>
         <span className="sf-status-tags">
-          <b className="sf-burn">
-            <Flame size={12} /> {mat.short}:{" "}
-            {margin >= 0 ? "Burns" : "Below mock limit"} {margin.toFixed(1)} pts
-          </b>
-          <b>MOCK DATA</b>
+          {step !== 2 && (
+            <b className="sf-burn">
+              <Flame size={12} /> {mat.short}:{" "}
+              {margin >= 0 ? "Burns" : "Below mock limit"} {margin.toFixed(1)}{" "}
+              pts
+            </b>
+          )}
+          <b>{step === 2 ? "OBSERVATION DATA" : "MOCK DATA"}</b>
         </span>
       </header>
       <nav className="sf-steps" aria-label="Scenario workflow">
@@ -853,129 +823,14 @@ export default function ScenarioFlow() {
                 </div>
               </>
             ) : (
-              <section className="sf-panel sf-predict">
-                <div className="sf-segments sf-view-tabs">
-                  {[
-                    "Predict partial gravity",
-                    "Extract clean data",
-                    "Ask Copilot",
-                  ].map((t) => (
-                    <button
-                      key={t}
-                      aria-pressed={predictTab === t}
-                      onClick={() => setPredictTab(t)}
-                    >
-                      {t}
-                    </button>
-                  ))}
-                </div>
-                {predictTab === "Predict partial gravity" ? (
-                  <>
-                    <h2>Predict fire behaviour at gravities never tested</h2>
-                    <p>
-                      Explore an illustrative mock curve between orbit and
-                      Earth.
-                    </p>
-                    <div className="sf-predict-grid">
-                      <div>
-                        <div className="sf-chart">{chart}</div>
-                        <label className="sf-slider">
-                          Gravity <output>{gravity.toFixed(2)} g</output>
-                          <input
-                            aria-label="Prediction gravity"
-                            type="range"
-                            min="0"
-                            max="1"
-                            step=".01"
-                            value={gravity}
-                            onChange={(e) => setGravity(Number(e.target.value))}
-                          />
-                        </label>
-                        <div className="sf-presets">
-                          {presets.map(([n, g]) => (
-                            <button
-                              key={n}
-                              aria-pressed={g === gravity}
-                              onClick={() => setGravity(g)}
-                            >
-                              {n} {g} g
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                      <aside className="sf-readout">
-                        <small>
-                          AT {gravity.toFixed(2)} G · MOCK PREDICTION
-                        </small>
-                        <p>Min. O₂ to keep burning</p>
-                        <strong>
-                          {(16.3 + gravity * 1.2 + mat.offset).toFixed(1)}
-                          <small>% ± 0.3</small>
-                        </strong>
-                        <hr />
-                        <p>Your cabin {oxygen.toFixed(1)}% O₂</p>
-                        <span className="sf-burn">
-                          {margin >= 0 ? "Burns" : "Below mock limit"}
-                        </span>
-                        <p>Prediction, not measured evidence.</p>
-                      </aside>
-                    </div>
-                  </>
-                ) : predictTab === "Extract clean data" ? (
-                  <>
-                    <h2>Take your scenario with you</h2>
-                    <p>
-                      Export the current habitat, atmosphere and selected
-                      material as a CSV with an explicit mock-data flag.
-                    </p>
-                    <button className="sf-primary" onClick={download}>
-                      <Download size={16} /> Download mock CSV
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <h2>Ask about your scenario</h2>
-                    <p>Mock Copilot · prepared demonstration response</p>
-                    <form
-                      className="sf-ask"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        if (question.trim())
-                          setAnswer(
-                            `Demo response for “${question.trim()}”: Your ${current.name} scenario uses ${oxygen.toFixed(1)}% oxygen at ${gravity.toFixed(2)} g. Compare ${
-                              ranked
-                                .slice(0, 2)
-                                .map((i) => i.name)
-                                .join(" and ") || "the available investigations"
-                            } and review the evidence gaps. This is a mock response, not a source-backed scientific answer.`,
-                          );
-                      }}
-                    >
-                      <input
-                        aria-label="Ask Copilot"
-                        placeholder="Why does gravity change flame behavior?"
-                        value={question}
-                        onChange={(e) => setQuestion(e.target.value)}
-                      />
-                      <button
-                        disabled={!question.trim()}
-                        aria-label="Send question"
-                      >
-                        <Send size={18} />
-                      </button>
-                    </form>
-                    {answer && (
-                      <p className="sf-answer" role="status">
-                        {answer}
-                      </p>
-                    )}
-                  </>
-                )}
-                <p className="sf-footnote">
-                  MOCK DATA · The existing research and prediction tools remain
-                  available in the <a href="/research">research workspace</a>.
-                </p>
-              </section>
+              <PredictAsk
+                initialConditions={{
+                  gravity,
+                  oxygen,
+                  pressureKpa: pressure * 6.8947572932,
+                  airflow,
+                }}
+              />
             )}
             <div className="sf-bottom">
               <button onClick={() => go(step - 1)}>
@@ -991,8 +846,10 @@ export default function ScenarioFlow() {
           </>
         )}
         <footer className="sf-disclaimer">
-          <ShieldCheck size={13} /> Prototype with mock data · For interface
-          demonstration only
+          <ShieldCheck size={13} />{" "}
+          {step === 2
+            ? "Predictions use combustion-observations.json · Research exploration only"
+            : "Scenario & Evidence use mock data · For interface demonstration only"}
         </footer>
       </main>
     </div>

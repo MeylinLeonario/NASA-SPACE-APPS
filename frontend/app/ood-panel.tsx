@@ -17,14 +17,16 @@ type Status = {
   observations?: number; unreviewed_observations?: number; cohorts: Cohort[]; exploratory_cohorts?: Cohort[]; dataset_sha256: string | null; provenance_counts: Record<string, number>;
 };
 
-export default function OODPanel({token}: {token: string}) {
+export type InitialConditions = {gravity: number; oxygen: number; pressureKpa: number; airflow: number};
+
+export default function OODPanel({token, initialConditions}: {token: string; initialConditions?: InitialConditions}) {
   const [status, setStatus] = useState<Status | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
-  const [gravity, setGravity] = useState(.38);
-  const [oxygen, setOxygen] = useState('21');
-  const [pressure, setPressure] = useState('101.325');
-  const [airflow, setAirflow] = useState('0');
+  const [gravity, setGravity] = useState(initialConditions?.gravity ?? .38);
+  const [oxygen, setOxygen] = useState(String(initialConditions?.oxygen ?? 21));
+  const [pressure, setPressure] = useState(String(initialConditions ? Number(initialConditions.pressureKpa.toFixed(4)) : 101.325));
+  const [airflow, setAirflow] = useState(String(initialConditions?.airflow ?? 0));
   const [temperature, setTemperature] = useState('');
   const [cohort, setCohort] = useState('0');
   const [model, setModel] = useState('gpr');
