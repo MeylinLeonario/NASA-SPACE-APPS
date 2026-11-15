@@ -1,3 +1,4 @@
+import {useT} from '../../i18n/useT';
 import React from "react";
 import { useScenario } from "../../context/ScenarioContext";
 import {
@@ -9,6 +10,8 @@ import { FlameCanvasSvg } from "./FlameCanvasSvg";
 import { HabitatSelectorGrid } from "./HabitatSelectorGrid";
 
 export const Step1ScenarioView: React.FC = () => {
+  const t = useT();
+
   const {
     lang,
     conditions,
@@ -32,27 +35,27 @@ export const Step1ScenarioView: React.FC = () => {
                 1/3
               </span>
               <span>
-                {lang === "en"
+                {t(lang === "en"
                   ? "STEP 1 OF 3 · CONFIGURE THE SCENARIO"
-                  : "PASO 1 DE 3 · CONFIGURA EL ESCENARIO"}
+                  : "PASO 1 DE 3 · CONFIGURA EL ESCENARIO")}
               </span>
             </div>
 
             <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
-              {lang === "en"
+              {t(lang === "en"
                 ? "Where will the crew live?"
-                : "¿Dónde vivirá la tripulación?"}
+                : "¿Dónde vivirá la tripulación?")}
             </h1>
 
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-              {lang === "en"
+              {t(lang === "en"
                 ? "Pick a habitat. PyraScope ranks 30+ years of NASA fire experiments for it,"
-                : "Elige un hábitat. PyraScope ordena más de 30 años de experimentos de fuego de la NASA para él,"}
+                : "Elige un hábitat. PyraScope ordena más de 30 años de experimentos de fuego de la NASA para él,")}
               <br />
               <span className="font-semibold text-[#38BDF8]">
-                {lang === "en"
+                {t(lang === "en"
                   ? "flags the counter-intuitive physics, and predicts what was never tested."
-                  : "alerta la física contraintuitiva y predice lo que nunca se ha probado."}
+                  : "alerta la física contraintuitiva y predice lo que nunca se ha probado.")}
               </span>
             </p>
           </div>
@@ -65,9 +68,9 @@ export const Step1ScenarioView: React.FC = () => {
                 <span>30+</span>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                {lang === "en"
+                {t(lang === "en"
                   ? "years of shuttle & ISS fire data scattered across PDFs, videos & CSVs"
-                  : "años de datos de fuego en transbordador e ISS dispersos en PDFs, videos y CSVs"}
+                  : "años de datos de fuego en transbordador e ISS dispersos en PDFs, videos y CSVs")}
               </p>
             </div>
 
@@ -77,9 +80,9 @@ export const Step1ScenarioView: React.FC = () => {
                 <span>15 · 70</span>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                {lang === "en"
+                {t(lang === "en"
                   ? "PSI investigations · curated runs, normalised to one schema"
-                  : "investigaciones PSI · corridas curadas en un único esquema"}
+                  : "investigaciones PSI · corridas curadas en un único esquema")}
               </p>
             </div>
 
@@ -89,9 +92,9 @@ export const Step1ScenarioView: React.FC = () => {
                 <span>0</span>
               </div>
               <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                {lang === "en"
+                {t(lang === "en"
                   ? "direct fire data points at lunar or Martian gravity"
-                  : "datos directos de fuego en gravedad lunar o marciana"}
+                  : "datos directos de fuego en gravedad lunar o marciana")}
               </p>
             </div>
           </div>
@@ -99,9 +102,9 @@ export const Step1ScenarioView: React.FC = () => {
           {/* Grilla de los 6 Hábitats */}
           <HabitatSelectorGrid />
           <div className="rounded-xl border border-slate-700 bg-[#081124] p-5">
-            <label htmlFor="scenario-material" className="mb-2 block text-sm font-bold">{lang === "en" ? "Material for your scenario" : "Material para tu escenario"}</label>
+            <label htmlFor="scenario-material" className="mb-2 block text-sm font-bold">{t(lang === "en" ? "Material for your scenario" : "Material para tu escenario")}</label>
             <select id="scenario-material" value={selectedMaterial} onChange={event => setSelectedMaterial(event.target.value as typeof selectedMaterial)} className="w-full rounded-lg border border-slate-700 bg-slate-900 p-3">
-              {Object.values(MATERIALS_CATALOG).map(material => <option key={material.id} value={material.id}>{material.name[lang]} — {material.subtitle[lang]}</option>)}
+              {Object.values(MATERIALS_CATALOG).map(material => <option key={material.id} value={material.id}>{t(material.name[lang])} — {t(material.subtitle[lang])}</option>)}
             </select>
           </div>
 
@@ -119,7 +122,7 @@ export const Step1ScenarioView: React.FC = () => {
                     variant="earth-1g"
                   />
                   <span className="mt-2 text-xs font-bold text-white">
-                    {lang === "en" ? "On Earth" : "En la Tierra"}
+                    {t(lang === "en" ? "On Earth" : "En la Tierra")}
                   </span>
                   <span className="font-mono text-[10px] text-slate-400">
                     1 g · 20.9% O₂
@@ -135,10 +138,10 @@ export const Step1ScenarioView: React.FC = () => {
                     variant="scenario"
                   />
                   <span className="mt-2 text-xs font-bold text-white">
-                    {lang === "en" ? "In your scenario" : "En tu escenario"}
+                    {t(lang === "en" ? "In your scenario" : "En tu escenario")}
                   </span>
                   <span className="font-mono text-[10px] text-slate-400">
-                    {conditions.gravityG.toFixed(2)} g · {conditions.o2.toFixed(1)}% O₂
+                    {t(conditions.gravityG.toFixed(2))} g · {t(conditions.o2.toFixed(1))}% O₂
                   </span>
                 </div>
               </div>
@@ -146,45 +149,44 @@ export const Step1ScenarioView: React.FC = () => {
               {/* Explicación física y margen frente a su límite de oxígeno */}
               <div className="flex-1 space-y-2">
                 <span className="font-mono text-[10px] font-semibold uppercase tracking-widest text-slate-400">
-                  {lang === "en"
+                  {t(lang === "en"
                     ? "LIVE FLAME PREVIEW"
-                    : "VISTA PREVIA DE LA LLAMA"}
+                    : "VISTA PREVIA DE LA LLAMA")}
                 </span>
                 <h3 className="text-base font-bold text-white">
-                  {lang === "en"
+                  {t(lang === "en"
                     ? "How fire looks where you are designing"
-                    : "Cómo se ve el fuego donde diseñas"}
+                    : "Cómo se ve el fuego donde diseñas")}
                 </h3>
                 <p className="text-xs leading-relaxed text-slate-300">
-                  {describeFlamePhysics(conditions, lang)}
+                  {t(describeFlamePhysics(conditions, lang))}
                 </p>
 
                 <div className="pt-1 flex flex-wrap items-center gap-2 text-xs">
                   <span className="font-bold text-white">
-                    {matSpec.name[lang]}
+                    {t(matSpec.name[lang])}
                   </span>
-                  <span
+                  {activeMaterialEvaluation.available === false ? <span className="text-sky-300">{t(lang === "en" ? "Consult source-linked measurements in step 3. Oxygen threshold unavailable." : "Consulta las mediciones con fuentes en el paso 3. Umbral de oxígeno no disponible.")}</span> : <><span
                     className={`rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ${
                       activeMaterialEvaluation.burns
                         ? "bg-[#3B121D] text-rose-300 border border-rose-500/40"
                         : "bg-emerald-950/70 text-emerald-300 border border-emerald-500/40"
                     }`}
                   >
-                    {activeMaterialEvaluation.burns
+                    {t(activeMaterialEvaluation.burns
                       ? lang === "en"
                         ? "Burns"
                         : "Arde"
                       : lang === "en"
                       ? "Safe"
-                      : "Seguro"}{" "}
-                    · {marginSign}
-                    {activeMaterialEvaluation.burnMarginPts.toFixed(1)} pts
-                  </span>
+                      : "Seguro")}{" "}{t(" ")}{" "}
+                    · {t(marginSign)}
+                    {t(activeMaterialEvaluation.burnMarginPts.toFixed(1))} {" "}{t("pts")}{" "}</span>
                   <span className="text-slate-400">
-                    {lang === "en"
+                    {t(lang === "en"
                       ? "vs its oxygen limit"
-                      : "vs su límite de oxígeno"}
-                  </span>
+                      : "vs su límite de oxígeno")}
+                  </span></>}
                 </div>
               </div>
             </div>

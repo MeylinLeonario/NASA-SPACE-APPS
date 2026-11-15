@@ -1,5 +1,5 @@
 //frontend/src/context/ScenarioContext.tsx
-import React, { createContext, useContext, useMemo, useState } from "react";
+import React, { createContext, useContext, useMemo, useState, useEffect } from "react";
 import {
   AtmosphereConditions,
   HabitatId,
@@ -29,6 +29,10 @@ interface ScenarioContextValue {
   ) => void;
   selectedMaterial: MaterialId;
   setSelectedMaterial: (mat: MaterialId) => void;
+  selectedInvestigationId: string;
+  setSelectedInvestigationId: (id: string) => void;
+  evidenceTab: "map" | "compare" | "inside";
+  setEvidenceTab: (tab: "map" | "compare" | "inside") => void;
   safetyPillar: SafetyPillar;
   setSafetyPillar: (pillar: SafetyPillar) => void;
   activeMaterialEvaluation: MaterialEvaluation;
@@ -52,7 +56,10 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
   const [conditions, setConditions] = useState<AtmosphereConditions>(
     HABITAT_PRESETS[0].conditions
   );
-  const [selectedMaterial, setSelectedMaterial] = useState<MaterialId>("pmma");
+  const [selectedMaterial, setSelectedMaterial] = useState<MaterialId>("cellulose");
+  const [selectedInvestigationId, setSelectedInvestigationId] = useState("");
+  const [evidenceTab, setEvidenceTab] = useState<"map" | "compare" | "inside">("map");
+  useEffect(() => { document.documentElement.lang = lang; }, [lang]);
   const [safetyPillar, setSafetyPillar] = useState<SafetyPillar>("all");
 
   const activeHabitat = useMemo(
@@ -96,6 +103,7 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const allMaterialsEvaluation = useMemo(() => {
     return {
+      cellulose: evaluateMaterialInAtmosphere("cellulose", conditions),
       pmma: evaluateMaterialInAtmosphere("pmma", conditions),
       sibal: evaluateMaterialInAtmosphere("sibal", conditions),
       nomex: evaluateMaterialInAtmosphere("nomex", conditions),
@@ -123,6 +131,7 @@ export const ScenarioProvider: React.FC<{ children: React.ReactNode }> = ({
         updateCondition,
         selectedMaterial,
         setSelectedMaterial,
+        selectedInvestigationId, setSelectedInvestigationId, evidenceTab, setEvidenceTab,
         safetyPillar,
         setSafetyPillar,
         activeMaterialEvaluation,

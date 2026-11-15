@@ -1,6 +1,7 @@
 // frontend/components/layout/navbar.tsx
 'use client';
 
+import {useT} from '../../src/i18n/useT';
 import React, { useEffect, useState } from 'react';
 import { Check, Flame, Sparkles } from 'lucide-react';
 import { Language, ViewStep } from '../../models/flare.model';
@@ -20,6 +21,8 @@ export default function Navbar({
   language,
   onToggleLanguage,
 }: NavbarProps) {
+  const t = useT();
+
   const [hasCustomLogo, setHasCustomLogo] = useState(false);
 
   // Verifica silenciosamente si existe /logos/space-apps-logo.png para nunca mostrar un ícono roto
@@ -53,19 +56,18 @@ export default function Navbar({
           </span>
           <div>
             <span className="block font-display text-base font-extrabold tracking-tight text-white transition-colors group-hover:text-orange-200">
-              Flare
-            </span>
+              {" "}{t("Flare")}{" "}</span>
             <span className="hidden text-[11px] text-slate-400 sm:block">
-              {language === 'es'
+              {t(language === 'es'
                 ? 'Seguridad contra incendios en microgravedad'
-                : 'Microgravity fire safety insights'}
+                : 'Microgravity fire safety insights')}
             </span>
           </div>
         </button>
 
         {/* 2. Stepper Central Guiado (1 Escenario · 2 Ranking y alertas · 3 Predecir y preguntar) */}
         <nav
-          aria-label="Flujo guiado de tres pasos"
+          aria-label={t("Flujo guiado de tres pasos")}
           className="hidden lg:flex items-center gap-1 rounded-full border border-slate-800/90 bg-[#0b1120]/95 p-1 shadow-inner"
         >
           {steps.map((step) => {
@@ -96,7 +98,7 @@ export default function Navbar({
                 >
                   {isCompleted ? <Check className="h-3 w-3" /> : step.num}
                 </span>
-                <span>{language === 'es' ? step.labelEs : step.labelEn}</span>
+                <span>{t(language === 'es' ? step.labelEs : step.labelEn)}</span>
               </button>
             );
           })}
@@ -107,7 +109,7 @@ export default function Navbar({
           {/* Selector EN / ES */}
           <div
             role="group"
-            aria-label="Selector de idioma"
+            aria-label={t("Selector de idioma")}
             className="flex items-center rounded-xl border border-slate-800 bg-[#0b1120] p-0.5 font-mono text-[11px]"
           >
             <button
@@ -119,8 +121,7 @@ export default function Navbar({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              EN
-            </button>
+              {" "}{t("EN")}{" "}</button>
             <button
               type="button"
               onClick={() => onToggleLanguage('es')}
@@ -130,8 +131,7 @@ export default function Navbar({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              ES
-            </button>
+              {" "}{t("ES")}{" "}</button>
           </div>
 
           {/* Botón Copilot con degradado interactivo y brillo */}
@@ -141,18 +141,18 @@ export default function Navbar({
             className="btn-shimmer group relative inline-flex items-center gap-2 rounded-xl border border-sky-400/50 bg-gradient-to-r from-sky-500/20 via-blue-600/25 to-indigo-600/20 px-4 py-2 text-xs font-semibold text-white shadow-lg shadow-sky-500/15 transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-300 hover:shadow-sky-400/30 active:translate-y-0 active:scale-95"
           >
             <Sparkles className="h-3.5 w-3.5 text-sky-300 transition-transform duration-300 group-hover:rotate-12 group-hover:scale-110" />
-            <span>Copilot</span>
+            <span>{" "}{t("Copilot")}{" "}</span>
           </button>
 
           {/* Logo NASA Space Apps (Carga /public/logos/space-apps-logo.png si existe, o SVG limpio) */}
           <div
             className="hidden xl:flex items-center border-l border-slate-800/90 pl-3"
-            title="NASA Space Apps Challenge"
+            title={t("NASA Space Apps Challenge")}
           >
             {hasCustomLogo ? (
               <img
                 src="/logos/space-apps-logo.png"
-                alt="NASA Space Apps Challenge"
+                alt={t("NASA Space Apps Challenge")}
                 className="h-8 w-auto object-contain"
               />
             ) : (
@@ -172,11 +172,9 @@ export default function Navbar({
                 </svg>
                 <div className="leading-none">
                   <span className="block font-mono text-[8px] font-bold tracking-[0.2em] text-[#E43700]">
-                    NASA
-                  </span>
+                    {" "}{t("NASA")}{" "}</span>
                   <span className="block font-display text-[10px] font-extrabold tracking-wider text-white">
-                    SPACE APPS
-                  </span>
+                    {" "}{t("SPACE APPS")}{" "}</span>
                 </div>
               </div>
             )}
@@ -199,8 +197,8 @@ export default function Navbar({
                   : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <span className="font-mono font-bold text-sky-400">{step.num}.</span>
-              <span>{language === 'es' ? step.labelEs : step.labelEn}</span>
+              <span className="font-mono font-bold text-sky-400">{t(step.num)}.</span>
+              <span>{t(language === 'es' ? step.labelEs : step.labelEn)}</span>
             </button>
           );
         })}

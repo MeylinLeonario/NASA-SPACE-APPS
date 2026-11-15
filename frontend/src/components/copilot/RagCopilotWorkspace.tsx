@@ -1,6 +1,7 @@
 // frontend/src/components/copilot/RagCopilotWorkspace.tsx
 'use client';
 
+import {useT} from '../../i18n/useT';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
@@ -92,6 +93,8 @@ function useWordStream(fullText: string, enabled: boolean, speedMs = 16) {
 export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
   variant = 'embedded',
 }) => {
+  const t = useT();
+
   const {
     lang,
     activeHabitat,
@@ -114,6 +117,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
   const abortRef = useRef<AbortController | null>(null);
   const citationRefs = useRef<Record<number, HTMLDetailsElement | null>>({});
 
+  useEffect(() => {abortRef.current?.abort(); setLoading(false); setResponse(null);}, [lang]);
   const activeMaterialSpec = MATERIALS_CATALOG[selectedMaterial];
 
   // Cargar estado de conexión a Supabase / Catálogo PSI y modelo de síntesis al montar
@@ -259,30 +263,27 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
       return (
         <span className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-sky-300">
           <Database className="h-2.5 w-2.5" />
-          PSI CATALOG
-        </span>
+          {" "}{t("PSI CATALOG")}{" "}</span>
       );
     }
     if (kind === 'background') {
       return (
         <span className="inline-flex items-center gap-1 rounded border border-indigo-500/40 bg-indigo-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-indigo-300">
           <Info className="h-2.5 w-2.5" />
-          NASA BRIEF
-        </span>
+          {" "}{t("NASA BRIEF")}{" "}</span>
       );
     }
     if (kind === 'catalog_summary') {
       return (
         <span className="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-emerald-300">
           <Layers className="h-2.5 w-2.5" />
-          MATRIZ MATERIALES
-        </span>
+          {" "}{t("MATRIZ MATERIALES")}{" "}</span>
       );
     }
     return (
       <span className="inline-flex items-center gap-1 rounded border border-amber-500/40 bg-amber-500/15 px-1.5 py-0.5 font-mono text-[9px] font-bold text-amber-300">
         <FileText className="h-2.5 w-2.5" />
-        PDF PAPER {cit.page > 0 ? `· PÁG. ${cit.page}` : ''}
+        {" "}{t("PDF PAPER")}{" "}{t(cit.page > 0 ? `· PÁG. ${cit.page}` : '')}
       </span>
     );
   };
@@ -303,15 +304,14 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
           </span>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-white">Copilot SI</h3>
+              <h3 className="text-sm font-bold text-white">{" "}{t("Copilot SI")}{" "}</h3>
               <span className="rounded-full border border-sky-500/30 bg-sky-500/10 px-2 py-0.5 font-mono text-[9px] font-semibold text-sky-300">
-                RAG + PSI
-              </span>
+                {" "}{t("RAG + PSI")}{" "}</span>
             </div>
             <p className="text-[11px] text-slate-400">
-              {lang === 'en'
+              {t(lang === 'en'
                 ? 'Grounded in NASA PSI & peer-reviewed papers'
-                : 'Respaldado por NASA PSI y papers científicos'}
+                : 'Respaldado por NASA PSI y papers científicos')}
             </p>
           </div>
         </div>
@@ -332,15 +332,14 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               }`}
             />
             <span>
-              {catalogSource?.catalog === 'supabase'
+              {t(catalogSource?.catalog === 'supabase'
                 ? 'DB: SUPABASE'
-                : 'DB: PSI LOCAL'}
+                : 'DB: PSI LOCAL')}
             </span>
           </div>
           {healthInfo && !healthInfo.synthesis_ready && (
             <span className="font-mono text-[9px] text-amber-400">
-              Modo solo-evidencia (Activa ENABLE_PAID_API=true)
-            </span>
+              {" "}{t("Modo solo-evidencia (Activa ENABLE_PAID_API=true)")}{" "}</span>
           )}
         </div>
 
@@ -348,7 +347,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
       <div className="border-b border-slate-800/80 bg-[#0D172A] px-4 py-3">
         <div className="flex items-center justify-between gap-2">
           <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-sky-400">
-            ⚡ {lang === 'en' ? 'ACTIVE SCENARIO & MATERIAL' : 'CONTEXTO DE ESCENARIO Y MATERIAL'}
+            ⚡ {t(lang === 'en' ? 'ACTIVE SCENARIO & MATERIAL' : 'CONTEXTO DE ESCENARIO Y MATERIAL')}
           </span>
 
           <label className="inline-flex cursor-pointer items-center gap-1.5 text-[10px] text-slate-300 select-none">
@@ -359,7 +358,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               className="h-3.5 w-3.5 rounded border-slate-600 accent-sky-400"
             />
             <span>
-              {lang === 'en' ? 'Inject into query' : 'Incluir en consulta'}
+              {t(lang === 'en' ? 'Inject into query' : 'Incluir en consulta')}
             </span>
           </label>
         </div>
@@ -367,29 +366,29 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
         {/* Tarjeta resumen de condiciones + material */}
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-800 bg-[#070D19] px-3 py-2 text-[11px]">
           <div>
-            <strong className="text-white">{activeHabitat.name[lang]}</strong>
+            <strong className="text-white">{t(activeHabitat.name[lang])}</strong>
             <span className="ml-2 font-mono text-[10px] text-slate-400">
-              {conditions.o2.toFixed(1)}% O₂ · {conditions.pressurePsi.toFixed(1)} psi ·{' '}
-              {conditions.airflowCms.toFixed(1)} cm/s · {conditions.gravityG.toFixed(2)} g
+              {t(conditions.o2.toFixed(1))}% O₂ · {t(conditions.pressurePsi.toFixed(1))} {" "}{t("psi ·")}{" "}{" "}{t(' ')}{" "}
+              {t(conditions.airflowCms.toFixed(1))} {" "}{t("cm/s ·")}{" "}{t(conditions.gravityG.toFixed(2))} g
             </span>
           </div>
 
           <div className="flex items-center gap-1.5">
             <span className="rounded border border-slate-700 bg-slate-900 px-2 py-0.5 font-mono text-[10px] font-semibold text-sky-300">
-              {activeMaterialSpec.shortName}
+              {t(activeMaterialSpec.shortName)}
             </span>
             <span
               className={`rounded px-1.5 py-0.5 font-mono text-[9px] font-bold ${
-                activeMaterialEvaluation.burns
+                activeMaterialEvaluation.available === false ? 'bg-slate-800 text-slate-300 border border-slate-600' : activeMaterialEvaluation.burns
                   ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
               }`}
             >
-              {activeMaterialEvaluation.burns
+              {t(activeMaterialEvaluation.available === false ? (lang === 'en' ? 'Oxygen threshold unavailable' : 'Umbral de oxígeno no disponible') : activeMaterialEvaluation.burns
                 ? `${lang === 'en' ? 'Burns' : 'Arde'} +${activeMaterialEvaluation.burnMarginPts.toFixed(1)} pts`
                 : lang === 'en'
                 ? 'Safe'
-                : 'Seguro'}
+                : 'Seguro')}
             </span>
           </div>
         </div>
@@ -404,23 +403,23 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               <div className="flex items-center gap-2 text-sky-400 font-semibold">
                 <ShieldCheck className="h-4 w-4 shrink-0" />
                 <span>
-                  {lang === 'en'
+                  {t(lang === 'en'
                     ? 'Zero-Hallucination Scientific RAG'
-                    : 'RAG Científico con Validación Estricta de Citas'}
+                    : 'RAG Científico con Validación Estricta de Citas')}
                 </span>
               </div>
               <p className="mt-1.5 text-[11px] leading-relaxed text-slate-400">
-                {lang === 'en'
+                {t(lang === 'en'
                   ? 'Every claim generated by the assistant is cross-checked by regex against verbatim quotes in our indexed PDFs and NASA PSI catalog. Unverified claims are automatically discarded.'
-                  : 'Cada afirmación generada se valida contra citas textuales exactas (verbatim quotes) en los PDFs científicos y el catálogo NASA PSI. Cualquier dato sin respaldo directo se descarta automáticamente.'}
+                  : 'Cada afirmación generada se valida contra citas textuales exactas (verbatim quotes) en los PDFs científicos y el catálogo NASA PSI. Cualquier dato sin respaldo directo se descarta automáticamente.')}
               </p>
             </div>
 
             <div>
               <span className="mb-2.5 block font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                {lang === 'en'
+                {t(lang === 'en'
                   ? `SUGGESTED FOR ${activeHabitat.name.en.toUpperCase()} & ${activeMaterialSpec.shortName}`
-                  : `SUGERIDAS PARA ${activeHabitat.name.es.toUpperCase()} Y ${activeMaterialSpec.shortName}`}
+                  : `SUGERIDAS PARA ${activeHabitat.name.es.toUpperCase()} Y ${activeMaterialSpec.shortName}`)}
               </span>
               <div className="flex flex-col gap-2">
                 {suggestedQuestions.map((q, idx) => (
@@ -430,7 +429,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                     onClick={() => void executeQuestion(q)}
                     className="group flex items-start justify-between gap-2.5 rounded-xl border border-slate-800 bg-[#081020] p-3 text-left text-[11px] font-medium text-slate-200 transition-all hover:border-sky-500/50 hover:bg-[#0E1A32] hover:text-white"
                   >
-                    <span className="leading-snug">{q}</span>
+                    <span className="leading-snug">{t(q)}</span>
                     <span className="mt-0.5 font-mono text-sky-400 transition-transform group-hover:translate-x-0.5">
                       ↗
                     </span>
@@ -446,7 +445,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
           <div className="rounded-xl border border-slate-700/80 bg-[#0F1B33] p-3.5">
             <div className="flex items-center justify-between gap-2">
               <span className="font-mono text-[9px] font-bold uppercase tracking-wider text-sky-400">
-                {lang === 'en' ? 'YOUR QUESTION' : 'CONSULTA ACTIVA'}
+                {t(lang === 'en' ? 'YOUR QUESTION' : 'CONSULTA ACTIVA')}
               </span>
               <button
                 type="button"
@@ -458,10 +457,10 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                 className="inline-flex items-center gap-1 font-mono text-[10px] text-slate-400 hover:text-white"
               >
                 <RotateCcw className="h-3 w-3" />
-                {lang === 'en' ? 'Reset' : 'Otra consulta'}
+                {t(lang === 'en' ? 'Reset' : 'Otra consulta')}
               </button>
             </div>
-            <p className="mt-1 text-xs font-semibold text-white">{askedQuestion}</p>
+            <p className="mt-1 text-xs font-semibold text-white">{t(askedQuestion)}</p>
           </div>
         )}
 
@@ -471,9 +470,9 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             <div className="flex items-center gap-2.5 text-sky-300 font-semibold">
               <Loader2 className="h-4 w-4 animate-spin text-sky-400" />
               <span>
-                {lang === 'en'
+                {t(lang === 'en'
                   ? 'Executing Grounded RAG Pipeline...'
-                  : 'Ejecutando Pipeline RAG Verificado...'}
+                  : 'Ejecutando Pipeline RAG Verificado...')}
               </span>
             </div>
 
@@ -509,7 +508,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                     ) : (
                       <span className="h-3.5 w-3.5 rounded-full border border-slate-700" />
                     )}
-                    <span>{stepText}</span>
+                    <span>{t(stepText)}</span>
                   </div>
                 );
               })}
@@ -522,9 +521,9 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
           <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-rose-200">
             <div className="flex items-center gap-2 font-semibold text-rose-300">
               <ShieldAlert className="h-4 w-4 shrink-0" />
-              <span>{lang === 'en' ? 'Connection Error' : 'Error de Conexión'}</span>
+              <span>{t(lang === 'en' ? 'Connection Error' : 'Error de Conexión')}</span>
             </div>
-            <p className="mt-1 text-[11px] leading-relaxed">{error}</p>
+            <p className="mt-1 text-[11px] leading-relaxed">{t(error)}</p>
           </div>
         )}
 
@@ -536,21 +535,20 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               <div className="flex items-center gap-1.5 text-emerald-400">
                 <ShieldCheck className="h-3.5 w-3.5" />
                 <span>
-                  {response.mode === 'evidence_only'
+                  {t(response.mode === 'evidence_only'
                     ? lang === 'en'
                       ? 'EVIDENCE ONLY MODE'
                       : 'MODO SOLO EVIDENCIA'
                     : lang === 'en'
                     ? `${response.claims?.length || 0} VERIFIED CLAIMS · ${response.citations.length} SOURCES`
-                    : `${response.claims?.length || 0} AFIRMACIONES VALIDADAS · ${response.citations.length} FUENTES`}
+                    : `${response.claims?.length || 0} AFIRMACIONES VALIDADAS · ${response.citations.length} FUENTES`)}
                 </span>
               </div>
 
               <div className="flex items-center gap-2 text-slate-400">
                 {response.usage?.cached && (
                   <span className="rounded bg-emerald-500/15 px-1.5 py-0.5 text-[9px] text-emerald-300">
-                    ⚡ CACHE HIT (0ms)
-                  </span>
+                    {" "}{t("⚡ CACHE HIT (0ms)")}{" "}</span>
                 )}
                 {(execSummaryStream.isStreaming || mainAnswerStream.isStreaming) && (
                   <button
@@ -561,7 +559,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                     }}
                     className="text-sky-400 underline hover:text-sky-300"
                   >
-                    {lang === 'en' ? 'Show all' : 'Mostrar todo'}
+                    {t(lang === 'en' ? 'Show all' : 'Mostrar todo')}
                   </button>
                 )}
               </div>
@@ -573,13 +571,13 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                 <div className="flex items-center justify-between">
                   <span className="inline-flex items-center gap-1.5 font-mono text-[10px] font-bold uppercase tracking-wider text-sky-300">
                     <Zap className="h-3.5 w-3.5 text-sky-400" />
-                    {lang === 'en'
+                    {t(lang === 'en'
                       ? 'EXECUTIVE DECISION SUMMARY'
-                      : 'RESUMEN EJECUTIVO PARA TOMA DE DECISIONES'}
+                      : 'RESUMEN EJECUTIVO PARA TOMA DE DECISIONES')}
                   </span>
                 </div>
                 <p className="mt-2 text-xs font-medium leading-relaxed text-white">
-                  {execSummaryStream.displayed}
+                  {t(execSummaryStream.displayed)}
                   {execSummaryStream.isStreaming && (
                     <span className="ml-1 inline-block h-3 w-1.5 animate-pulse bg-sky-400 align-middle" />
                   )}
@@ -593,17 +591,17 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                 <div className="flex items-center gap-2 font-bold text-amber-300">
                   <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
                   <span>
-                    {lang === 'en'
+                    {t(lang === 'en'
                       ? 'Counter-Intuitive Microgravity Physics Alert'
-                      : 'Alerta de Física Contraintuitiva en Microgravedad'}
+                      : 'Alerta de Física Contraintuitiva en Microgravedad')}
                   </span>
                 </div>
                 <p className="mt-1.5 text-[11px] leading-relaxed text-amber-100">
-                  {response.physical_alert}
+                  {t(response.physical_alert)}
                 </p>
                 {response.physical_alert_claim?.quote && (
                   <blockquote className="mt-2 border-l-2 border-amber-400/50 pl-2.5 font-mono text-[10px] italic text-amber-200/80">
-                    “{response.physical_alert_claim.quote}”
+                    “{t(response.physical_alert_claim.quote)}”
                   </blockquote>
                 )}
               </div>
@@ -612,13 +610,13 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             {/* BLOQUE C: DESGLOSE DE AFIRMACIONES VERIFICADAS CON CITA LITERAL (O RESPUESTA GENERAL) */}
             <div className="rounded-xl border border-slate-800 bg-[#081020] p-4">
               <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-sky-400">
-                {response.claims && response.claims.length > 0
+                {t(response.claims && response.claims.length > 0
                   ? lang === 'en'
                     ? 'EVIDENCE-BACKED CLAIMS & VERBATIM QUOTES'
                     : 'HALLAZGOS VERIFICADOS Y CITAS LITERALES'
                   : lang === 'en'
                   ? 'SYNTHESIS'
-                  : 'SÍNTESIS'}
+                  : 'SÍNTESIS')}
               </span>
 
               {response.claims && response.claims.length > 0 ? (
@@ -629,7 +627,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                       className="rounded-xl border border-slate-800/90 bg-[#0B1528] p-3 transition hover:border-slate-700"
                     >
                       <p className="text-xs leading-relaxed text-slate-100">
-                        {claim.text}
+                        {t(claim.text)}
                       </p>
 
                       {/* Extracto textual exacto validado por el servidor (source_quote) */}
@@ -637,7 +635,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                         <div className="mt-2 flex items-start gap-2 rounded-lg bg-[#060C18] p-2.5 border border-slate-800/80">
                           <Quote className="mt-0.5 h-3.5 w-3.5 shrink-0 text-sky-400/70" />
                           <p className="font-mono text-[10px] leading-relaxed text-slate-300">
-                            “{claim.quote}”
+                            “{t(claim.quote)}”
                           </p>
                         </div>
                       )}
@@ -645,7 +643,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                       {/* Botones interactivos que saltan a la fuente citada */}
                       <div className="mt-2 flex flex-wrap items-center gap-1.5">
                         <span className="font-mono text-[9px] text-slate-500">
-                          {lang === 'en' ? 'Verified in:' : 'Verificado en:'}
+                          {t(lang === 'en' ? 'Verified in:' : 'Verificado en:')}
                         </span>
                         {claim.citation_ids.map((cid) => {
                           const num = citationIndexMap[cid];
@@ -656,8 +654,8 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                               onClick={() => num && jumpToCitation(num)}
                               className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-2 py-0.5 font-mono text-[10px] font-bold text-sky-300 transition hover:bg-sky-500/25 hover:text-white"
                             >
-                              <span>[{num || cid}]</span>
-                              <span>{cid.replace(/^psi:/, '')}</span>
+                              <span>[{t(num || cid)}]</span>
+                              <span>{t(cid.replace(/^psi:/, ''))}</span>
                             </button>
                           );
                         })}
@@ -667,7 +665,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                 </div>
               ) : (
                 <p className="mt-2 whitespace-pre-wrap text-xs leading-relaxed text-slate-200">
-                  {mainAnswerStream.displayed}
+                  {t(mainAnswerStream.displayed)}
                 </p>
               )}
             </div>
@@ -677,12 +675,12 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
               <div className="rounded-xl border border-slate-800 bg-[#081020] p-4">
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {lang === 'en'
+                    {t(lang === 'en'
                       ? `TRACEABLE SOURCES (${response.citations.length})`
-                      : `FUENTES TRAZABLES (${response.citations.length})`}
+                      : `FUENTES TRAZABLES (${response.citations.length})`)}
                   </span>
                   <span className="font-mono text-[9px] text-slate-500">
-                    {lang === 'en' ? 'Click to inspect excerpt' : 'Clic para ver pasaje original'}
+                    {t(lang === 'en' ? 'Click to inspect excerpt' : 'Clic para ver pasaje original')}
                   </span>
                 </div>
 
@@ -707,22 +705,22 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                         <summary className="flex cursor-pointer list-none items-start justify-between gap-2">
                           <div className="flex items-start gap-2.5">
                             <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-sky-500/20 font-mono text-[10px] font-bold text-sky-300 border border-sky-500/30">
-                              {num}
+                              {t(num)}
                             </span>
                             <div>
                               <div className="flex flex-wrap items-center gap-1.5">
-                                {renderCitationKindBadge(cit)}
+                                {t(renderCitationKindBadge(cit))}
                                 {cit.relevance > 0 && (
                                   <span className="font-mono text-[9px] text-slate-500">
-                                    score {cit.relevance.toFixed(1)}
+                                    {" "}{t("score")}{" "}{t(cit.relevance.toFixed(1))}
                                   </span>
                                 )}
                               </div>
                               <strong className="mt-1 block text-[11px] font-semibold text-white">
-                                {cit.title}
+                                {t(cit.title)}
                               </strong>
                               <span className="block text-[10px] text-slate-400">
-                                {cit.source_file}
+                                {t(cit.source_file)}
                               </span>
                             </div>
                           </div>
@@ -730,7 +728,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                         </summary>
 
                         <blockquote className="mt-2.5 whitespace-pre-wrap rounded-lg border-l-2 border-sky-400 bg-[#0A1326] p-2.5 font-mono text-[10px] leading-relaxed text-slate-300">
-                          {cit.text}
+                          {t(cit.text)}
                         </blockquote>
 
                         {resolvedUrl && (
@@ -742,13 +740,13 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                               className="inline-flex items-center gap-1 rounded-lg border border-sky-500/30 bg-sky-500/10 px-2.5 py-1 font-mono text-[10px] font-semibold text-sky-300 transition hover:bg-sky-500/20 hover:text-white"
                             >
                               <span>
-                                {cit.page > 0
+                                {t(cit.page > 0
                                   ? lang === 'en'
                                     ? `Open original PDF at page ${cit.page}`
                                     : `Abrir PDF original en pág. ${cit.page}`
                                   : lang === 'en'
                                   ? 'Open official PSI source'
-                                  : 'Abrir fuente oficial PSI'}
+                                  : 'Abrir fuente oficial PSI')}
                               </span>
                               <ExternalLink className="h-3 w-3" />
                             </a>
@@ -765,11 +763,11 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             {response.conflicts.length > 0 && (
               <div className="rounded-xl border border-rose-500/40 bg-rose-500/10 p-3.5 text-rose-200">
                 <strong className="block font-mono text-[10px] uppercase tracking-wider text-rose-300">
-                  {lang === 'en' ? 'CONFLICTING EVIDENCE DETECTED' : 'EVIDENCIA EN CONFLICTO DETECTADA'}
+                  {t(lang === 'en' ? 'CONFLICTING EVIDENCE DETECTED' : 'EVIDENCIA EN CONFLICTO DETECTADA')}
                 </strong>
                 {response.conflicts.map((c, idx) => (
                   <p key={idx} className="mt-1 text-[11px] leading-relaxed">
-                    {c}
+                    {t(c)}
                   </p>
                 ))}
               </div>
@@ -778,13 +776,13 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             {response.limitations.length > 0 && (
               <details className="rounded-xl border border-slate-800 bg-[#070D19] p-3 text-slate-400">
                 <summary className="cursor-pointer font-mono text-[10px] font-semibold uppercase tracking-wider text-slate-300">
-                  {lang === 'en'
+                  {t(lang === 'en'
                     ? `Scientific & Corpus Limitations (${response.limitations.length})`
-                    : `Limitaciones Científicas y del Corpus (${response.limitations.length})`}
+                    : `Limitaciones Científicas y del Corpus (${response.limitations.length})`)}
                 </summary>
                 <ul className="mt-2 list-disc space-y-1 pl-4 text-[11px] leading-relaxed">
                   {response.limitations.map((lim, idx) => (
-                    <li key={idx}>{lim}</li>
+                    <li key={idx}>{t(lim)}</li>
                   ))}
                 </ul>
               </details>
@@ -793,7 +791,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
             {/* Chips rápidos para seguir explorando */}
             <div className="pt-1">
               <span className="mb-1.5 block font-mono text-[9px] font-bold uppercase tracking-wider text-slate-500">
-                {lang === 'en' ? 'FOLLOW-UP QUESTIONS' : 'SEGUIR EXPLORANDO'}
+                {t(lang === 'en' ? 'FOLLOW-UP QUESTIONS' : 'SEGUIR EXPLORANDO')}
               </span>
               <div className="flex flex-col gap-1.5">
                 {suggestedQuestions
@@ -806,7 +804,7 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
                       onClick={() => void executeQuestion(q)}
                       className="flex items-center justify-between rounded-lg border border-slate-800 bg-[#070D19] px-3 py-2 text-left text-[11px] text-slate-300 transition hover:border-sky-500/40 hover:text-white"
                     >
-                      <span className="truncate">{q}</span>
+                      <span className="truncate">{t(q)}</span>
                       <span className="ml-2 text-sky-400">↗</span>
                     </button>
                   ))}
@@ -852,11 +850,11 @@ export const RagCopilotWorkspace: React.FC<RagCopilotWorkspaceProps> = ({
         <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500">
           <span className="inline-flex items-center gap-1">
             <ShieldCheck className="h-3 w-3 text-emerald-400" />
-            {lang === 'en'
+            {t(lang === 'en'
               ? 'Strict verbatim quote validation active'
-              : 'Validación estricta de citas literales activa'}
+              : 'Validación estricta de citas literales activa')}
           </span>
-          <span className="font-mono text-[9px] text-slate-600">POST /api/chat</span>
+          <span className="font-mono text-[9px] text-slate-600">{" "}{t("POST /api/chat")}{" "}</span>
         </div>
       </form>
     </div>

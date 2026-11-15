@@ -1,5 +1,6 @@
 'use client';
 
+import {useT} from '../../src/i18n/useT';
 import {useEffect, useState} from 'react';
 import {Download, Database} from 'lucide-react';
 import {CartesianGrid, Legend, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis} from 'recharts';
@@ -33,6 +34,8 @@ const format = (value: number) => new Intl.NumberFormat('en', {maximumSignifican
 const colors = ['#739fca', '#8eb49f', '#c3a0d1', '#d0b087'];
 
 export default function OODEvidence({cohort, gravity, dataMode, token, observationsOnly = false}: Props) {
+  const t = useT();
+
   const [loaded, setLoaded] = useState<{key: string; token: string; report: Evidence} | null>(null);
   const [error, setError] = useState('');
   const [property, setProperty] = useState('');
@@ -65,42 +68,42 @@ export default function OODEvidence({cohort, gravity, dataMode, token, observati
   const shownRows = showAll ? selectedRows : selectedRows.slice(0, 15);
 
   return <details className="ood-evidence" open>
-    <summary><Database size={16}/> Observed evidence &amp; validation readiness</summary>
-    {error && <p role="alert">{error}</p>}
-    {!report && !error && <p role="status">Loading source-linked observations…</p>}
+    <summary><Database size={16}/> {" "}{t("Observed evidence & validation readiness")}{" "}</summary>
+    {error && <p role="alert">{t(error)}</p>}
+    {!report && !error && <p role="status">{" "}{t("Loading source-linked observations…")}{" "}</p>}
     {report && <>
-      <p>{report.cohort_observations} observations in this fuel/configuration cohort · {report.dependency_groups} dependency groups. This panel inspects recorded measurements and exclusion rules; it does not fit a model or compute validation errors.</p>
-      {report.reason && <p>{report.reason}</p>}
+      <p>{t(report.cohort_observations)} {" "}{t("observations in this fuel/configuration cohort ·")}{" "}{t(report.dependency_groups)} {" "}{t("dependency groups. This panel inspects recorded measurements and exclusion rules; it does not fit a model or compute validation errors.")}{" "}</p>
+      {report.reason && <p>{t(report.reason)}</p>}
       {!!properties.length && <>
-        {observationsOnly && <section className="ood-measured-results" aria-label="Measured results · not predictions">
-          <h4>Measured results · not predictions</h4>
-          <p>These are recorded values for this experimental configuration, at the conditions listed with each measurement. They do not change when you adjust the target gravity, oxygen, pressure or airflow above. A prediction at those target conditions is unavailable.</p>
+        {observationsOnly && <section className="ood-measured-results" aria-label={t("Measured results · not predictions")}>
+          <h4>{" "}{t("Measured results · not predictions")}{" "}</h4>
+          <p>{" "}{t("These are recorded values for this experimental configuration, at the conditions listed with each measurement. They do not change when you adjust the target gravity, oxygen, pressure or airflow above. A prediction at those target conditions is unavailable.")}{" "}</p>
           <div className="ood-results">{Object.entries(report.outputs).map(([name, measured]) => <article className="ood-estimate" key={name} aria-label={`Measured ${propertyLabels[name]}`}>
-            <span className="eyebrow">MEASURED · {measured.observations.length} OBSERVATIONS</span>
-            <h4>{propertyLabels[name]}</h4>
+            <span className="eyebrow">{" "}{t("MEASURED ·")}{" "}{t(measured.observations.length)} {" "}{t("OBSERVATIONS")}{" "}</span>
+            <h4>{t(propertyLabels[name])}</h4>
             {measured.observations.slice(0, 5).map(row => <div className="ood-measured-row" key={row.id}>
-              <strong className="ood-estimate-value">{format(row.observed)} <small>{measured.unit}</small></strong>
-              <p>{format(row.gravity_g)} g · {format(row.oxygen_pct)}% O₂ · {format(row.pressure_kpa)} kPa · {format(row.airflow_cm_s)} cm/s</p>
-              <span className="tag neutral">{row.reviewed ? 'Reviewed observation' : 'Transcription pending scientific review'}</span>
-              <details><summary>Source · {row.id}</summary><p>{row.citation}</p></details>
+              <strong className="ood-estimate-value">{t(format(row.observed))} <small>{t(measured.unit)}</small></strong>
+              <p>{t(format(row.gravity_g))} g · {t(format(row.oxygen_pct))}% O₂ · {t(format(row.pressure_kpa))} {" "}{t("kPa ·")}{" "}{t(format(row.airflow_cm_s))} {" "}{t("cm/s")}{" "}</p>
+              <span className="tag neutral">{t(row.reviewed ? 'Reviewed observation' : 'Transcription pending scientific review')}</span>
+              <details><summary>{" "}{t("Source ·")}{" "}{t(row.id)}</summary><p>{t(row.citation)}</p></details>
             </div>)}
-            {measured.observations.length > 5 && <p>First 5 measurements shown; inspect all {measured.observations.length} in the source-linked table below.</p>}
+            {measured.observations.length > 5 && <p>{" "}{t("First 5 measurements shown; inspect all")}{" "}{t(measured.observations.length)} {" "}{t("in the source-linked table below.")}{" "}</p>}
           </article>)}</div>
         </section>}
-        <div className="ood-result-toolbar"><label>Observed property<select value={selectedProperty} onChange={event => {setProperty(event.target.value); setShowAll(false);}}>
-          {properties.map(key => <option key={key} value={key}>{propertyLabels[key]}</option>)}
-        </select></label><button type="button" className="button secondary" onClick={() => downloadJSON('ood-observed-evidence.json', report)}><Download size={14}/> Export observed evidence</button></div>
+        <div className="ood-result-toolbar"><label>{" "}{t("Observed property")}{" "}<select value={selectedProperty} onChange={event => {setProperty(event.target.value); setShowAll(false);}}>
+          {properties.map(key => <option key={key} value={key}>{t(propertyLabels[key])}</option>)}
+        </select></label><button type="button" className="button secondary" onClick={() => downloadJSON('ood-observed-evidence.json', report)}><Download size={14}/> {" "}{t("Export observed evidence")}{" "}</button></div>
         <div className="ood-gravity-counts">{output?.by_gravity.map(level => <div key={level.gravity_g} className={gravity === level.gravity_g ? 'selected' : ''}>
-          <strong>{level.gravity_g} g</strong><span>{level.observations} measured rows</span><small>{level.reviewed} reviewed · {level.observations - level.reviewed} pending</small>
+          <strong>{t(level.gravity_g)} g</strong><span>{t(level.observations)} {" "}{t("measured rows")}{" "}</span><small>{t(level.reviewed)} {" "}{t("reviewed ·")}{" "}{t(level.observations - level.reviewed)} {" "}{t("pending")}{" "}</small>
         </div>)}</div>
-        {report.gravity_note && <p className="small-note">{report.gravity_note}</p>}
-        <h4>Observed {propertyLabels[selectedProperty]?.toLowerCase()} versus oxygen</h4>
-        <p>Each point uses its own recorded pressure, airflow and temperature. This plot does not isolate an oxygen effect. Repeated points may overlap; every row is retained in the table.</p>
+        {report.gravity_note && <p className="small-note">{t(report.gravity_note)}</p>}
+        <h4>{" "}{t("Observed")}{" "}{t(propertyLabels[selectedProperty]?.toLowerCase())} {" "}{t("versus oxygen")}{" "}</h4>
+        <p>{" "}{t("Each point uses its own recorded pressure, airflow and temperature. This plot does not isolate an oxygen effect. Repeated points may overlap; every row is retained in the table.")}{" "}</p>
         <div className="ood-evidence-chart"><ResponsiveContainer width="100%" height="100%">
           <ScatterChart margin={{top: 12, right: 22, bottom: 25, left: 15}}>
             <CartesianGrid stroke="#283341"/>
-            <XAxis dataKey="oxygen_pct" type="number" name="Oxygen" unit="%" label={{value: 'Recorded oxygen (%)', position: 'bottom'}}/>
-            <YAxis dataKey="observed" type="number" name="Observed" unit={` ${output?.unit}`} domain={[0, 'auto']} tickFormatter={format}/>
+            <XAxis dataKey="oxygen_pct" type="number" name="Oxygen" unit="%" label={{value: t('Recorded oxygen (%)'), position: 'bottom'}}/>
+            <YAxis dataKey="observed" type="number" name={t('Observed')} unit={` ${output?.unit}`} domain={[0, 'auto']} tickFormatter={format}/>
             <Tooltip/><Legend verticalAlign="top"/>
             {output?.by_gravity.map((level, index) => <Scatter key={level.gravity_g}
               name={`${level.gravity_g} g${gravity === level.gravity_g ? ' · selected' : ''}`}
@@ -109,35 +112,35 @@ export default function OODEvidence({cohort, gravity, dataMode, token, observati
           </ScatterChart>
         </ResponsiveContainer></div>
         {preview ? <div className="ood-fold-preview">
-          <h4>What happens if {preview.gravity_g} g is held out?</h4>
+          <h4>{" "}{t("What happens if")}{" "}{t(preview.gravity_g)} {" "}{t("g is held out?")}{" "}</h4>
           <div className="ood-split-stages">
-            <div><strong>{preview.held_out_n}</strong><span>rows held out</span></div>
-            <div><strong>{preview.remaining_before_group_exclusion}</strong><span>rows at other gravities</span></div>
-            <div><strong>{preview.remaining_training_n}</strong><span>rows after dependency exclusions</span></div>
+            <div><strong>{t(preview.held_out_n)}</strong><span>{" "}{t("rows held out")}{" "}</span></div>
+            <div><strong>{t(preview.remaining_before_group_exclusion)}</strong><span>{" "}{t("rows at other gravities")}{" "}</span></div>
+            <div><strong>{t(preview.remaining_training_n)}</strong><span>{" "}{t("rows after dependency exclusions")}{" "}</span></div>
           </div>
-          <p><span className="tag">{preview.validation_allowed ? 'Data split eligible for validation' : 'Scientific comparison unavailable'}</span></p>
-          {preview.reasons.length > 0 && <ul>{preview.reasons.map(reason => <li key={reason}>{reason}</li>)}</ul>}
-          <p>Remaining training gravity levels: {preview.remaining_gravity_levels.length ? preview.remaining_gravity_levels.join(', ') + ' g' : 'none'}.</p>
-          <details><summary>Dependency groups excluded with the held-out rows</summary><ul>{preview.excluded_groups.map(group => <li key={group}>{group}</li>)}</ul></details>
-          {!preview.validation_allowed && <div className="ood-next-evidence"><strong>What would enable this comparison?</strong><ul>
-            {dataMode === 'exploratory' && <li>Review the transcribed measurements before using reviewed-mode validation.</li>}
-            {preview.related_rows_removed > 0 && <li>Provide compatible observations from genuinely independent runs or campaigns. Renaming a dependency group does not make it independent.</li>}
-            {output && output.by_gravity.length < 3 && <li>This protocol needs observations at another gravity so two training levels can remain after one is held out.</li>}
-            {preview.remaining_training_n < 3 && <li>Retain at least three training rows without held-out group overlap; this software minimum does not establish scientific sufficiency.</li>}
+          <p><span className="tag">{t(preview.validation_allowed ? 'Data split eligible for validation' : 'Scientific comparison unavailable')}</span></p>
+          {preview.reasons.length > 0 && <ul>{preview.reasons.map(reason => <li key={reason}>{t(reason)}</li>)}</ul>}
+          <p>{" "}{t("Remaining training gravity levels:")}{" "}{t(preview.remaining_gravity_levels.length ? preview.remaining_gravity_levels.join(', ') + ' g' : 'none')}.</p>
+          <details><summary>{" "}{t("Dependency groups excluded with the held-out rows")}{" "}</summary><ul>{preview.excluded_groups.map(group => <li key={group}>{t(group)}</li>)}</ul></details>
+          {!preview.validation_allowed && <div className="ood-next-evidence"><strong>{" "}{t("What would enable this comparison?")}{" "}</strong><ul>
+            {dataMode === 'exploratory' && <li>{" "}{t("Review the transcribed measurements before using reviewed-mode validation.")}{" "}</li>}
+            {preview.related_rows_removed > 0 && <li>{" "}{t("Provide compatible observations from genuinely independent runs or campaigns. Renaming a dependency group does not make it independent.")}{" "}</li>}
+            {output && output.by_gravity.length < 3 && <li>{" "}{t("This protocol needs observations at another gravity so two training levels can remain after one is held out.")}{" "}</li>}
+            {preview.remaining_training_n < 3 && <li>{" "}{t("Retain at least three training rows without held-out group overlap; this software minimum does not establish scientific sufficiency.")}{" "}</li>}
           </ul></div>}
-        </div> : <p className="ood-warning">{observationsOnly ? 'Measured results are available. Predicting across gravity requires at least three compatible observations spanning two gravity levels per property; this configuration does not meet that minimum.' : 'Choose a gravity above to inspect its measurements and preview the leakage-safe holdout split.'}</p>}
-        <details className="ood-measurement-table" open><summary>Source-linked measurement table · {selectedRows.length} rows{gravity == null ? ' across all gravities' : ` at ${gravity} g`}</summary>
-          <div className="ood-table-scroll"><table><caption>Observed {propertyLabels[selectedProperty]?.toLowerCase()} ({output?.unit}) · recorded conditions, not predictions</caption>
-            <thead><tr><th scope="col">Row / source</th><th scope="col">Gravity (g)</th><th scope="col">Oxygen (%)</th><th scope="col">Pressure (kPa)</th><th scope="col">Airflow (cm/s)</th><th scope="col">Observed ({output?.unit})</th><th scope="col">Measurement SD</th><th scope="col">Review</th></tr></thead>
+        </div> : <p className="ood-warning">{t(observationsOnly ? 'Measured results are available. Predicting across gravity requires at least three compatible observations spanning two gravity levels per property; this configuration does not meet that minimum.' : 'Choose a gravity above to inspect its measurements and preview the leakage-safe holdout split.')}</p>}
+        <details className="ood-measurement-table" open><summary>{" "}{t("Source-linked measurement table ·")}{" "}{t(selectedRows.length)} {" "}{t("rows")}{" "}{t(gravity == null ? ' across all gravities' : ` at ${gravity} g`)}</summary>
+          <div className="ood-table-scroll"><table><caption>{" "}{t("Observed")}{" "}{t(propertyLabels[selectedProperty]?.toLowerCase())} ({t(output?.unit)}{" "}{t(") · recorded conditions, not predictions")}{" "}</caption>
+            <thead><tr><th scope="col">{" "}{t("Row / source")}{" "}</th><th scope="col">{" "}{t("Gravity (g)")}{" "}</th><th scope="col">{" "}{t("Oxygen (%)")}{" "}</th><th scope="col">{" "}{t("Pressure (kPa)")}{" "}</th><th scope="col">{" "}{t("Airflow (cm/s)")}{" "}</th><th scope="col">{" "}{t("Observed (")}{" "}{t(output?.unit)})</th><th scope="col">{" "}{t("Measurement SD")}{" "}</th><th scope="col">{" "}{t("Review")}{" "}</th></tr></thead>
             <tbody>{shownRows.map((row, index) => <tr key={`${row.id}-${index}`}>
-              <td><details><summary>{row.id}</summary><p>{row.citation}</p><p>{row.provenance.replaceAll('_', ' ')} · dependency group: {row.leakage_group}</p>{row.temperature_k != null && <p>Initial temperature: {row.temperature_k} K</p>}</details></td>
-              <td>{format(row.gravity_g)}</td><td>{format(row.oxygen_pct)}</td><td>{format(row.pressure_kpa)}</td><td>{format(row.airflow_cm_s)}</td><td>{format(row.observed)}</td><td>{row.measurement_sd == null ? 'Unavailable' : `${format(row.measurement_sd)} ${output?.unit}`}</td><td>{row.reviewed ? 'Reviewed' : 'Pending'}</td>
+              <td><details><summary>{t(row.id)}</summary><p>{t(row.citation)}</p><p>{t(row.provenance.replaceAll('_', ' '))} {" "}{t("· dependency group:")}{" "}{t(row.leakage_group)}</p>{row.temperature_k != null && <p>{" "}{t("Initial temperature:")}{" "}{t(row.temperature_k)} K</p>}</details></td>
+              <td>{t(format(row.gravity_g))}</td><td>{t(format(row.oxygen_pct))}</td><td>{t(format(row.pressure_kpa))}</td><td>{t(format(row.airflow_cm_s))}</td><td>{t(format(row.observed))}</td><td>{t(row.measurement_sd == null ? 'Unavailable' : `${format(row.measurement_sd)} ${output?.unit}`)}</td><td>{t(row.reviewed ? 'Reviewed' : 'Pending')}</td>
             </tr>)}</tbody>
           </table></div>
-          {selectedRows.length > 15 && <button type="button" className="text-button" onClick={() => setShowAll(!showAll)}>{showAll ? 'Show first 15 rows' : `Show all ${selectedRows.length} rows`}</button>}
-          {selectedRows.length === 0 && <p>No measurements for this property at the selected gravity.</p>}
+          {selectedRows.length > 15 && <button type="button" className="text-button" onClick={() => setShowAll(!showAll)}>{t(showAll ? 'Show first 15 rows' : `Show all ${selectedRows.length} rows`)}</button>}
+          {selectedRows.length === 0 && <p>{" "}{t("No measurements for this property at the selected gravity.")}{" "}</p>}
         </details>
-        <details><summary>Inspection limitations</summary><ul>{report.limitations.map(limitation => <li key={limitation}>{limitation}</li>)}</ul><p>Dataset SHA-256: <small>{report.dataset_sha256}</small></p></details>
+        <details><summary>{" "}{t("Inspection limitations")}{" "}</summary><ul>{report.limitations.map(limitation => <li key={limitation}>{t(limitation)}</li>)}</ul><p>{" "}{t("Dataset SHA-256:")}{" "}<small>{t(report.dataset_sha256)}</small></p></details>
       </>}
     </>}
   </details>;

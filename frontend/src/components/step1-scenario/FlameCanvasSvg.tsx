@@ -1,3 +1,4 @@
+import {useT} from '../../i18n/useT';
 import React from "react";
 
 interface FlameCanvasSvgProps {
@@ -21,6 +22,8 @@ export const FlameCanvasSvg: React.FC<FlameCanvasSvgProps> = ({
   size = "md",
   variant = "scenario",
 }) => {
+  const t = useT();
+
   const isEarthRef = variant === "earth-1g" || gravityG >= 0.85;
 
   // Elongación vertical según gravedad (0g = esfera 1.0, 0.17g = lágrima corta 1.22, 1g = vela alta 2.05)

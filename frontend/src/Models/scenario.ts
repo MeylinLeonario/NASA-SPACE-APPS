@@ -1,7 +1,7 @@
 //frontend/src/Models/scenario.ts
 export type Language = "en" | "es";
 
-export type MaterialId = "pmma" | "sibal" | "nomex";
+export type MaterialId = "cellulose" | "pmma" | "sibal" | "nomex";
 
 export type SafetyPillar = "all" | "prevention" | "detection" | "suppression";
 
@@ -37,6 +37,7 @@ export interface MaterialEvaluation {
   burnMarginPts: number;     // cabin O2 - minO2ToBurnPct (positive = burns)
   blindSpotPts: number;      // earthTest1Pct - minO2ToBurnPct (positive = Earth test is optimistic)
   burns: boolean;
+  available?: boolean;
 }
 
 export interface HabitatPreset {

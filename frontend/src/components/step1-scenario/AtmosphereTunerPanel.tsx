@@ -1,3 +1,4 @@
+import {useT} from '../../i18n/useT';
 import React from "react";
 import { useScenario } from "../../context/ScenarioContext";
 import {
@@ -8,6 +9,8 @@ import { MaterialId, SafetyPillar } from "../../Models/scenario";
 import { FlameCanvasSvg } from "./FlameCanvasSvg";
 
 export const AtmosphereTunerPanel: React.FC = () => {
+  const t = useT();
+
   const {
     lang,
     conditions,
@@ -20,7 +23,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
     setActiveStep,
   } = useScenario();
 
-  const materialsList: MaterialId[] = ["pmma", "sibal", "nomex"];
+  const materialsList: MaterialId[] = ["cellulose", "pmma", "sibal", "nomex"];
   const pillarsList: {
     id: SafetyPillar;
     icon: string;
@@ -45,7 +48,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
         {/* Título del Panel */}
         <div className="flex items-center justify-between">
           <h2 className="text-[15px] font-bold text-white">
-            {lang === "en" ? "Fine-tune atmosphere" : "Ajusta la atmósfera"}
+            {t(lang === "en" ? "Fine-tune atmosphere" : "Ajusta la atmósfera")}
           </h2>
           <span className="flex h-5 w-5 items-center justify-center rounded-full border border-slate-700 text-[10px] text-slate-400">
             i
@@ -62,16 +65,16 @@ export const AtmosphereTunerPanel: React.FC = () => {
             variant="scenario"
           />
           <p className="mt-2 text-[11px] font-medium text-slate-300">
-            {lang === "en"
+            {t(lang === "en"
               ? "Illustrative flame for your gravity & O₂"
-              : "Llama ilustrativa según tu gravedad y O₂"}
+              : "Llama ilustrativa según tu gravedad y O₂")}
           </p>
           <div className="mt-1 flex items-center gap-2 font-mono text-[10px] text-sky-400">
-            <span>{conditions.o2.toFixed(1)}% O₂</span>
+            <span>{t(conditions.o2.toFixed(1))}% O₂</span>
             <span>·</span>
-            <span>{conditions.pressurePsi.toFixed(1)} psi</span>
+            <span>{t(conditions.pressurePsi.toFixed(1))} {" "}{t("psi")}{" "}</span>
             <span>·</span>
-            <span>{conditions.gravityG.toFixed(2)} g</span>
+            <span>{t(conditions.gravityG.toFixed(2))} g</span>
           </div>
         </div>
 
@@ -82,10 +85,10 @@ export const AtmosphereTunerPanel: React.FC = () => {
             <div className="mb-1.5 flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
                 <span className="text-sky-400">💧</span>
-                <span>{lang === "en" ? "Oxygen" : "Oxígeno"}</span>
+                <span>{t(lang === "en" ? "Oxygen" : "Oxígeno")}</span>
               </span>
               <span className="font-mono text-sm font-bold text-white">
-                {conditions.o2.toFixed(1)}{" "}
+                {t(conditions.o2.toFixed(1))}{" "}{t(" ")}{" "}
                 <span className="text-xs font-normal text-slate-400">% O₂</span>
               </span>
             </div>
@@ -104,7 +107,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
                 className="absolute -translate-x-1/2 flex flex-col items-center leading-none"
               >
                 <span className="text-[8px] text-slate-600">|</span>
-                <span>{lang === "en" ? "Earth" : "Tierra"}</span>
+                <span>{t(lang === "en" ? "Earth" : "Tierra")}</span>
               </span>
             </div>
           </div>
@@ -114,11 +117,11 @@ export const AtmosphereTunerPanel: React.FC = () => {
             <div className="mb-1.5 flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
                 <span className="text-sky-400">⏲️</span>
-                <span>{lang === "en" ? "Cabin pressure" : "Presión de cabina"}</span>
+                <span>{t(lang === "en" ? "Cabin pressure" : "Presión de cabina")}</span>
               </span>
               <span className="font-mono text-sm font-bold text-white">
-                {conditions.pressurePsi.toFixed(1)}{" "}
-                <span className="text-xs font-normal text-slate-400">psi</span>
+                {t(conditions.pressurePsi.toFixed(1))}{" "}{t(" ")}{" "}
+                <span className="text-xs font-normal text-slate-400">{" "}{t("psi")}{" "}</span>
               </span>
             </div>
             <input
@@ -138,7 +141,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
                 className="absolute -translate-x-1/2 flex flex-col items-center leading-none"
               >
                 <span className="text-[8px] text-slate-600">|</span>
-                <span>{lang === "en" ? "Earth" : "Tierra"}</span>
+                <span>{t(lang === "en" ? "Earth" : "Tierra")}</span>
               </span>
             </div>
           </div>
@@ -149,12 +152,12 @@ export const AtmosphereTunerPanel: React.FC = () => {
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
                 <span className="text-sky-400">💨</span>
                 <span>
-                  {lang === "en" ? "Ventilation airflow" : "Flujo de ventilación"}
+                  {t(lang === "en" ? "Ventilation airflow" : "Flujo de ventilación")}
                 </span>
               </span>
               <span className="font-mono text-sm font-bold text-white">
-                {conditions.airflowCms.toFixed(1)}{" "}
-                <span className="text-xs font-normal text-slate-400">cm/s</span>
+                {t(conditions.airflowCms.toFixed(1))}{" "}{t(" ")}{" "}
+                <span className="text-xs font-normal text-slate-400">{" "}{t("cm/s")}{" "}</span>
               </span>
             </div>
             <input
@@ -174,7 +177,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
                 className="absolute -translate-x-1/2 flex flex-col items-center leading-none"
               >
                 <span className="text-[8px] text-slate-600">|</span>
-                <span>ISS</span>
+                <span>{" "}{t("ISS")}{" "}</span>
               </span>
             </div>
           </div>
@@ -184,10 +187,10 @@ export const AtmosphereTunerPanel: React.FC = () => {
             <div className="mb-1.5 flex items-center justify-between text-xs">
               <span className="flex items-center gap-1.5 font-medium text-slate-300">
                 <span className="text-sky-400">🪐</span>
-                <span>{lang === "en" ? "Gravity" : "Gravedad"}</span>
+                <span>{t(lang === "en" ? "Gravity" : "Gravedad")}</span>
               </span>
               <span className="font-mono text-sm font-bold text-white">
-                {conditions.gravityG.toFixed(2)}{" "}
+                {t(conditions.gravityG.toFixed(2))}{" "}{t(" ")}{" "}
                 <span className="text-xs font-normal text-slate-400">g</span>
               </span>
             </div>
@@ -217,7 +220,7 @@ export const AtmosphereTunerPanel: React.FC = () => {
                         : "bg-[#0B152B] text-slate-400 border border-slate-800 hover:text-slate-200"
                     }`}
                   >
-                    {stop.label[lang]}
+                    {t(stop.label[lang])}
                   </button>
                 );
               })}
@@ -233,9 +236,9 @@ export const AtmosphereTunerPanel: React.FC = () => {
         className="mt-5 flex w-full items-center justify-center gap-2 rounded-xl bg-white py-3 text-xs font-bold text-slate-950 shadow-lg hover:bg-slate-100 transition"
       >
         <span>
-          {lang === "en"
+          {t(lang === "en"
             ? "See ranked evidence & alerts"
-            : "Ver evidencia y alertas"}
+            : "Ver evidencia y alertas")}
         </span>
         <span>→</span>
       </button>

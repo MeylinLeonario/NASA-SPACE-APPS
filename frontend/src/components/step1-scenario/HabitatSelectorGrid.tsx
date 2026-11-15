@@ -1,3 +1,4 @@
+import {useT} from '../../i18n/useT';
 import React from "react";
 import { useScenario } from "../../context/ScenarioContext";
 import {
@@ -10,6 +11,8 @@ import { HabitatPreset, MaterialId } from "../../Models/scenario";
  * Miniaturas circulares ilustradas idénticas a la estética espacial del mockup image_b17a5f.png
  */
 const HabitatArtworkThumbnail: React.FC<{ preset: HabitatPreset }> = ({ preset }) => {
+  const t = useT();
+
   return (
     <div className="relative h-14 w-14 rounded-full border border-slate-700/80 bg-[#050A14] shadow-md overflow-hidden shrink-0">
       {preset.iconType === "moon" && (
@@ -90,6 +93,8 @@ const HabitatArtworkThumbnail: React.FC<{ preset: HabitatPreset }> = ({ preset }
 };
 
 export const HabitatSelectorGrid: React.FC = () => {
+  const t = useT();
+
   const {
     lang,
     selectedHabitatId,
@@ -104,12 +109,12 @@ export const HabitatSelectorGrid: React.FC = () => {
     <div>
       <div className="mb-3 flex flex-wrap items-baseline gap-2">
         <h2 className="text-base font-bold text-white">
-          {lang === "en" ? "Choose a habitat" : "Elige un hábitat"}
+          {t(lang === "en" ? "Choose a habitat" : "Elige un hábitat")}
         </h2>
         <span className="text-xs text-slate-400">
-          {lang === "en"
+          {t(lang === "en"
             ? "— each card previews how materials behave there"
-            : "— cada tarjeta anticipa cómo se comportan los materiales allí"}
+            : "— cada tarjeta anticipa cómo se comportan los materiales allí")}
         </span>
       </div>
 
@@ -141,31 +146,30 @@ export const HabitatSelectorGrid: React.FC = () => {
                         : "border border-slate-700 bg-slate-900/50 group-hover:border-slate-500"
                     }`}
                   >
-                    {isSelected ? "✓" : ""}
+                    {t(isSelected ? "✓" : "")}
                   </span>
                 </div>
 
                 {/* Nombre y Subtítulo del Hábitat */}
                 <h3 className="text-[15px] font-bold leading-snug text-white">
-                  {preset.name[lang]}
+                  {t(preset.name[lang])}
                 </h3>
                 <p className="mt-0.5 text-xs leading-relaxed text-slate-400 min-h-[32px]">
-                  {preset.subtitle[lang]}
+                  {t(preset.subtitle[lang])}
                 </p>
 
                 {/* Píldoras de O2, Presión (psi) y Gravedad (g) */}
                 <div className="mt-3 flex flex-wrap gap-1.5 font-mono text-[11px]">
                   <span className="rounded bg-[#111C35] px-2 py-0.5 text-slate-200 border border-slate-700/70">
-                    {cardConditions.o2 % 1 === 0
+                    {t(cardConditions.o2 % 1 === 0
                       ? cardConditions.o2.toFixed(0)
-                      : cardConditions.o2.toFixed(1)}
+                      : cardConditions.o2.toFixed(1))}
                     % O₂
                   </span>
                   <span className="rounded bg-[#111C35] px-2 py-0.5 text-slate-200 border border-slate-700/70">
-                    {cardConditions.pressurePsi.toFixed(1)} psi
-                  </span>
+                    {t(cardConditions.pressurePsi.toFixed(1))} {" "}{t("psi")}{" "}</span>
                   <span className="rounded bg-[#111C35] px-2 py-0.5 text-slate-200 border border-slate-700/70">
-                    {cardConditions.gravityG.toFixed(2)} g
+                    {t(cardConditions.gravityG.toFixed(2))} g
                   </span>
                 </div>
               </div>
@@ -173,9 +177,9 @@ export const HabitatSelectorGrid: React.FC = () => {
               {/* Sección Inferior: MARGEN POR MATERIAL */}
               <div className="mt-4 pt-2.5">
                 <span className="block font-mono text-[9px] font-semibold uppercase tracking-wider text-slate-400">
-                  {lang === "en"
+                  {t(lang === "en"
                     ? "BURN MARGIN BY MATERIAL"
-                    : "MARGEN POR MATERIAL"}
+                    : "MARGEN POR MATERIAL")}
                 </span>
 
                 <div className="mt-1.5 grid grid-cols-3 gap-1.5">
@@ -202,10 +206,10 @@ export const HabitatSelectorGrid: React.FC = () => {
                       >
                         <div className="flex items-center gap-1 text-[9px] text-slate-300">
                           <span className="text-[8px]">
-                            {evalRes.burns ? "🔥" : "❄️"}
+                            {t(evalRes.burns ? "🔥" : "❄️")}
                           </span>
                           <span className="truncate font-semibold">
-                            {evalRes.shortName}
+                            {t(evalRes.shortName)}
                           </span>
                         </div>
                         <div
@@ -213,8 +217,8 @@ export const HabitatSelectorGrid: React.FC = () => {
                             evalRes.burns ? "text-rose-300" : "text-slate-300"
                           }`}
                         >
-                          {sign}
-                          {evalRes.burnMarginPts.toFixed(1)}
+                          {t(sign)}
+                          {t(evalRes.burnMarginPts.toFixed(1))}
                         </div>
                       </div>
                     );
@@ -228,9 +232,9 @@ export const HabitatSelectorGrid: React.FC = () => {
 
       {/* Nota al pie de la grilla */}
       <p className="mt-2.5 text-[11px] text-slate-400">
-        {lang === "en"
+        {t(lang === "en"
           ? "Burn margin = cabin O₂ minus the minimum O₂ the material needs to keep burning at that airflow, pressure and gravity. Positive = it burns."
-          : "Margen = O₂ de la cabina menos el O₂ mínimo que el material necesita para seguir ardiendo con ese flujo, presión y gravedad. Positivo = arde."}
+          : "Margen = O₂ de la cabina menos el O₂ mínimo que el material necesita para seguir ardiendo con ese flujo, presión y gravedad. Positivo = arde.")}
       </p>
     </div>
   );

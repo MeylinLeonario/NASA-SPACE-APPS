@@ -1,6 +1,7 @@
 // frontend/views/home-view.tsx
 'use client';
 
+import {useT} from '../src/i18n/useT';
 import React, { useEffect, useState } from 'react';
 import {
   AlertTriangle,
@@ -25,6 +26,8 @@ export default function HomeView({
   onQuickSelectHabitat,
   activeHabitat,
 }: HomeViewProps) {
+  const t = useT();
+
   const [demoGravityG, setDemoGravityG] = useState<number>(0.0);
 
   // Contadores animados para los KPIs del Hero
@@ -53,7 +56,7 @@ export default function HomeView({
 
   const heroTitleLetters = 'FLARE'.split('');
   const subtitleWords =
-    'El fuego no se comporta igual donde no hay arriba ni abajo.'.split(' ');
+    t('El fuego no se comporta igual donde no hay arriba ni abajo.').split(' ');
 
   const stepCards = [
     {
@@ -108,12 +111,12 @@ export default function HomeView({
             className="animate-reveal inline-flex items-center gap-2 rounded-full border border-orange-500/40 bg-gradient-to-r from-orange-500/15 via-amber-500/10 to-sky-500/10 px-4 py-1.5 text-xs font-semibold text-orange-200 shadow-sm"
           >
             <Flame className="h-3.5 w-3.5 text-orange-400 animate-pulse" />
-            <span>Flame Analysis Research Explorator</span>
+            <span>{" "}{t("Flame Analysis Research Explorator")}{" "}</span>
           </div>
 
           {/* Título FLARE con revelado letra por letra y degradado vivo */}
           <h1
-            aria-label="FLARE"
+            aria-label={t("FLARE")}
             className="mt-5 font-display text-6xl font-black tracking-tight sm:text-7xl lg:text-[84px] leading-none select-none"
           >
             {heroTitleLetters.map((char, idx) => (
@@ -122,7 +125,7 @@ export default function HomeView({
                 style={{ animationDelay: `${100 + idx * 75}ms` }}
                 className="animate-letter animate-gradient-text bg-gradient-to-r from-white via-orange-200 to-orange-500 bg-clip-text text-transparent drop-shadow-[0_8px_28px_rgba(249,115,22,0.22)]"
               >
-                {char}
+                {t(char)}
               </span>
             ))}
           </h1>
@@ -135,7 +138,7 @@ export default function HomeView({
                 style={{ animationDelay: `${380 + idx * 42}ms` }}
                 className="animate-reveal mr-[0.28em] inline-block"
               >
-                {word}
+                {t(word)}
               </span>
             ))}
           </h2>
@@ -145,9 +148,7 @@ export default function HomeView({
             style={{ animationDelay: '780ms' }}
             className="animate-reveal mt-5 max-w-xl text-base leading-relaxed text-slate-300"
           >
-            Explora más de 30 años de experimentos de fuego de la NASA, descubre qué peligros
-            esconden las pruebas terrestres y decide con evidencia para tu hábitat.
-          </p>
+            {" "}{t("Explora más de 30 años de experimentos de fuego de la NASA, descubre qué peligros esconden las pruebas terrestres y decide con evidencia para tu hábitat.")}{" "}</p>
 
           {/* Botones de Acción con Degradado y Shimmer */}
           <div
@@ -159,7 +160,7 @@ export default function HomeView({
               onClick={() => onNavigateStep('scenario')}
               className="btn-shimmer group inline-flex items-center gap-2.5 rounded-full bg-gradient-to-r from-white via-slate-100 to-orange-100 px-6 py-3.5 text-sm font-bold text-slate-950 shadow-xl shadow-orange-500/15 ring-1 ring-white/80 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-orange-500/30 active:translate-y-0 active:scale-95"
             >
-              <span>Configurar mi escenario</span>
+              <span>{" "}{t("Configurar mi escenario")}{" "}</span>
               <ArrowRight className="h-4 w-4 stroke-[2.5] transition-transform duration-200 group-hover:translate-x-1" />
             </button>
 
@@ -168,7 +169,7 @@ export default function HomeView({
               onClick={scrollToHowItWorks}
               className="inline-flex items-center gap-2 rounded-full border border-slate-700/90 bg-[#0b1324]/90 px-6 py-3.5 text-sm font-semibold text-slate-200 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-sky-400/60 hover:bg-slate-800/80 hover:text-white active:scale-95"
             >
-              <span>Cómo funciona</span>
+              <span>{" "}{t("Cómo funciona")}{" "}</span>
             </button>
           </div>
 
@@ -179,23 +180,22 @@ export default function HomeView({
           >
             <div className="group">
               <div className="font-mono text-2xl font-extrabold text-white transition-colors group-hover:text-orange-300 sm:text-3xl">
-                {yearsCount}+
+                {t(yearsCount)}+
               </div>
-              <div className="mt-1 text-xs text-slate-400">años de datos</div>
+              <div className="mt-1 text-xs text-slate-400">{" "}{t("años de datos")}{" "}</div>
             </div>
             <div className="group">
               <div className="font-mono text-2xl font-extrabold text-white transition-colors group-hover:text-sky-300 sm:text-3xl">
-                {invCount} <span className="text-slate-500">·</span> {runsCount}
+                {t(invCount)} <span className="text-slate-500">·</span> {t(runsCount)}
               </div>
-              <div className="mt-1 text-xs text-slate-400">investigaciones PSI</div>
+              <div className="mt-1 text-xs text-slate-400">{" "}{t("investigaciones PSI")}{" "}</div>
             </div>
             <div className="group">
               <div className="font-mono text-2xl font-extrabold text-amber-400 sm:text-3xl">
                 0
               </div>
               <div className="mt-1 text-xs text-slate-400">
-                datos directos en Luna o Marte
-              </div>
+                {" "}{t("datos directos en Luna o Marte")}{" "}</div>
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@ export default function HomeView({
       {/* BANNER DE ADVERTENCIA FÍSICA */}
       <section
         style={{ animationDelay: '450ms' }}
-        aria-label="La brecha que Flare te ayuda a ver"
+        aria-label={t("La brecha que Flare te ayuda a ver")}
         className="animate-reveal relative mt-14 overflow-hidden rounded-2xl border border-amber-500/35 bg-gradient-to-r from-amber-500/12 via-[#0d1526] to-[#0b1120] px-6 py-5 shadow-lg transition-all duration-300 hover:border-amber-400/60"
       >
         <div className="flex items-start gap-4">
@@ -224,12 +224,8 @@ export default function HomeView({
           </span>
           <p className="text-sm leading-relaxed text-slate-300">
             <strong className="font-semibold text-white">
-              La brecha que Flare te ayuda a ver:
-            </strong>{' '}
-            las pruebas terrestres pueden decir que un material es seguro, pero en microgravedad
-            puede arder con menos oxígeno. Flare compara ambos mundos para tu cabina y te dice
-            cuánto riesgo oculto hay.
-          </p>
+              {" "}{t("La brecha que Flare te ayuda a ver:")}{" "}</strong>{" "}{t(' ')}{" "}
+            {" "}{t("las pruebas terrestres pueden decir que un material es seguro, pero en microgravedad puede arder con menos oxígeno. Flare compara ambos mundos para tu cabina y te dice cuánto riesgo oculto hay.")}{" "}</p>
         </div>
       </section>
 
@@ -237,11 +233,9 @@ export default function HomeView({
       <section id="tres-pasos-section" className="mt-16">
         <div className="flex items-end justify-between gap-4">
           <h2 className="font-display text-2xl font-bold tracking-tight text-white sm:text-3xl">
-            Tres pasos, una decisión
-          </h2>
+            {" "}{t("Tres pasos, una decisión")}{" "}</h2>
           <span className="hidden font-mono text-xs uppercase tracking-widest text-slate-500 sm:inline">
-            FLUJO GUIADO DE INGENIERÍA
-          </span>
+            {" "}{t("FLUJO GUIADO DE INGENIERÍA")}{" "}</span>
         </div>
 
         <div className="mt-7 grid grid-cols-1 gap-6 md:grid-cols-3">
@@ -283,15 +277,15 @@ export default function HomeView({
                       <IconComponent className="h-5 w-5" />
                     </span>
                     <span className="font-mono text-4xl font-extrabold text-slate-800/90 transition-colors duration-300 group-hover:text-sky-400/25">
-                      {card.num}
+                      {t(card.num)}
                     </span>
                   </div>
 
                   <h3 className="mt-6 font-display text-lg font-bold text-white transition-colors group-hover:text-sky-200">
-                    {card.title}
+                    {t(card.title)}
                   </h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-400">
-                    {card.description}
+                    {t(card.description)}
                   </p>
 
                   <ul className="mt-5 space-y-2.5 text-xs font-medium text-slate-300">
@@ -301,14 +295,14 @@ export default function HomeView({
                         className="flex items-center gap-2.5 transition-transform duration-200 group-hover:translate-x-1"
                       >
                         <span className="h-1.5 w-1.5 rounded-full bg-orange-400 shadow-[0_0_8px_#fb923c]" />
-                        <span>{b}</span>
+                        <span>{t(b)}</span>
                       </li>
                     ))}
                   </ul>
                 </div>
 
                 <div className="relative z-10 mt-7 inline-flex items-center gap-1.5 text-xs font-bold text-sky-400 transition-colors group-hover:text-sky-300">
-                  <span>Abrir</span>
+                  <span>{" "}{t("Abrir")}{" "}</span>
                   <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1.5" />
                 </div>
               </article>
@@ -323,8 +317,7 @@ export default function HomeView({
         className="animate-reveal mt-14 border-t border-slate-800/80 pt-8"
       >
         <p className="text-xs font-medium text-slate-400">
-          ¿Prefieres empezar rápido? Salta directo a un hábitat:
-        </p>
+          {" "}{t("¿Prefieres empezar rápido? Salta directo a un hábitat:")}{" "}</p>
 
         <div className="mt-4 flex flex-wrap items-center gap-3">
           {HABITAT_PRESETS.map((preset) => {
@@ -349,9 +342,9 @@ export default function HomeView({
                       : 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
                   }`}
                 />
-                <span>{preset.name}</span>
+                <span>{t(preset.name)}</span>
                 <span className="font-mono text-[10px] text-slate-500 transition-colors group-hover:text-sky-300">
-                  {preset.o2Pct}% O₂ · {preset.gravityG}g
+                  {t(preset.o2Pct)}% O₂ · {t(preset.gravityG)}g
                 </span>
               </button>
             );
