@@ -1,3 +1,4 @@
+//frontend/src/components/step3-predictor/DecisionBriefModal.tsx
 import React from "react";
 import { Copy, Download, AlertTriangle, FileText } from "lucide-react";
 import { useScenario } from "../../context/ScenarioContext";

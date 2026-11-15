@@ -1,3 +1,4 @@
+//frontend/src/Models/scenario.ts
 export type Language = "en" | "es";
 
 export type MaterialId = "pmma" | "sibal" | "nomex";
