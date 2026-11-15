@@ -1,3 +1,4 @@
+//frontend/src/context/ScenarioContext.tsx
 import React, { createContext, useContext, useMemo, useState } from "react";
 import {
   AtmosphereConditions,

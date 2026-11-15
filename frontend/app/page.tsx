@@ -39,21 +39,20 @@ function MainAppContent() {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-[radial-gradient(ellipse_80%_50%_at_50%_-15%,rgba(14,116,144,0.18),transparent)]">
-      {/* Navbar Global Fija */}
       <Navbar
-        activeStep={activeStep}
-        onSelectStep={setActiveStep}
+        activeStep={currentViewStep}
+        onSelectStep={handleSelectStep}
         onOpenCopilot={() => setCopilotOpen(true)}
-        language={language}
-        onToggleLanguage={setLanguage}
+        language={lang}
+        onToggleLanguage={setLang}
       />
 
       {/* Cinta de Telemetría del Escenario (visible en los Pasos 1, 2 y 3) */}
       {activeStep !== 'home' && activeStep !== 'predict' && (
         <ScenarioRibbon
-          habitat={activeHabitat}
-          activeStep={activeStep}
-          onEditScenario={() => setActiveStep('scenario')}
+          habitat={syncedRibbonHabitat}
+          activeStep={currentViewStep}
+          onEditScenario={() => handleSelectStep('scenario')}
         />
       )}
 
@@ -62,25 +61,22 @@ function MainAppContent() {
       </div>}
       {/* Contenido Principal por Vista */}
       <main className="flex-1 w-full">
-        {activeStep === 'home' && (
+        {currentViewStep === 'home' && (
           <HomeView
-            onNavigateStep={setActiveStep}
-            onQuickSelectHabitat={handleQuickSelectHabitat}
-            activeHabitat={activeHabitat}
+            onNavigateStep={handleSelectStep}
+            onQuickSelectHabitat={handleQuickSelectFromHome}
+            activeHabitat={syncedRibbonHabitat}
           />
         )}
 
-        {/* Renderizado de tus componentes modulares envueltos correctamente */}
-        {activeStep === 'scenario' && <Step1ScenarioView />}
-        {activeStep === 'ranking' && <Step2RankingView />}
-        {activeStep === 'predict' && <Step3PredictorView />}
+        {currentViewStep === 'scenario' && <Step1ScenarioView />}
+        {currentViewStep === 'ranking' && <Step2RankingView />}
+        {currentViewStep === 'predict' && <Step3PredictorView />}
       </main>
 
-      {/* Cajón Lateral del Copiloto SI */}
       <CopilotDrawer
         open={copilotOpen}
         onClose={() => setCopilotOpen(false)}
-        activeHabitat={activeHabitat}
       />
     </div>
   );

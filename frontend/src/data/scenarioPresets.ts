@@ -1,3 +1,4 @@
+//frontend/src/data/scenarioPresets.ts
 import {
   AtmosphereConditions,
   HabitatPreset,
