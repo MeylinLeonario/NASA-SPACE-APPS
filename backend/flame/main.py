@@ -76,6 +76,10 @@ class HabitatScenarioRequest(BaseModel):
     weights: Optional[dict[str, float]] = None
 
 
+class LegacyMissionMatchRequest(HabitatScenarioRequest):
+    pressure_psi: float = Field(gt=0, description="Presión absoluta de cabina en PSI")
+
+
 def create_app(config: Settings | None = None):
     cfg = config or settings()
     store = Store(cfg)
@@ -209,8 +213,17 @@ def create_app(config: Settings | None = None):
         cat = engines.load_psi_catalog(store)
         target = {"o2": req.o2, "pressure": req.pressure, "flow": req.flow, "gravity": req.gravity}
         pillar = req.selected_pillar or (req.pillars[0] if len(req.pillars) == 1 else None)
+        pillar = {
+            "all": "todos", "prevention": "prevencion",
+            "detection": "deteccion", "suppression": "supresion",
+        }.get(pillar, pillar)
         ranking = engines.calculate_mission_match(target, cat.get("investigations", []), weights=req.weights, selected_pillar=pillar)
         return {"target_habitat": target, "ranking": ranking}
+
+    @app.post('/api/motor1/match-missions')
+    def legacy_mission_match(req: LegacyMissionMatchRequest):
+        # Older scenario clients send PSI; the shared ranking engine uses kPa.
+        return motor1_rank(req.model_copy(update={"pressure": req.pressure_psi * 6.89476}))
 
     # --- MOTOR 2: PARTIAL-G & LOI PREDICTOR (OOD ML DE MEYLIN) ---
     from .runs import observations_path, SOURCE as runs_source

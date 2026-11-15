@@ -113,3 +113,33 @@ def test_observation_export_preserves_dataset_and_requires_auth(cfg):
     cfg.flame_api_token = 'test-secret'
     assert c.get('/api/ood/dataset').status_code == 401
     assert c.get('/api/ood/dataset', headers={'Authorization': 'Bearer test-secret'}).content == raw
+
+
+def test_legacy_mission_match_uses_psi_and_matches_canonical_ranking(cfg):
+    c = TestClient(create_app(cfg))
+    investigations = [{
+        'id': 'pressure-sensitive', 'acronym': 'TEST', 'name': 'Test investigation',
+        'pressure': {'min': 70, 'max': 71}, 'o2': {'min': 29, 'max': 31},
+        'flow': {'min': 9, 'max': 11}, 'gravity': 0.167,
+        'pillars': ['prevencion'],
+    }]
+    payload = {'o2': 30, 'pressure_psi': 10.2, 'flow': 10, 'gravity': 0.167}
+    with patch('flame.engines.load_psi_catalog', return_value={'investigations': investigations}):
+        for legacy_pillar, canonical_pillar in (
+            ('all', 'todos'), ('prevention', 'prevencion'),
+            ('detection', 'deteccion'), ('suppression', 'supresion'),
+        ):
+            legacy = c.post('/api/motor1/match-missions', json={
+                **payload, 'selected_pillar': legacy_pillar,
+            })
+            canonical = c.post('/api/motor1/match', json={
+                'o2': 30, 'pressure': 10.2 * 6.89476, 'flow': 10, 'gravity': 0.167,
+                'selected_pillar': canonical_pillar,
+            })
+            assert legacy.status_code == canonical.status_code == 200
+            assert legacy.json() == canonical.json()
+            assert legacy.json()['ranking'][0]['match_breakdown']['pressure_match_pct'] == 100
+        for pressure in (None, 0, -1, 'invalid'):
+            invalid = {**payload, 'pressure_psi': pressure}
+            assert c.post('/api/motor1/match-missions', json=invalid).status_code == 422
+        assert c.post('/api/motor1/match-missions', json={'o2': 30}).status_code == 422
