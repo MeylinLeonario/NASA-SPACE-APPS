@@ -176,3 +176,71 @@ export async function fetchRagStatus(): Promise<{
     return { health: null, source: null };
   }
 }
+
+// ---------------------------------------------------------------------------
+// Informe de decisión (Motor 4): POST /api/report
+// ---------------------------------------------------------------------------
+export interface ReportItem {
+  text: string; // afirmación con sus números de cita, p. ej. "... [1, 3]"
+  claim: RagClaim;
+}
+
+export interface ReportSection {
+  id: 'materials' | 'suppression' | 'safety';
+  title: string;
+  items: ReportItem[];
+}
+
+export interface DecisionReport {
+  scenario: Record<string, unknown> & { name: string; o2_pct: number; pressure_kpa: number; gravity_g: number; customized?: boolean };
+  material: { id: string; name: string; name_en: string; short_name: string };
+  language: 'es' | 'en';
+  verdict: {
+    status: 'flammable' | 'not_flammable_in_tests' | 'insufficient_evidence';
+    headline: string;
+    text: string | null;
+    claim: RagClaim | null;
+  };
+  sections: ReportSection[];
+  read_first: { investigation_id: string; acronym: string; name: string; relevance_score: number; in_psi: string; tests_material: boolean }[];
+  coverage: Record<string, unknown>;
+  gaps: string[];
+  citations: RagCitation[];
+  limitations: string[];
+  mode: 'generated' | 'evidence_only' | 'declined' | 'no_evidence';
+  scenario_source: string;
+  usage?: { cached?: boolean };
+}
+
+export async function fetchDecisionReport(params: {
+  scenarioId: string;
+  materialId: string;
+  language: Language;
+  conditions?: AtmosphereConditions;
+  signal?: AbortSignal;
+}): Promise<DecisionReport> {
+  const c = params.conditions;
+  const response = await fetch(`${API_BASE}/api/report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    signal: params.signal,
+    body: JSON.stringify({
+      scenario_id: params.scenarioId,
+      material_id: params.materialId,
+      language: params.language,
+      ...(c
+        ? {
+            o2_pct: Number(c.o2.toFixed(1)),
+            pressure_kpa: Number((c.pressurePsi * 6.894757).toFixed(1)),
+            flow_cms: Number(c.airflowCms.toFixed(1)),
+            gravity_g: Number(c.gravityG.toFixed(3)),
+          }
+        : {}),
+    }),
+  });
+  if (!response.ok) {
+    const errBody = await response.json().catch(() => null);
+    throw new Error(errBody?.error?.message || errBody?.detail || `Error al generar el informe (${response.status})`);
+  }
+  return response.json();
+}
