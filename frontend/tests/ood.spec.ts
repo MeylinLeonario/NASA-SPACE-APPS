@@ -33,7 +33,7 @@ async function setup(page: Page, status: (typeof loaded | typeof empty) & {obser
       path === '/api/documents' ? [] : path === '/api/ood/gravity-sweep' ? {status:'unavailable',reason:'No model curve supplied in this software fixture.',points:[],observations:[],unit:'mm/s',training_n:0,warning:'Software fixture only.'} : path === '/api/ood/evidence' ? {status: 'unavailable', reason: 'No fixture observations supplied for this test.', cohort_observations: 0, dependency_groups: 0, outputs: {}, gravity_note: null, limitations: [], model_fitted: false, dataset_sha256: null} : path === '/api/ood/schema' ? {title: 'Dataset', type: 'object'} : {items: []};
     await route.fulfill({json});
   });
-  await page.goto('/');
+  await page.goto('/research');
   return page.getByRole('region', {name: 'Predict fire behaviour at gravities never tested'});
 }
 

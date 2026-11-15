@@ -1,154 +1,1000 @@
-'use client';
-import { useEffect, useMemo, useRef, useState, type FormEvent, type MouseEvent } from 'react';
-import { Activity, ArrowDownToLine, ArrowRight, ArrowUpRight, BookOpen, Check, ChevronDown, CircleHelp, Database, ExternalLink, FileText, Flame, FlaskConical, GitCompareArrows, LayoutDashboard, LoaderCircle, Menu, MessageSquare, Microscope, Orbit, Plus, Search, Send, ShieldCheck, Sparkles, Upload, X } from 'lucide-react';
-import OODPanel from './ood-panel';
-import { FlameComparison, ResearchContexts } from './research-contexts';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, AreaChart, Area } from 'recharts';
+"use client";
 
-type Evidence = {document_id:string; page:number; quote:string};
-type Finding = {claim:string; kind:string; evidence:Evidence[]; verification_status:string; scientific_confidence:string; limitations:string[]; source_file?:string; document_id?:string};
-type Meta = {title:string|null; authors:string[]; publication_year:number|null; doi:string|null; experiment:string|null; research_category:string|null; gravity_condition:string|null; fuel_type:string|null; oxygen_concentration:string|null; airflow_velocity:string|null; pressure:string|null; experimental_method:string|null; source_institution:string|null; key_findings:Finding[]; verification_status:string; field_evidence:Record<string,Evidence[]>};
-type Doc = {id:string; source_file:string; status:string; page_count:number; chunks:number; metadata:Meta; warnings:string[]; pages?:{page:number;text:string}[]};
-type Stats = {total_papers:number; indexed_chunks:number; total_pages:number; experiments_represented:number; research_categories:number; extraction_failures:number; extraction_warning_pages:number; verified_findings:number; source_checked_findings:number; experiment_distribution:{name:string;papers:number}[]; publication_timeline:{year:string;papers:number}[]; category_distribution:{name:string;papers:number}[]; usage:{estimated_usd:number;requests:number}; paid_api_enabled:boolean; embedded_chunks:number};
-type Citation = {id:string;document_id:string;title:string;source_file:string;page:number;text:string;url:string;relevance:number;scientific_confidence:string};
-type Answer = {answer:string;citations:Citation[];limitations:string[];conflicts:string[];mode:string;insufficient_evidence:boolean;usage:Record<string,unknown>};
-type Tab = 'Overview'|'AI assistant'|'Research explorer'|'Experiments'|'Evidence & methods';
-const nav = [{name:'Overview' as Tab,icon:LayoutDashboard},{name:'AI assistant' as Tab,icon:MessageSquare},{name:'Research explorer' as Tab,icon:BookOpen},{name:'Experiments' as Tab,icon:GitCompareArrows},{name:'Evidence & methods' as Tab,icon:ShieldCheck}];
-const fmt = (v:number|undefined) => v === undefined ? '—' : v.toLocaleString();
-const title = (d:Doc) => d.metadata.title || d.source_file.replace(/\.pdf$/i,'');
-const fieldLabel: Record<string,string> = {publication_year:'Publication year',experiment:'Experiment',research_category:'Research category',gravity_condition:'Gravity condition',fuel_type:'Fuel type',oxygen_concentration:'Oxygen concentration',airflow_velocity:'Airflow velocity',pressure:'Pressure',experimental_method:'Method',source_institution:'Institution'};
-const colors = ['#87bcff','#74d1c6','#c9acff','#e2b379'];
+import { useState } from "react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Check,
+  Database,
+  Layers,
+  TriangleAlert,
+  Droplets,
+  Gauge,
+  Wind,
+  Orbit,
+  ShieldCheck,
+  Flame,
+  Download,
+  Send,
+} from "lucide-react";
+import {
+  Area,
+  CartesianGrid,
+  ComposedChart,
+  Line,
+  ReferenceLine,
+  ResponsiveContainer,
+  Scatter,
+  XAxis,
+  YAxis,
+  Tooltip,
+} from "recharts";
+import "./scenario.css";
 
-export default function Home(){
-  const [tab,setTab]=useState<Tab>('Overview');
-  const [stats,setStats]=useState<Stats|null>(null);
-  const [docs,setDocs]=useState<Doc[]>([]);
-  const [findings,setFindings]=useState<Finding[]>([]);
-  const [error,setError]=useState('');
-  const [loading,setLoading]=useState(true);
-  const [selected,setSelected]=useState<Doc|null>(null);
-  const [query,setQuery]=useState('');
-  const [filters,setFilters]=useState<Record<string,string>>({});
-  const [question,setQuestion]=useState('');
-  const [asked,setAsked]=useState('');
-  const [answer,setAnswer]=useState<Answer|null>(null);
-  const [asking,setAsking]=useState(false);
-  const [searchResults,setSearchResults]=useState<Citation[]|null>(null);
-  const [busy,setBusy]=useState('');
-  const [notice,setNotice]=useState('');
-  const [mobile,setMobile]=useState(false);
-  const [comparison,setComparison]=useState<string[]>([]);
-  const [token,setToken]=useState('');
-  const uploadRef=useRef<HTMLInputElement>(null);
-  const importRef=useRef<HTMLInputElement>(null);
-  const [tokenInput,setTokenInput]=useState('');
-
-  async function api<T>(path:string, options:RequestInit={}):Promise<T>{
-    const headers:Record<string,string> = token ? {Authorization:`Bearer ${token}`} : {};
-    if(options.body && !(options.body instanceof FormData)) headers['Content-Type']='application/json';
-    const res=await fetch(path,{...options,headers:{...headers,...options.headers}});
-    if(!res.ok){const data=await res.json().catch(()=>null);throw new Error(data?.error?.message || `Request failed (${res.status})`);}
-    return res.json();
+const habitats = [
+  {
+    name: "Artemis Lunar Base",
+    description: "Long-stay habitat, O₂-enriched air",
+    oxygen: 30,
+    pressure: 10.2,
+    gravity: 0.17,
+    art: "moon",
+  },
+  {
+    name: "Pressurized Rover",
+    description: "Small cabin, frequent EVAs",
+    oxygen: 34,
+    pressure: 8.2,
+    gravity: 0.17,
+    art: "rover",
+  },
+  {
+    name: "Mars Habitat",
+    description: "Partial gravity, months from help",
+    oxygen: 26.5,
+    pressure: 10.2,
+    gravity: 0.38,
+    art: "mars",
+  },
+  {
+    name: "ISS / Spacecraft Cabin",
+    description: "Earth-like air, no buoyancy",
+    oxygen: 21,
+    pressure: 14.7,
+    gravity: 0,
+    art: "iss",
+  },
+  {
+    name: "Spacesuit (EVA)",
+    description: "Pure oxygen at low pressure",
+    oxygen: 100,
+    pressure: 4.3,
+    gravity: 0.17,
+    art: "eva",
+  },
+  {
+    name: "Earth: Underground Mine",
+    description: "Spinoff · Antofagasta, ~2,750 m",
+    oxygen: 20.9,
+    pressure: 10.6,
+    gravity: 1,
+    art: "mine",
+  },
+];
+const materials = [
+  {
+    name: "Acrylic (PMMA)",
+    description: "Windows, panels, enclosures",
+    short: "PMMA",
+    offset: 0,
+  },
+  {
+    name: "Cotton-fiberglass fabric",
+    description: "Seats, bags, soft goods",
+    short: "SIBAL",
+    offset: -1,
+  },
+  {
+    name: "Nomex (flame-resistant)",
+    description: "Suits, flame-resistant covers",
+    short: "Nomex",
+    offset: 8.5,
+  },
+];
+const investigations = [
+  {
+    name: "SoFIE",
+    year: "2022–",
+    title: "Solid Fuel Ignition and Extinction",
+    score: 96,
+    pillar: "Prevention",
+    fuel: "Solid",
+    description:
+      "The closest mock analog to exploration atmospheres planned for lunar habitats and rovers.",
+  },
+  {
+    name: "BASS-II",
+    year: "2014–2017",
+    title: "Burning and Suppression of Solids",
+    score: 81,
+    pillar: "Suppression",
+    fuel: "Solid",
+    description:
+      "Explore how airflow and oxygen change flame spread over solid materials in microgravity.",
+  },
+  {
+    name: "BASS",
+    year: "2012–2014",
+    title: "Burning and Suppression of Solids",
+    score: 81,
+    pillar: "Prevention",
+    fuel: "Solid",
+    description:
+      "Compare burning behavior across different ventilation conditions and fuel geometries.",
+  },
+  {
+    name: "Saffire II–III",
+    year: "2016–2017",
+    title: "Spacecraft Fire Safety",
+    score: 76,
+    pillar: "Detection",
+    fuel: "Fabric",
+    description:
+      "Large-scale spacecraft demonstrations help explore flame growth and detection.",
+  },
+  {
+    name: "ACME CFI-G",
+    year: "2017–2023",
+    title: "Confined Combustion",
+    score: 70,
+    pillar: "Detection",
+    fuel: "Gas",
+    description:
+      "A complementary mock investigation of gas flames in a controlled environment.",
+  },
+];
+const presets = [
+  ["Orbit", 0],
+  ["Moon", 0.17],
+  ["Mars", 0.38],
+  ["Earth", 1],
+] as const;
+export default function ScenarioFlow() {
+  const [step, setStep] = useState(0),
+    [habitat, setHabitat] = useState(0),
+    [oxygen, setOxygen] = useState(30),
+    [pressure, setPressure] = useState(10.2),
+    [airflow, setAirflow] = useState(10),
+    [gravity, setGravity] = useState(0.17),
+    [material, setMaterial] = useState(0),
+    [pillar, setPillar] = useState("All"),
+    [fuel, setFuel] = useState("All fuels"),
+    [selected, setSelected] = useState("SoFIE"),
+    [view, setView] = useState("Danger map"),
+    [allAlerts, setAllAlerts] = useState(false),
+    [table, setTable] = useState(false),
+    [zoom, setZoom] = useState(false),
+    [predictTab, setPredictTab] = useState("Predict partial gravity"),
+    [question, setQuestion] = useState(""),
+    [answer, setAnswer] = useState("");
+  const current = habitats[habitat],
+    mat = materials[material];
+  const limit =
+    16.3 +
+    gravity * 1.2 +
+    (pressure - 10.2) * 0.08 +
+    (airflow - 10) * 0.015 +
+    mat.offset;
+  const margin = oxygen - limit;
+  const ranked = investigations
+    .filter(
+      (i) =>
+        (pillar === "All" || i.pillar === pillar) &&
+        (fuel === "All fuels" || i.fuel === fuel),
+    )
+    .map((i, index) => ({
+      ...i,
+      score: Math.max(
+        0,
+        i.score -
+          ((habitat * (index + 2)) % 11) -
+          Math.round(Math.abs(gravity - current.gravity) * 12) -
+          material * 2,
+      ),
+    }));
+  const active = ranked.find((i) => i.name === selected) || ranked[0];
+  const curve = Array.from({ length: 21 }, (_, i) => ({
+    g: i / 20,
+    value: 16.3 + (i / 20) * 1.2 + mat.offset,
+    band: [
+      16.1 + (i / 20) * 0.9 + mat.offset,
+      16.6 + (i / 20) * 1.3 + mat.offset,
+    ],
+  }));
+  const points = Array.from({ length: 9 }, (_, i) => ({
+    air: i * 5 + 2,
+    oxygen: 21,
+    threshold: limit - 0.5 + 6 / (i * 5 + 2),
+  }));
+  function choose(index: number) {
+    const h = habitats[index];
+    setHabitat(index);
+    setOxygen(h.oxygen);
+    setPressure(h.pressure);
+    setGravity(h.gravity);
   }
-  async function refresh(){
-    setLoading(true); setError('');
-    try{
-      const [s,d,f]=await Promise.all([api<Stats>('/api/statistics'),api<Doc[]>('/api/documents'),api<{items:Finding[]}>('/api/findings')]);
-      setStats(s);setDocs(d);setFindings(f.items);
-    }catch(e){setError((e as Error).message);}finally{setLoading(false);}
+  function go(next: number) {
+    setStep(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
-  useEffect(()=>{void refresh();},[token]); // token remains in session memory only
-  useEffect(()=>{if(selected){const onKey=(e:KeyboardEvent)=>{if(e.key==='Escape')setSelected(null);};document.addEventListener('keydown',onKey);return()=>document.removeEventListener('keydown',onKey);}},[selected]);
-  const visibleDocs=useMemo(()=>docs.filter(d=>(!query || `${title(d)} ${d.metadata.authors.join(' ')} ${d.metadata.doi || ''}`.toLowerCase().includes(query.toLowerCase()))&&Object.entries(filters).every(([k,v])=>!v||String(d.metadata[k as keyof Meta])===v)),[docs,query,filters]);
-  const experiments=useMemo(()=>Array.from(new Set(docs.map(d=>d.metadata.experiment).filter(Boolean))) as string[],[docs]);
-  const go=(t:Tab)=>{setTab(t);setMobile(false);setNotice('');};
-  async function openDoc(d:Doc){try{setSelected(await api<Doc>(`/api/documents/${d.id}`));}catch(e){setError((e as Error).message);}}
-  async function ask(e?:FormEvent, preset?:string){
-    e?.preventDefault();const text=preset||question;if(!text.trim()||asking)return;
-    setAsked(text);setQuestion('');setAsking(true);setAnswer(null);setError('');setTab('AI assistant');
-    try{setAnswer(await api<Answer>('/api/chat',{method:'POST',body:JSON.stringify({query:text,limit:5,filters:{},language:'auto'})}));}
-    catch(e){setError((e as Error).message);}finally{setAsking(false);}
+  function download() {
+    const blob = new Blob(
+      [
+        "mock_data,habitat,material,oxygen_pct,pressure_psi,airflow_cm_s,gravity_g\n" +
+          `true,${current.name},${mat.short},${oxygen},${pressure},${airflow},${gravity}\n`,
+      ],
+      { type: "text/csv" },
+    );
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "mock-scenario.csv";
+    a.click();
+    URL.revokeObjectURL(url);
   }
-  async function searchText(e:FormEvent){
-    e.preventDefault();setBusy('search');setError('');
-    try{const r=await api<{results:Citation[]}>('/api/search',{method:'POST',body:JSON.stringify({query,limit:10,filters:Object.fromEntries(Object.entries(filters).filter(([,v])=>v).map(([k,v])=>[k,k==='publication_year'?Number(v):v]))})});setSearchResults(r.results);}
-    catch(e){setError((e as Error).message);}finally{setBusy('');}
-  }
-  async function ingest(dryRun:boolean){
-    setBusy('ingest');setError('');
-    try{const result=await api<{documents:number;chunks:number;embedding_tokens:number;estimated_embedding_usd:number;warnings:string[]}>('/api/ingest',{method:'POST',body:JSON.stringify({dry_run:dryRun,embeddings:false})});
-      setNotice(dryRun?`Dry run: ${result.documents} files · ${result.chunks} chunks · approximately ${result.embedding_tokens.toLocaleString()} tokens · estimated embeddings $${result.estimated_embedding_usd.toFixed(4)}. No API calls made.`:`Local corpus indexed: ${result.documents} files, ${result.chunks} chunks. ${result.warnings.length} extraction warnings.`);
-      if(!dryRun)await refresh();
-    }catch(e){setError((e as Error).message);}finally{setBusy('');}
-  }
-  async function upload(file:File|undefined,discovery=false){
-    if(!file)return;setBusy('upload');setError('');const form=new FormData();form.append('file',file);
-    try{const r=await api<{result:Record<string,unknown>}>(discovery?'/api/discovery/upload':'/api/documents/upload',{method:'POST',body:form});setNotice(discovery?`Imported ${r.result.added} discovery records (${r.result.duplicates} duplicates). Discovery records are not full-text evidence.`:'PDF added. Choose “Index local papers” to make it searchable.');}
-    catch(e){setError((e as Error).message);}finally{setBusy('');if(uploadRef.current)uploadRef.current.value='';if(importRef.current)importRef.current.value='';}
-  }
-  async function openProtectedSource(event:MouseEvent<HTMLDivElement>){
-    if(!token)return;
-    const link=(event.target as HTMLElement).closest('a');
-    if(!link || !link.getAttribute('href')?.startsWith('/api/documents/') || !link.getAttribute('href')?.includes('/file'))return;
-    event.preventDefault();
-    const viewer=window.open('about:blank','_blank');
-    if(viewer)viewer.opener=null;
-    try{
-      const res=await fetch(link.href.split('#')[0],{headers:{Authorization:`Bearer ${token}`}});
-      if(!res.ok)throw new Error('Could not open source document.');
-      const objectUrl=URL.createObjectURL(await res.blob());
-      if(viewer)viewer.location.href=objectUrl+(link.hash||'');
-      setTimeout(()=>URL.revokeObjectURL(objectUrl),300000);
-    }catch(e){viewer?.close();setError((e as Error).message);}
-  }
-  const docCard=(d:Doc,i:number)=><button className="paper-row" onClick={()=>void openDoc(d)} key={d.id}><span className="paper-icon"><FileText size={19}/></span><span className="paper-main"><span className="paper-title">{title(d)}</span><span className="paper-meta">{d.metadata.authors.length?d.metadata.authors.slice(0,2).join(', '):'Authors unavailable'}<span>·</span>{d.metadata.publication_year || 'Year unavailable'}<span>·</span>{d.page_count} pages</span></span><span className="tag">{d.metadata.experiment || d.metadata.research_category || 'Unclassified'}</span><ArrowUpRight size={17}/></button>;
-
-  return <div className="app-shell" onClick={e=>void openProtectedSource(e)}>
-    <aside className={`sidebar ${mobile?'mobile-open':''}`}>
-      <button className="brand" onClick={()=>go('Overview')}><span className="brand-mark"><Flame size={24}/></span><span>FLARE<span className="brand-sub">RESEARCH EXPLORATOR</span></span></button>
-      <div className="workspace"><span className="workspace-icon"><Orbit size={18}/></span><span>Research workspace<small>Flame in Freefall</small></span><ChevronDown size={14}/></div>
-      <div className="nav-caption">RESEARCH</div>
-      <nav aria-label="Main navigation">{nav.map(n=><button key={n.name} aria-current={tab===n.name?'page':undefined} onClick={()=>go(n.name)} className={tab===n.name?'nav-item active':'nav-item'}><n.icon size={18}/>{n.name}{n.name==='AI assistant'&&<span className="new-dot"/>}</button>)}</nav>
-      <div className="sidebar-bottom"><div className="corpus-state"><span className="status-dot"/><span>Local corpus<small>{fmt(stats?.total_papers)} documents connected</small></span><Database size={16}/></div><div className="science-note"><ShieldCheck size={17}/><p>Evidence first.<br/><span>Every answer starts with a source.</span></p></div><div className="sidebar-footer"><span className="avatar">FL</span><span>FLARE<small>Research MVP · v0.1</small></span></div></div>
-    </aside>
-    <div className="main-shell">
-      <header className="topbar"><div className="breadcrumb"><button className="mobile-menu icon-button" aria-label="Toggle navigation" onClick={()=>setMobile(!mobile)}><Menu size={19}/></button><span>Workspace</span><span className="slash">/</span><strong>{tab}</strong></div><div className="topbar-right"><span className="local-badge"><span className="status-dot"/> LOCAL RESEARCH</span><button className="icon-button" title="Evidence methodology" aria-label="Evidence methodology" onClick={()=>go('Evidence & methods')}><CircleHelp size={18}/></button><span className="avatar small">FL</span></div></header>
-      <main>
-        {error&&<div className="alert error" role="alert"><span>{error}</span><button onClick={()=>setError('')} aria-label="Dismiss error"><X size={16}/></button></div>}
-        {notice&&<div className="alert" role="status"><span>{notice}</span><button onClick={()=>setNotice('')} aria-label="Dismiss notice"><X size={16}/></button></div>}
-        {!stats?<div className="loading-state"><LoaderCircle className={loading?'spin':''}/> {loading?'Connecting to the local research corpus…':'Research corpus is unavailable'}{!loading&&<><button className="button secondary" disabled={loading} onClick={()=>void refresh()}>Retry connection</button><p>Start the FastAPI backend on port 8000, or enter the configured API token.</p><form onSubmit={e=>{e.preventDefault();setToken(tokenInput);}}><input type="password" placeholder="Local API token" value={tokenInput} onChange={e=>setTokenInput(e.target.value)} aria-label="API token"/><button className="button">Connect</button></form></>}</div>:<>
-        <div className="page-heading"><div><div className="eyebrow"><span className="tiny-cross">+</span> MICROGRAVITY COMBUSTION RESEARCH</div><h1>{tab==='Overview'?'Fire science. Beyond Earth.':tab==='AI assistant'?'Scientific AI assistant':tab==='Research explorer'?'Research explorer':tab==='Experiments'?'Experiment comparison':'Evidence & methods'}</h1><p>{tab==='Overview'?'Explore the science of fire beyond Earth. Ground every insight in evidence.':tab==='AI assistant'?'Ask a question. Trace the evidence. Understand the limitations.':tab==='Research explorer'?'Explore the indexed papers, their metadata, and original source pages.':tab==='Experiments'?'Compare what the corpus supports, with missing conditions made explicit.':'Inspect the corpus, understand provenance, and manage local ingestion.'}</p></div><button className="button secondary" onClick={()=>{go('Research explorer');uploadRef.current?.click();}} disabled={!!busy}><Plus size={16}/> Add paper</button></div>
-        <input ref={uploadRef} className="hidden" type="file" accept="application/pdf,.pdf" onChange={e=>void upload(e.target.files?.[0])}/>
-        <input ref={importRef} className="hidden" type="file" accept=".csv,.json" onChange={e=>void upload(e.target.files?.[0],true)}/>
-
-        {tab==='Overview'&&<>
-          <OODPanel token={token}/>
-          <div className="workflow-strip" aria-label="Research workflow"><button onClick={()=>go('Research explorer')}><b>1</b> Explore the evidence</button><ArrowRight/><button onClick={()=>go('Experiments')}><b>2</b> Compare experiments</button><ArrowRight/><button onClick={()=>go('AI assistant')}><b>3</b> Ask with citations</button></div>
-          <section className="hero-panel"><div className="hero-copy"><span className="hero-label"><span className="status-dot orange"/> FLAME ANALYSIS RESEARCH EXPLORATOR</span><h2>Understand fire.<br/>Explore beyond Earth.</h2><p>Connect microgravity combustion research to the questions that matter for spacecraft fire safety.</p><button className="button primary" onClick={()=>go('AI assistant')}><Sparkles size={16}/> Ask the research assistant <ArrowRight size={16}/></button><div className="hero-foot"><ShieldCheck size={13}/> Source-backed research <span>·</span> Page-level citations</div></div><FlameComparison/></section>
-          <ResearchContexts onSelect={q=>{go('AI assistant');setQuestion(q);}}/>
-          <section className="stats-grid" aria-label="Corpus statistics">{[{label:'Corpus papers',value:stats?.total_papers,icon:FileText,sub:`${stats ? stats.total_papers - stats.extraction_failures : '—'} searchable · ${stats?.extraction_failures ?? '—'} extraction failures`},{label:'Evidence chunks',value:stats?.indexed_chunks,icon:Database,sub:`${fmt(stats?.total_pages)} source pages`},{label:'Experiments tagged',value:stats?.experiments_represented,icon:FlaskConical,sub:'Source mentions · review pending'},{label:'Reviewed findings',value:stats?.verified_findings,icon:ShieldCheck,sub:`${fmt(stats?.source_checked_findings)} source-checked excerpts`}].map((s,i)=><div className="stat-card" key={s.label}><div className="stat-top"><span>{s.label}</span><s.icon size={17}/></div><div className="stat-value">{fmt(s.value)}<span className="stat-tick">{i===3?'HUMAN REVIEW':'CORPUS'}</span></div><div className="stat-sub">{s.sub}</div></div>)}</section>
-          <div className="overview-columns"><section className="panel distribution"><div className="panel-heading"><div><h3>Research landscape</h3><p>Publications by experiment mention</p></div><span className="tag neutral">CORPUS DATA</span></div><div className="chart-area">{stats?.experiment_distribution.length?<ResponsiveContainer width="100%" height="100%"><BarChart data={stats.experiment_distribution} barSize={34} margin={{top:10,right:8,left:-25,bottom:0}}><CartesianGrid vertical={false} stroke="#27303a" strokeDasharray="3 5"/><XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill:'#9ba4b0',fontSize:11}} dy={8}/><YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{fill:'#73808d',fontSize:11}}/><Tooltip contentStyle={{background:'#151c25',border:'1px solid #34404d',borderRadius:8,color:'#e7eaf0'}} cursor={{fill:'#ffffff04'}}/><Bar dataKey="papers" name="Papers" fill="#83baff" radius={[4,4,0,0]}/></BarChart></ResponsiveContainer>:<div className="empty">No experiment metadata available.</div>}</div><div className="chart-source"><span className="source-dot"/> Source: indexed document metadata. Mentions may overlap with background research.</div></section><section className="panel research-prompt"><div className="prompt-icon"><Sparkles size={20}/></div><span className="eyebrow">START WITH A QUESTION</span><h3>What does the<br/>evidence tell us?</h3><p>Search across the corpus with citations you can inspect.</p>{['How does confinement affect flame spread?','What are the limitations of Saffire VI?','¿Qué evidencia hay sobre microgravedad?'].map(q=><button className="question-chip" key={q} onClick={()=>void ask(undefined,q)}>{q}<ArrowUpRight size={14}/></button>)}</section></div>
-          <section className="panel papers-panel"><div className="panel-heading"><div><h3>Inside the research library <span className="count-pill">{docs.length}</span></h3><p>Original publications. Inspectable evidence.</p></div><button className="text-button" onClick={()=>go('Research explorer')}>Explore library <ArrowRight size={14}/></button></div><div>{docs.slice(0,4).map(docCard)}{!docs.length&&<div className="empty">No papers indexed. Add PDFs and index the local corpus.</div>}</div></section>
-          <div className="integrity-line"><ShieldCheck size={15}/><span>Scientific confidence is assessed separately from search relevance.</span><button onClick={()=>go('Evidence & methods')}>Our methodology <ArrowUpRight size={13}/></button></div>
-        </>}
-
-        {tab==='AI assistant'&&<div className="assistant-layout"><section className="panel chat-panel"><div className="panel-heading"><div className="flex-center"><span className="prompt-icon compact"><Sparkles size={17}/></span><div><h3>Research assistant</h3><p>{stats?.paid_api_enabled?'GPT-4o configuration enabled · citations validated':'Evidence mode · GPT-4o is disabled'}</p></div></div><span className="tag neutral">EN / ES</span></div><div className="chat-body">{!asked?<div className="chat-welcome"><Orbit size={40}/><h2>Follow the evidence.</h2><p>Ask about flame propagation, extinction, experimental limitations, or spacecraft fire safety.</p>{['How does confinement affect flame spread?','What limitations are reported for Saffire VI?','¿Qué se ha observado en microgravedad?'].map(q=><button className="question-chip" key={q} onClick={()=>void ask(undefined,q)}>{q}<ArrowUpRight size={14}/></button>)}</div>:<><div className="user-message">{asked}</div><div className="assistant-message"><span className="prompt-icon compact"><Sparkles size={16}/></span><div className="answer-content">{asking?<p className="flex-center"><LoaderCircle className="spin" size={16}/> Retrieving source evidence…</p>:answer?<><span className="eyebrow">{answer.mode==='evidence_only'?'EVIDENCE RETRIEVAL':'GROUNDED RESPONSE'}</span><p className="answer-text">{answer.answer}</p>{answer.citations.map((c,i)=><details className="citation" key={c.id}><summary><span className="citation-num">{i+1}</span><span>{c.title}<small>Page {c.page} · relevance {c.relevance.toFixed(4)} · confidence not assessed</small></span><ChevronDown size={14}/></summary><blockquote>{c.text}</blockquote><a href={c.url} target="_blank" rel="noreferrer">Open original page <ExternalLink size={13}/></a></details>)}{answer.limitations.length>0&&<div className="limitations"><strong>Evidence limitations</strong><ul>{answer.limitations.map((l,i)=><li key={i}>{l}</li>)}</ul></div>}{answer.conflicts.length>0&&<div className="limitations"><strong>Conflicting evidence</strong>{answer.conflicts.map((c,i)=><p key={i}>{c}</p>)}</div>}</>:<p>No response was generated. Check the error above and try again.</p>}</div></div></>}</div><form className="chat-form" onSubmit={e=>void ask(e)}><label className="sr-only" htmlFor="question">Ask a scientific question</label><textarea id="question" placeholder="Ask a question about the indexed research…" value={question} onChange={e=>setQuestion(e.target.value)} maxLength={2000} rows={2}/><button aria-label="Send question" className="send-button" disabled={asking||!question.trim()}><Send size={17}/></button></form><div className="chat-foot"><ShieldCheck size={12}/> Citations are traceable. Scientific conclusions still require review.</div></section><aside className="context-panel"><div className="panel"><h3><Database size={16}/> Connected evidence</h3><div className="context-value">{fmt(stats?.total_papers)}<span>papers</span></div><p>{fmt(stats?.indexed_chunks)} searchable excerpts from {fmt(stats?.total_pages)} pages.</p><hr/><span className="eyebrow">RESEARCH BOUNDARIES</span><p>Microgravity, lunar gravity, and Martian gravity are distinct conditions.</p><p>Habitat implications must be labeled as hypotheses unless directly measured.</p><hr/><span className="tag">{stats?.embedded_chunks?`${stats.embedded_chunks} vector chunks`:'Local keyword retrieval'}</span></div></aside></div>}
-
-        {tab==='Research explorer'&&<><section className="panel explorer-controls"><form className="search-form" onSubmit={e=>void searchText(e)}><Search size={18}/><input aria-label="Search publications" placeholder="Search titles, authors, DOI… or search inside the papers" value={query} onChange={e=>{setQuery(e.target.value);setSearchResults(null);}}/><button className="button secondary" disabled={!query.trim()||!!busy}>{busy==='search'?<LoaderCircle className="spin" size={14}/>:<Search size={14}/>} Search full text</button></form><div className="filter-row">{['experiment','research_category','publication_year','gravity_condition','fuel_type'].map(field=><select aria-label={fieldLabel[field]} key={field} value={filters[field]||''} onChange={e=>{setFilters({...filters,[field]:e.target.value});setSearchResults(null);}}><option value="">{fieldLabel[field]}</option>{Array.from(new Set(docs.map(d=>d.metadata[field as keyof Meta]).filter(v=>v!==null&&typeof v!=='object'))).sort().map(v=><option key={String(v)} value={String(v)}>{String(v)}</option>)}</select>)}<button className="text-button" onClick={()=>{setFilters({});setQuery('');setSearchResults(null);}}>Reset</button></div></section><div className="section-summary"><span>{searchResults?`${searchResults.length} evidence excerpts`:`${visibleDocs.length} publications`}</span><span>Metadata is evidence-linked · missing fields stay unavailable</span></div><section className="panel papers-panel">{searchResults?searchResults.map(c=><div className="search-result" key={c.id}><div className="result-title"><FileText size={17}/><a href={c.url} target="_blank" rel="noreferrer">{c.title} <ArrowUpRight size={14}/></a><span className="tag">Page {c.page}</span></div><p>{c.text}</p><small>Retrieval relevance {c.relevance.toFixed(4)} · scientific confidence not assessed</small></div>):visibleDocs.map(docCard)}{(searchResults?searchResults.length:visibleDocs.length)===0&&<div className="empty"><Search size={24}/><h3>No matching research</h3><p>Try another term or reset the filters. No findings are inferred from an empty result.</p></div>}</section></>}
-
-        {tab==='Experiments'&&<><div className="alert"><ShieldCheck size={17}/><span>Experiment tags reflect source mentions. Conditions below are document summaries, not controlled comparisons of matched experimental runs.</span></div><div className="comparison-picks">{experiments.map((name,i)=><button key={name} className={`experiment-pick ${comparison.includes(name)?'selected':''}`} onClick={()=>setComparison(comparison.includes(name)?comparison.filter(n=>n!==name):[...comparison,name])}><span className="experiment-color" style={{background:colors[i%4]}}/><span><strong>{name}</strong><small>{docs.filter(d=>d.metadata.experiment===name).length} source papers</small></span>{comparison.includes(name)?<Check size={17}/>:<Plus size={17}/>}</button>)}</div>{!experiments.length&&<div className="panel empty">No supported experiment tags in the corpus.</div>}{comparison.length===0&&<div className="panel empty"><GitCompareArrows size={30}/><h3>Select experiments to inspect</h3><p>Only experiment mentions present in the indexed corpus appear here.</p></div>}{comparison.length>0&&<div className="comparison-grid">{comparison.map(name=><section className="panel comparison-card" key={name}><div className="panel-heading"><h3>{name}</h3><span className="tag">SOURCE MENTION</span></div>{docs.filter(d=>d.metadata.experiment===name).map(d=><div className="comparison-paper" key={d.id}><button className="text-button" onClick={()=>void openDoc(d)}>{title(d)}<ExternalLink size={14}/></button><dl>{['gravity_condition','fuel_type','oxygen_concentration','airflow_velocity','pressure','experimental_method'].map(k=><div key={k}><dt>{fieldLabel[k]}</dt><dd className={d.metadata[k as keyof Meta]?'':'unavailable'}>{String(d.metadata[k as keyof Meta] || 'Unavailable')}</dd></div>)}</dl>{d.metadata.key_findings.map((f,i)=><div className="finding" key={i}><span className="tag">{f.kind}</span><p>{f.claim}</p>{f.evidence.map((e,j)=><a key={j} target="_blank" rel="noreferrer" href={`/api/documents/${d.id}/file#page=${e.page}`}>Source · page {e.page} <ExternalLink size={12}/></a>)}</div>)}</div>)}</section>)}</div>}</>}
-
-        {tab==='Evidence & methods'&&<>
-          <div className="method-grid">{[{icon:Search,title:'Retrieval relevance',text:'Reciprocal rank fusion combines keyword and semantic rankings when vectors are available. Ranking reflects relevance to a question.'},{icon:FileText,title:'Evidence completeness',text:'Excerpts preserve document and page provenance. A relevant excerpt can omit methods, context, or limitations; inspect the original.'},{icon:ShieldCheck,title:'Scientific confidence',text:'Confidence is not calculated from similarity or institutional affiliation. Source-checked quotations still require scientific review.'}].map(m=><section className="panel method-card" key={m.title}><m.icon size={21}/><h3>{m.title}</h3><p>{m.text}</p></section>)}</div>
-          <section className="panel management"><div className="panel-heading"><div><h3>Corpus management</h3><p>Local indexing works without API credentials.</p></div><span className="tag neutral">NO PAID CALLS</span></div><div className="management-stats"><span><strong>{fmt(stats?.research_categories)}</strong> research categories</span><span><strong>{fmt(stats?.extraction_failures)}</strong> failed documents</span><span><strong>{fmt(stats?.extraction_warning_pages)}</strong> page warnings</span><span><strong>${stats?.usage.estimated_usd.toFixed(4)||'0.0000'}</strong> estimated API cost</span></div><div className="action-row"><button className="button secondary" disabled={!!busy} onClick={()=>void ingest(true)}><Activity size={15}/> Estimate ingestion</button><button className="button primary" disabled={!!busy} onClick={()=>void ingest(false)}>{busy==='ingest'?<LoaderCircle className="spin" size={15}/>:<Database size={15}/>} Index local papers</button><button className="button secondary" disabled={!!busy} onClick={()=>importRef.current?.click()}><Upload size={15}/> Import Consensus CSV / JSON</button></div><p className="small-note">Consensus imports are discovery metadata only. OpenAI requires server-side environment configuration and explicit spending opt-in.</p></section>
-          <div className="overview-columns"><section className="panel"><div className="panel-heading"><div><h3>Publication timeline</h3><p>Only source-supported publication years</p></div></div><div className="chart-area">{stats?.publication_timeline.length?<ResponsiveContainer width="100%" height="100%"><AreaChart data={stats.publication_timeline} margin={{left:-25,right:15,bottom:0}}><defs><linearGradient id="timeline" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#dc8658" stopOpacity={.25}/><stop offset="1" stopColor="#dc8658" stopOpacity={0}/></linearGradient></defs><CartesianGrid vertical={false} stroke="#27303a" strokeDasharray="3 5"/><XAxis dataKey="year" tick={{fill:'#8793a0',fontSize:11}} tickLine={false} axisLine={false}/><YAxis allowDecimals={false} tick={{fill:'#8793a0',fontSize:11}} tickLine={false} axisLine={false}/><Tooltip contentStyle={{background:'#151c25',border:'1px solid #34404d'}}/><Area type="linear" dataKey="papers" name="Papers" stroke="#dc8658" fill="url(#timeline)" strokeWidth={2}/></AreaChart></ResponsiveContainer>:<div className="empty">Publication years unavailable.</div>}</div><div className="chart-source">Source: evidence-linked document bibliography. This chart is bibliometric, not an experimental measurement.</div></section><section className="panel method-card"><Microscope size={24}/><h3>What is verified?</h3><p><strong>{stats?.verified_findings||0} reviewed findings.</strong> Source validation checks that a quote exists at its cited page. It does not independently validate the result or establish consensus.</p><p>Original PDF text may contain OCR errors. Page references use PDF page positions, including cover pages.</p><a className="text-button" href="/api/docs" target="_blank" rel="noreferrer">Local API documentation <ExternalLink size={14}/></a></section></div>
-          <section className="panel"><div className="panel-heading"><div><h3>Source-checked findings</h3><p>Traceability checked · scientific confidence not assessed</p></div><span className="count-pill">{findings.length}</span></div>{findings.map((f,i)=><div className="finding-row" key={i}><span className="tag">{f.kind.replaceAll('_',' ')}</span><h4>{f.claim}</h4>{f.evidence.map((e,j)=><details key={j}><summary>Inspect supporting quote · page {e.page}</summary><blockquote>{e.quote}</blockquote><a href={`/api/documents/${e.document_id}/file#page=${e.page}`} target="_blank" rel="noreferrer">Open original <ExternalLink size={12}/></a></details>)}<p className="small-note">{f.limitations.join(' ')}</p></div>)}{!findings.length&&<div className="empty">No source-checked findings have been added.</div>}</section>
-          {docs.some(d=>d.warnings.length>0)&&<section className="panel"><div className="panel-heading"><h3>Extraction warnings</h3></div>{docs.filter(d=>d.warnings.length).map(d=><details className="warning-row" key={d.id}><summary>{title(d)} <span className="tag">{d.warnings.length} warnings</span></summary><ul>{d.warnings.map((w,i)=><li key={i}>{w}</li>)}</ul><button className="text-button" onClick={()=>void openDoc(d)}>Inspect document</button></details>)}</section>}
-        </>}
-        <footer className="main-footer"><span>FLARE <span className="muted">/</span> Research grounded in evidence.</span><span>LOCAL CORPUS · NO SYNTHETIC MEASUREMENTS</span></footer>
-        </>}
+  const filters = (
+    <div className="sf-segments" aria-label="Safety focus">
+      {["All", "Prevention", "Detection", "Suppression"].map((p) => (
+        <button
+          key={p}
+          aria-pressed={pillar === p}
+          onClick={() => setPillar(p)}
+        >
+          {p === "All" ? null : <ShieldCheck size={12} />} {p}
+        </button>
+      ))}
+    </div>
+  );
+  const chartData: Record<string, number | number[]>[] = step === 2 ? curve : points;
+  const chart = (
+    <ResponsiveContainer width="100%" height="100%">
+      <ComposedChart
+        data={chartData}
+        margin={{ top: 20, right: 25, left: 0, bottom: 20 }}
+      >
+        <CartesianGrid stroke="#28364a" strokeDasharray="3 4" />
+        <XAxis
+          type="number"
+          dataKey={step === 2 ? "g" : "air"}
+          domain={step === 2 ? [0, 1] : [0, 45]}
+          tick={{ fill: "#94a3ba", fontSize: 11 }}
+          label={{
+            value:
+              step === 2 ? "Gravity level (g)" : "Ventilation airflow (cm/s)",
+            position: "bottom",
+            fill: "#94a3ba",
+            fontSize: 11,
+          }}
+        />
+        <YAxis
+          domain={zoom ? [14 + mat.offset, 23 + mat.offset] : ["auto", "auto"]}
+          tick={{ fill: "#94a3ba", fontSize: 11 }}
+          unit="%"
+        />
+        <Tooltip
+          contentStyle={{
+            background: "#101a2a",
+            border: "1px solid #34445a",
+            borderRadius: 8,
+          }}
+        />
+        {step === 2 && (
+          <Area dataKey="band" fill="#83baff" fillOpacity={0.2} stroke="none" />
+        )}
+        <Line
+          type="monotone"
+          dataKey={step === 2 ? "value" : "threshold"}
+          stroke="#83baff"
+          strokeWidth={3}
+          dot={false}
+        />
+        {step !== 2 && <Scatter dataKey="oxygen" fill="#f8ae65" />}
+        <ReferenceLine
+          x={step === 2 ? gravity : airflow}
+          stroke="#d7e6fa"
+          strokeDasharray="3 3"
+          label={{ value: "YOUR SCENARIO", fill: "#d7e6fa", fontSize: 10 }}
+        />
+      </ComposedChart>
+    </ResponsiveContainer>
+  );
+  const alerts = [
+    [
+      "CRITICAL",
+      "Exploration atmosphere: O₂-enriched",
+      `${oxygen.toFixed(1)}% O₂ in your cabin. This mock scenario illustrates oxygen enrichment relative to Earth.`,
+    ],
+    [
+      "CRITICAL",
+      "Earth test is not conservative here",
+      "Gravity and airflow can change how materials behave. Compare evidence under matching conditions.",
+    ],
+    [
+      "WARNING",
+      "Your fan speed is in the danger band",
+      `At ${airflow.toFixed(1)} cm/s, explore the relationship between ventilation and flame behavior.`,
+    ],
+    [
+      "WARNING",
+      "Fire spreads toward the fan",
+      "Without buoyancy, flames on sheets and fabrics may creep upstream.",
+    ],
+    [
+      "WARNING",
+      "Partial gravity evidence gap",
+      "No direct mock observations are available at lunar or Martian gravity.",
+    ],
+    [
+      "WARNING",
+      "Geometry changes the result",
+      "Material thickness and configuration affect the comparison.",
+    ],
+    [
+      "WARNING",
+      "Suppression needs context",
+      "A screening result alone cannot establish suppression performance.",
+    ],
+    [
+      "WARNING",
+      "Review the source",
+      "These illustrative records are not verified scientific evidence.",
+    ],
+  ];
+  return (
+    <div className="sf-app">
+      <header className="sf-status">
+        <span>
+          <i /> <strong>{current.name}</strong>{" "}
+          <small>
+            {oxygen.toFixed(1)}% O₂ · {pressure.toFixed(1)} psi ·{" "}
+            {airflow.toFixed(1)} cm/s · {gravity.toFixed(2)} g
+          </small>
+        </span>
+        <span className="sf-status-tags">
+          <b className="sf-burn">
+            <Flame size={12} /> {mat.short}:{" "}
+            {margin >= 0 ? "Burns" : "Below mock limit"} {margin.toFixed(1)} pts
+          </b>
+          <b>MOCK DATA</b>
+        </span>
+      </header>
+      <nav className="sf-steps" aria-label="Scenario workflow">
+        {["Scenario", "Evidence", "Predict & Ask"].map((name, i) => (
+          <button
+            key={name}
+            aria-current={step === i ? "step" : undefined}
+            onClick={() => go(i)}
+          >
+            <span>{i < step ? <Check size={12} /> : i + 1}</span>
+            {name}
+            {i < 2 && <ArrowRight size={13} />}
+          </button>
+        ))}
+        <a href="/research">Research workspace ↗</a>
+      </nav>
+      <main className="sf-main">
+        <div className="sf-eyebrow">
+          {step + 1} / 3{" "}
+          <span>
+            STEP {step + 1} OF 3 ·{" "}
+            {
+              [
+                "BUILD YOUR SCENARIO",
+                "EXPLORE THE RANKING & PHYSICAL ALERTS",
+                "PREDICT, EXTRACT OR ASK",
+              ][step]
+            }
+          </span>
+        </div>
+        {step === 0 ? (
+          <div className="sf-scenario">
+            <section>
+              <h1>Where will the crew live?</h1>
+              <p className="sf-intro">
+                Pick a habitat. PyraScope ranks 30+ years of NASA fire
+                experiments for it,
+                <br />
+                <em>
+                  flags the counter-intuitive physics, and predicts what was
+                  never tested.
+                </em>
+              </p>
+              <div className="sf-stats">
+                {[
+                  [
+                    Database,
+                    "30+",
+                    "years of shuttle & ISS fire data scattered across PDFs, videos & CSVs",
+                  ],
+                  [
+                    Layers,
+                    "15 · 70",
+                    "PSI investigations · curated runs, normalised to one schema",
+                  ],
+                  [
+                    TriangleAlert,
+                    "0",
+                    "direct fire data points at lunar or Martian gravity",
+                  ],
+                ].map(([Icon, value, description]) => {
+                  const I = Icon as typeof Database;
+                  return (
+                    <div key={String(value)}>
+                      <I size={19} />
+                      <section>
+                        <strong>{String(value)}</strong>
+                        <p>{String(description)}</p>
+                      </section>
+                    </div>
+                  );
+                })}
+              </div>
+              <h2 className="sf-habitat-heading">
+                Choose a habitat{" "}
+                <small>— each card previews how materials behave there</small>
+              </h2>
+              <div className="sf-habitats">
+                {habitats.map((h, i) => (
+                  <button
+                    className={`sf-habitat ${habitat === i ? "selected" : ""}`}
+                    key={h.name}
+                    onClick={() => choose(i)}
+                    aria-pressed={habitat === i}
+                  >
+                    <span className={`sf-planet ${h.art}`} aria-hidden="true" />
+                    <span className="sf-radio">
+                      {habitat === i && <Check size={13} />}
+                    </span>
+                    <h3>{h.name}</h3>
+                    <p>{h.description}</p>
+                    <div className="sf-chips">
+                      <span>{h.oxygen}% O₂</span>
+                      <span>{h.pressure} psi</span>
+                      <span>{h.gravity.toFixed(2)} g</span>
+                    </div>
+                    <small className="sf-caption">
+                      BURN MARGIN BY MATERIAL · MOCK
+                    </small>
+                    <div className="sf-margins">
+                      {materials.map((m, j) => (
+                        <span
+                          key={m.short}
+                          className={j === material ? "chosen" : ""}
+                        >
+                          {m.short}
+                          <br />
+                          {(
+                            h.oxygen -
+                            (16.3 + h.gravity * 1.2 + m.offset)
+                          ).toFixed(1)}
+                        </span>
+                      ))}
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <p className="sf-footnote">
+                Burn margin = cabin O₂ minus the illustrative sustaining-oxygen
+                threshold. Positive = burns in this mock model.
+              </p>
+            </section>
+            <aside>
+              <div className="sf-atmosphere">
+                <h2>Fine-tune atmosphere</h2>
+                {[
+                  {
+                    label: "Oxygen",
+                    value: oxygen,
+                    set: setOxygen,
+                    min: 15,
+                    max: 100,
+                    step: 0.1,
+                    unit: "% O₂",
+                    icon: Droplets,
+                  },
+                  {
+                    label: "Cabin pressure",
+                    value: pressure,
+                    set: setPressure,
+                    min: 3,
+                    max: 16,
+                    step: 0.1,
+                    unit: "psi",
+                    icon: Gauge,
+                  },
+                  {
+                    label: "Ventilation airflow",
+                    value: airflow,
+                    set: setAirflow,
+                    min: 0,
+                    max: 40,
+                    step: 0.5,
+                    unit: "cm/s",
+                    icon: Wind,
+                  },
+                  {
+                    label: "Gravity",
+                    value: gravity,
+                    set: setGravity,
+                    min: 0,
+                    max: 1,
+                    step: 0.01,
+                    unit: "g",
+                    icon: Orbit,
+                  },
+                ].map((c) => (
+                  <label className="sf-slider" key={c.label}>
+                    <span>
+                      <span>
+                        <c.icon size={14} />
+                        {c.label}
+                      </span>
+                      <output>
+                        {c.value.toFixed(c.label === "Gravity" ? 2 : 1)}{" "}
+                        <small>{c.unit}</small>
+                      </output>
+                    </span>
+                    <input
+                      aria-label={c.label}
+                      type="range"
+                      min={c.min}
+                      max={c.max}
+                      step={c.step}
+                      value={c.value}
+                      onChange={(e) => c.set(Number(e.target.value))}
+                    />
+                  </label>
+                ))}
+                <div className="sf-presets">
+                  {presets.map(([name, g]) => (
+                    <button
+                      key={name}
+                      aria-pressed={gravity === g}
+                      onClick={() => setGravity(g)}
+                    >
+                      {name} {g} g
+                    </button>
+                  ))}
+                </div>
+                <div className="sf-divider" />
+                <h2>Material to evaluate</h2>
+                <div className="sf-materials">
+                  {materials.map((m, i) => (
+                    <button
+                      key={m.name}
+                      onClick={() => setMaterial(i)}
+                      aria-pressed={material === i}
+                    >
+                      <span>
+                        <strong>{m.name}</strong>
+                        <small>{m.description}</small>
+                      </span>
+                      <span className="sf-radio">
+                        {material === i && <span />}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+                <div className="sf-divider" />
+                <h2>Safety focus</h2>
+                <p className="sf-footnote">
+                  Boosts investigations from NASA’s matching fire-safety pillar.
+                </p>
+                {filters}
+              </div>
+              <button className="sf-primary" onClick={() => go(1)}>
+                See ranked evidence & alerts <ArrowRight size={16} />
+              </button>
+            </aside>
+          </div>
+        ) : (
+          <>
+            <h1>
+              {step === 1 ? (
+                <>
+                  Evidence for <em>{current.name}</em>
+                </>
+              ) : (
+                "Go beyond what was tested"
+              )}
+            </h1>
+            <p className="sf-intro">
+              {step === 1 ? (
+                <>
+                  Read first:{" "}
+                  <strong>
+                    {ranked
+                      .slice(0, 3)
+                      .map((i) => `${i.name} (${i.score})`)
+                      .join(", ") || "No matching investigations"}
+                  </strong>
+                  . The ranking, the danger map and the
+                  <br /> alerts update live with your scenario.
+                </>
+              ) : (
+                "Predict untested gravities, download a clean table for your own models, or ask the Copilot why a phenomenon happens."
+              )}
+            </p>
+            {step === 1 ? (
+              <>
+                <div className="sf-section-heading">
+                  <div>
+                    <h2>Physical alerts</h2>
+                    <p>2 critical · counter-intuitive physics to design for</p>
+                  </div>
+                  <button onClick={() => setAllAlerts(!allAlerts)}>
+                    {allAlerts ? "Show fewer" : "Show all 8"} ⌄
+                  </button>
+                </div>
+                <div className="sf-alerts">
+                  {alerts
+                    .slice(0, allAlerts ? 8 : 4)
+                    .map(([severity, title, text], i) => (
+                      <article
+                        key={title}
+                        className={severity === "CRITICAL" ? "critical" : ""}
+                      >
+                        <small>
+                          <TriangleAlert size={16} />
+                          {severity}
+                        </small>
+                        <h3>{title}</h3>
+                        <p>{text}</p>
+                        <footer>
+                          Evidence <b>{investigations[i % 5].name}</b>
+                          <b>BASS</b>
+                        </footer>
+                      </article>
+                    ))}
+                </div>
+                <div className="sf-evidence-grid">
+                  <section className="sf-panel sf-ranking">
+                    <h2>Most useful NASA investigations</h2>
+                    <p>
+                      Ranked for your conditions. Select one to see its runs.
+                    </p>
+                    <details>
+                      <summary>How scoring works</summary>
+                      <p>
+                        Mock scores combine a preset relevance rank, gravity
+                        similarity and material selection. Safety focus and fuel
+                        filter the results.
+                      </p>
+                    </details>
+                    {filters}
+                    <label className="sf-fuel">
+                      Fuel type{" "}
+                      <select
+                        aria-label="Fuel type"
+                        value={fuel}
+                        onChange={(e) => setFuel(e.target.value)}
+                      >
+                        {["All fuels", "Solid", "Fabric", "Gas"].map((f) => (
+                          <option key={f}>{f}</option>
+                        ))}
+                      </select>
+                    </label>
+                    <div className="sf-investigations">
+                      {ranked.map((i, index) => (
+                        <button
+                          key={i.name}
+                          className={active?.name === i.name ? "selected" : ""}
+                          onClick={() => setSelected(i.name)}
+                        >
+                          <div>
+                            <b>{index + 1}</b>
+                            <span>
+                              <strong>
+                                {i.name} <small>{i.year}</small>
+                              </strong>
+                              <small>{i.title}</small>
+                              <progress value={i.score} max={100} />
+                            </span>
+                            <strong className="sf-score">{i.score}</strong>
+                          </div>
+                          <div className="sf-chips">
+                            <span>{i.pillar}</span>
+                            <span>ISS</span>
+                            <span>{i.fuel}</span>
+                          </div>
+                          {active?.name === i.name && <p>{i.description}</p>}
+                        </button>
+                      ))}
+                      {!ranked.length && (
+                        <p className="sf-empty">
+                          No investigations match these filters. Choose All
+                          pillars or All fuels.
+                        </p>
+                      )}
+                    </div>
+                  </section>
+                  <section className="sf-panel">
+                    <div className="sf-segments sf-view-tabs">
+                      {[
+                        "Danger map",
+                        "Head-to-head",
+                        "Inside one investigation",
+                      ].map((v) => (
+                        <button
+                          key={v}
+                          aria-pressed={view === v}
+                          onClick={() => setView(v)}
+                        >
+                          {v}
+                        </button>
+                      ))}
+                    </div>
+                    {view === "Danger map" ? (
+                      <>
+                        <h2>Where fire becomes dangerous</h2>
+                        <p>
+                          At {airflow.toFixed(1)} cm/s and {gravity.toFixed(2)}{" "}
+                          g, {mat.name} has an illustrative O₂ threshold of{" "}
+                          {limit.toFixed(1)}%.{" "}
+                          <strong>
+                            Your cabin: {oxygen.toFixed(1)}% O₂ →{" "}
+                            <mark>
+                              {margin >= 0 ? "Burns" : "Below mock limit"}
+                            </mark>
+                          </strong>
+                        </p>
+                        <div className="sf-chart-tools">
+                          <div className="sf-segments">
+                            {materials.map((m, i) => (
+                              <button
+                                key={m.short}
+                                aria-pressed={material === i}
+                                onClick={() => setMaterial(i)}
+                              >
+                                {m.short}
+                              </button>
+                            ))}
+                          </div>
+                          <button
+                            aria-pressed={zoom}
+                            onClick={() => setZoom(!zoom)}
+                          >
+                            ⊕ {zoom ? "Reset zoom" : "Zoom on limits"}
+                          </button>
+                          <button
+                            aria-pressed={table}
+                            onClick={() => setTable(!table)}
+                          >
+                            ▦ {table ? "Hide table" : "Data table"}
+                          </button>
+                        </div>
+                        <div className="sf-chart">{chart}</div>
+                        {table && (
+                          <div className="sf-table-wrap">
+                            <table>
+                              <caption>Illustrative mock points</caption>
+                              <thead>
+                                <tr>
+                                  <th>Airflow (cm/s)</th>
+                                  <th>Threshold (% O₂)</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {points.map((p) => (
+                                  <tr key={p.air}>
+                                    <td>{p.air}</td>
+                                    <td>{p.threshold.toFixed(1)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        )}
+                      </>
+                    ) : view === "Head-to-head" ? (
+                      <>
+                        <h2>Compare the leading investigations</h2>
+                        <div className="sf-table-wrap">
+                          <table>
+                            <thead>
+                              <tr>
+                                <th>Investigation</th>
+                                <th>Score</th>
+                                <th>Safety pillar</th>
+                                <th>Fuel</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {ranked.map((i) => (
+                                <tr key={i.name}>
+                                  <td>{i.name}</td>
+                                  <td>{i.score}</td>
+                                  <td>{i.pillar}</td>
+                                  <td>{i.fuel}</td>
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <h2>{active?.name || "Select an investigation"}</h2>
+                        <p>{active?.title}</p>
+                        <p>{active?.description}</p>
+                        {active && (
+                          <div className="sf-run">
+                            <span>MOCK RUN 01</span>
+                            <h3>
+                              {mat.name} · {current.name}
+                            </h3>
+                            <p>
+                              {oxygen}% O₂ · {pressure} psi · {airflow} cm/s ·{" "}
+                              {gravity} g
+                            </p>
+                            <small>
+                              Illustrative scenario match. No measured
+                              experimental run is represented.
+                            </small>
+                          </div>
+                        )}
+                      </>
+                    )}
+                    <p className="sf-footnote">
+                      MOCK DATA · Illustrative UI values, not validated
+                      scientific results or safety guidance.
+                    </p>
+                  </section>
+                </div>
+              </>
+            ) : (
+              <section className="sf-panel sf-predict">
+                <div className="sf-segments sf-view-tabs">
+                  {[
+                    "Predict partial gravity",
+                    "Extract clean data",
+                    "Ask Copilot",
+                  ].map((t) => (
+                    <button
+                      key={t}
+                      aria-pressed={predictTab === t}
+                      onClick={() => setPredictTab(t)}
+                    >
+                      {t}
+                    </button>
+                  ))}
+                </div>
+                {predictTab === "Predict partial gravity" ? (
+                  <>
+                    <h2>Predict fire behaviour at gravities never tested</h2>
+                    <p>
+                      Explore an illustrative mock curve between orbit and
+                      Earth.
+                    </p>
+                    <div className="sf-predict-grid">
+                      <div>
+                        <div className="sf-chart">{chart}</div>
+                        <label className="sf-slider">
+                          Gravity <output>{gravity.toFixed(2)} g</output>
+                          <input
+                            aria-label="Prediction gravity"
+                            type="range"
+                            min="0"
+                            max="1"
+                            step=".01"
+                            value={gravity}
+                            onChange={(e) => setGravity(Number(e.target.value))}
+                          />
+                        </label>
+                        <div className="sf-presets">
+                          {presets.map(([n, g]) => (
+                            <button
+                              key={n}
+                              aria-pressed={g === gravity}
+                              onClick={() => setGravity(g)}
+                            >
+                              {n} {g} g
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <aside className="sf-readout">
+                        <small>
+                          AT {gravity.toFixed(2)} G · MOCK PREDICTION
+                        </small>
+                        <p>Min. O₂ to keep burning</p>
+                        <strong>
+                          {(16.3 + gravity * 1.2 + mat.offset).toFixed(1)}
+                          <small>% ± 0.3</small>
+                        </strong>
+                        <hr />
+                        <p>Your cabin {oxygen.toFixed(1)}% O₂</p>
+                        <span className="sf-burn">
+                          {margin >= 0 ? "Burns" : "Below mock limit"}
+                        </span>
+                        <p>Prediction, not measured evidence.</p>
+                      </aside>
+                    </div>
+                  </>
+                ) : predictTab === "Extract clean data" ? (
+                  <>
+                    <h2>Take your scenario with you</h2>
+                    <p>
+                      Export the current habitat, atmosphere and selected
+                      material as a CSV with an explicit mock-data flag.
+                    </p>
+                    <button className="sf-primary" onClick={download}>
+                      <Download size={16} /> Download mock CSV
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <h2>Ask about your scenario</h2>
+                    <p>Mock Copilot · prepared demonstration response</p>
+                    <form
+                      className="sf-ask"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (question.trim())
+                          setAnswer(
+                            `Demo response for “${question.trim()}”: Your ${current.name} scenario uses ${oxygen.toFixed(1)}% oxygen at ${gravity.toFixed(2)} g. Compare ${
+                              ranked
+                                .slice(0, 2)
+                                .map((i) => i.name)
+                                .join(" and ") || "the available investigations"
+                            } and review the evidence gaps. This is a mock response, not a source-backed scientific answer.`,
+                          );
+                      }}
+                    >
+                      <input
+                        aria-label="Ask Copilot"
+                        placeholder="Why does gravity change flame behavior?"
+                        value={question}
+                        onChange={(e) => setQuestion(e.target.value)}
+                      />
+                      <button
+                        disabled={!question.trim()}
+                        aria-label="Send question"
+                      >
+                        <Send size={18} />
+                      </button>
+                    </form>
+                    {answer && (
+                      <p className="sf-answer" role="status">
+                        {answer}
+                      </p>
+                    )}
+                  </>
+                )}
+                <p className="sf-footnote">
+                  MOCK DATA · The existing research and prediction tools remain
+                  available in the <a href="/research">research workspace</a>.
+                </p>
+              </section>
+            )}
+            <div className="sf-bottom">
+              <button onClick={() => go(step - 1)}>
+                <ArrowLeft size={16} />{" "}
+                {step === 1 ? "Edit scenario" : "Back to evidence"}
+              </button>
+              {step === 1 && (
+                <button className="sf-primary" onClick={() => go(2)}>
+                  Continue to Predict & Ask <ArrowRight size={16} />
+                </button>
+              )}
+            </div>
+          </>
+        )}
+        <footer className="sf-disclaimer">
+          <ShieldCheck size={13} /> Prototype with mock data · For interface
+          demonstration only
+        </footer>
       </main>
     </div>
-    {selected&&<div className="modal-backdrop" onClick={()=>setSelected(null)}><section role="dialog" aria-modal="true" aria-label="Document details" className="document-modal" onClick={e=>e.stopPropagation()}><div className="modal-top"><span className="eyebrow">SOURCE DOCUMENT</span><button autoFocus className="icon-button" aria-label="Close document" onClick={()=>setSelected(null)}><X size={20}/></button></div><h2>{title(selected)}</h2><p className="paper-meta">{selected.metadata.authors.join(', ')||'Authors unavailable'} · {selected.metadata.publication_year||'Year unavailable'}</p><div className="action-row"><a className="button primary" href={`/api/documents/${selected.id}/file`} target="_blank" rel="noreferrer"><FileText size={15}/> Open original PDF <ExternalLink size={14}/></a><span className="tag">{selected.page_count} pages · {selected.chunks} chunks</span></div>{selected.metadata.doi&&<p className="small-note">DOI: {selected.metadata.doi}</p>}<div className="alert">Bibliographic status: {selected.metadata.verification_status}. Metadata fields and experimental contexts require review.</div><dl className="detail-fields">{Object.entries(fieldLabel).map(([key,label])=><div key={key}><dt>{label}</dt><dd>{String(selected.metadata[key as keyof Meta]||'Unavailable')}{selected.metadata.field_evidence[key]?.map((e,i)=><details key={i}><summary>Source · page {e.page}</summary><blockquote>{e.quote}</blockquote></details>)}</dd></div>)}</dl><h3>Page-by-page extracted text</h3>{selected.pages?.map(p=><details className="page-excerpt" key={p.page}><summary>Page {p.page}<a href={`/api/documents/${selected.id}/file#page=${p.page}`} onClick={e=>e.stopPropagation()} target="_blank" rel="noreferrer">Original <ExternalLink size={12}/></a></summary><pre>{p.text||'No text extracted. OCR may be required.'}</pre></details>)}</section></div>}
-  </div>;
+  );
 }
