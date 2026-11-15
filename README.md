@@ -61,6 +61,16 @@ Terminal 1, from the repository root:
 .venv/bin/uvicorn flame.main:app --host 127.0.0.1 --port 8000
 ```
 
+On Windows PowerShell, from the repository root:
+
+```powershell
+.\.venv\Scripts\python.exe -m uvicorn flame.main:app --app-dir backend --reload --reload-dir backend --port 8000
+```
+
+Keep the `backend/flame` package complete: its storage, ingestion, retrieval and
+`ood` modules are required by `flame.main`, even when other backend entry points
+are used alongside it.
+
 Terminal 2, from the repository root:
 
 ```bash
