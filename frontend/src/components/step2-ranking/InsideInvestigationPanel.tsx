@@ -1,5 +1,6 @@
+import {InvestigationChart} from "./InvestigationChart";
 import {useT} from '../../i18n/useT';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useScenario } from "../../context/ScenarioContext";
 
 type Variable = {variable: string; min?: number; max?: number; unit?: string; values?: string[]; platform?: string; facility?: string; hardware?: string; note?: string; label: string};
@@ -10,6 +11,8 @@ export const InsideInvestigationPanel: React.FC = () => {
 
   const { lang, selectedInvestigationId: selected, setSelectedInvestigationId: setSelected } = useScenario();
   const en = lang === "en";
+  const panel = useRef<HTMLDivElement>(null);
+  useEffect(() => {panel.current?.scrollTo({top:0});}, [selected]);
   const [investigations, setInvestigations] = useState<{id: string; acronym: string; name: string}[]>([]);
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
@@ -38,7 +41,7 @@ export const InsideInvestigationPanel: React.FC = () => {
   }, [selected, retry, en]);
   const labels: Record<string, string> = en ? {o2: "Oxygen", pressure: "Pressure", flow: "Airflow", gravity: "Gravity", fuels: "Materials", hardware_context: "Hardware"} : {o2: "Oxígeno", pressure: "Presión", flow: "Flujo de aire", gravity: "Gravedad", fuels: "Materiales", hardware_context: "Hardware"};
   const display = (item: Variable) => item.values?.map(value => t(value)).join(", ") || (item.min !== undefined ? `${item.min}${item.max !== item.min ? ` – ${item.max}` : ""} ${item.unit || ""}` : [item.platform, item.facility, item.hardware].filter(Boolean).map(value => t(value)).join(" · "));
-  return <div className="flex-1 overflow-y-auto p-4 sm:p-6">
+  return <div ref={panel} className="flex-1 overflow-y-auto p-4 sm:p-6">
     <h3 className="text-lg font-bold">{t(en ? "Inside an investigation" : "Dentro de una investigación")}</h3>
     <p className="my-3 text-xs text-slate-400">{t(en ? "Compare reported conditions and findings. Catalog ranges do not identify individual experimental runs." : "Compara condiciones y hallazgos reportados. Los rangos del catálogo no identifican corridas experimentales individuales.")}</p>
     <label className="block text-sm" htmlFor="intra-investigation">{t(en ? "Investigation" : "Investigación")}</label>
@@ -47,6 +50,7 @@ export const InsideInvestigationPanel: React.FC = () => {
     </select>
     {error ? <div role="alert" className="my-4 text-amber-200">{t(error)} <button onClick={() => setRetry(value => value + 1)} className="underline">{t(en ? "Retry" : "Reintentar")}</button></div> : !analysis ? <p role="status">{t(en ? "Loading comparison…" : "Cargando comparación…")}</p> : <>
       <h4 className="my-4 font-bold">{t(analysis.acronym)} · {t(analysis.name)}</h4>
+      <InvestigationChart key={selected} investigationId={selected}/>
       <div className="grid gap-4 lg:grid-cols-2">{[
         [en ? "Fixed conditions" : "Condiciones fijas", analysis.fixed_conditions],
         [en ? "Variables changed" : "Variables que cambiaron", analysis.iterated_variables],

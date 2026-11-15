@@ -294,6 +294,17 @@ def create_app(config: Settings | None = None):
             raise HTTPException(404, f'Investigation {investigation_id} not found')
         return engines.analyze_intra_investigation(inv)
 
+    @app.get('/api/motor3/chart/{investigation_id}')
+    def motor3_chart(investigation_id: str):
+        from .investigation_charts import chart_data
+        cat = engines.load_psi_catalog(store)
+        key = investigation_id.strip().lower()
+        inv = next((item for item in cat.get('investigations', [])
+                    if key in (item['id'].lower(), item['acronym'].lower())), None)
+        if inv is None:
+            raise HTTPException(404, f'Investigation {investigation_id} not found')
+        return chart_data(inv, cat.get('sources', {}), obs_path())
+
     @app.get('/api/motor3/inter/{id_a}/{id_b}')
     def motor3_inter(id_a: str, id_b: str):
         cat = engines.load_psi_catalog(store)

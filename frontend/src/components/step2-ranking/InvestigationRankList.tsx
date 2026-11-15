@@ -42,8 +42,15 @@ export const InvestigationRankList: React.FC<RankListProps> = ({ onAskCopilot })
     loadRanking();
   }, [conditions, safetyPillar]);
 
+  const showChart = (id: string) => {
+    setSelectedInvestigationId(id);
+    setEvidenceTab("inside");
+    document.getElementById("investigation-evidence")?.scrollIntoView({behavior:"smooth", block:"start"});
+  };
+
   const toggleExpand = (id: string) => {
     setSelectedInvestigationId(id);
+    setEvidenceTab("inside");
     setExpandedId((prev) => (prev === id ? null : id));
   };
 
@@ -157,8 +164,8 @@ const handleAskCopilotClick = (e: React.MouseEvent, acronym: string) => {
 
                   {/* Botones de Acción (El botón Copilot llama a nuestra prop) */}
                   <div className="flex flex-wrap gap-2">
-                    <button onClick={() => {setSelectedInvestigationId(id); setEvidenceTab("inside");}} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-[10px] font-bold text-white transition hover:bg-slate-700">
-                       {t(lang === "en" ? "View analysis" : "Ver análisis")}
+                    <button onClick={() => showChart(id)} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-[10px] font-bold text-white transition hover:bg-slate-700">
+                       {t(lang === "en" ? "View paper chart" : "Ver gráfico del paper")}
                     </button>
                     <button onClick={() => {setSelectedInvestigationId(id); setEvidenceTab("inside");}} className="flex flex-1 items-center justify-center gap-1.5 rounded-lg border border-slate-600 bg-slate-800/80 px-3 py-2 text-[10px] font-bold text-white transition hover:bg-slate-700">
                       <GitCompare size={13} /> {t(lang === "en" ? "What changed" : "Qué cambió")}
