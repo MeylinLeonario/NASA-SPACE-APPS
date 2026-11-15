@@ -1,3 +1,4 @@
+//frontend/src/components/step3-predictor/Step3PredictorView.tsx
 import React from "react";
 import { useScenario } from "../../context/ScenarioContext";
 import { GravityPredictorChart } from "./GravityPredictorChart";
